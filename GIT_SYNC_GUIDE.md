@@ -17,7 +17,7 @@ git add .
 git commit -m "Initial commit - Wave Messenger project"
 
 # Add your GitHub repository as remote (replace with your repo URL)
-git remote add origin https://github.com/Imlokzu/wave-messenger.git
+git remote add origin https://github.com/Imlokzu/wave.git
 
 # Push to GitHub
 git push -u origin master
@@ -37,8 +37,8 @@ If you get authentication error, you'll need a Personal Access Token:
 sudo pacman -S git
 
 # Clone the repository
-git clone https://github.com/Imlokzu/wave-messenger.git
-cd wave-messenger
+git clone https://github.com/Imlokzu/wave.git
+cd wave
 
 # Copy environment variables
 cp .env.example .env
@@ -132,7 +132,7 @@ git reset --hard origin/master
 **Problem:** "fatal: remote origin already exists"
 ```bash
 git remote remove origin
-git remote add origin https://github.com/Imlokzu/wave-messenger.git
+git remote add origin https://github.com/Imlokzu/wave.git
 ```
 
 **Problem:** Merge conflicts
