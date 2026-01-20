@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friend Invite</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #101e23;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #101e23; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #16262c; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 30px; text-align: center;">
+                            <img src="{{app_url}}/nobackweave.png" alt="Wave" style="width: 60px; height: 60px; margin-bottom: 15px; filter: brightness(0) invert(1);">
+                            <div style="font-size: 48px; margin-bottom: 10px;">👋</div>
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 900;">New Friend Request</h1>
+                            <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Connect on Wave</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <p style="margin: 0 0 20px 0; color: #ffffff; font-size: 16px; line-height: 1.6;">
+                                Hi <strong>{{to_username}}</strong>,
+                            </p>
+                            <p style="margin: 0 0 20px 0; color: #90bccb; font-size: 16px; line-height: 1.6;">
+                                <strong style="color: #8b5cf6;">{{from_username}}</strong> wants to connect with you on Wave!
+                            </p>
+                            
+                            <div style="background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(124,58,237,0.1) 100%); border: 2px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 25px; margin: 30px 0; text-align: center;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ffffff; font-weight: 900;">
+                                    {{from_initial}}
+                                </div>
+                                <h3 style="margin: 0 0 5px 0; color: #ffffff; font-size: 20px;">@{{from_username}}</h3>
+                                <p style="margin: 0; color: #90bccb; font-size: 14px;">{{from_bio}}</p>
+                            </div>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="padding-right: 10px;">
+                                                    <a href="{{app_url}}/chat.html?accept={{invite_id}}" style="display: inline-block; background-color: #8b5cf6; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 700; font-size: 16px;">
+                                                        Accept
+                                                    </a>
+                                                </td>
+                                                <td style="padding-left: 10px;">
+                                                    <a href="{{app_url}}/chat.html?decline={{invite_id}}" style="display: inline-block; background-color: transparent; color: #90bccb; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 700; font-size: 16px; border: 2px solid rgba(255,255,255,0.1);">
+                                                        Decline
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 20px 0 0 0; color: #5a7d8a; font-size: 14px; text-align: center;">
+                                Connect and start chatting on Wave! 💬
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #101e23; padding: 30px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <p style="margin: 0 0 10px 0; color: #5a7d8a; font-size: 14px;">
+                                <a href="{{app_url}}" style="color: #0db9f2; text-decoration: none;">Open Wave</a>
+                            </p>
+                            <p style="margin: 0; color: #5a7d8a; font-size: 12px;">
+                                © 2026 Wave Messenger. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

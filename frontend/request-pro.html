@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Request Pro - Wave Messenger</title>
+    <script src="/js/auth-guard.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0db9f2",
+                        "background-dark": "#101e23",
+                        "surface-dark": "#16262c",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <script src="/config.js"></script>
+</head>
+<body class="bg-background-dark text-slate-100 font-display">
+    <div class="max-w-2xl mx-auto px-6 py-12">
+        <div class="mb-8">
+            <a href="/settings.html" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-all mb-6">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Back to Settings
+            </a>
+            <div class="bg-gradient-to-r from-primary/20 to-transparent rounded-2xl p-8 border border-primary/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-3xl">star</span>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-black text-white mb-2">Request Pro Status</h1>
+                        <p class="text-slate-400">Tell us why you'd like Wave Pro</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-surface-dark/50 backdrop-blur-sm p-8 rounded-xl border border-slate-700/50 shadow-xl">
+            <form id="proRequestForm" class="space-y-6">
+                <div>
+                    <label class="block text-white font-medium mb-2" for="reason">Why do you want Pro? *</label>
+                    <textarea id="reason" required rows="6" class="w-full bg-background-dark border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary resize-none" placeholder="Tell us about your use case, how you'll use Wave Pro features, or why you'd benefit from it..."></textarea>
+                </div>
+
+                <div class="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                    <h3 class="text-white font-bold mb-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                        What you'll get with Pro
+                    </h3>
+                    <ul class="space-y-1 text-slate-300 text-sm">
+                        <li>• Unlimited AI conversations</li>
+                        <li>• Priority support</li>
+                        <li>• Exclusive features</li>
+                        <li>• No ads</li>
+                        <li>• Custom themes</li>
+                    </ul>
+                </div>
+
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-primary text-black px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">send</span>
+                        Submit Request
+                    </button>
+                    <button type="button" onclick="window.location.href='/settings.html'" class="px-6 py-3 rounded-lg border border-slate-700 text-white hover:bg-surface-dark transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+            <div id="successMessage" class="hidden mt-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span>Your request has been submitted! We'll review it soon.</span>
+                </div>
+            </div>
+
+            <div id="errorMessage" class="hidden mt-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined">error</span>
+                    <span id="errorText"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('proRequestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login to submit a request');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Submitting...';
+            
+            document.getElementById('errorMessage').classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/reports/pro-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        reason: document.getElementById('reason').value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to submit request');
+                }
+                
+                document.getElementById('successMessage').classList.remove('hidden');
+                this.reset();
+                
+                setTimeout(() => {
+                    window.location.href = '/settings.html';
+                }, 3000);
+            } catch (error) {
+                console.error('Error submitting pro request:', error);
+                document.getElementById('errorText').textContent = error.message;
+                document.getElementById('errorMessage').classList.remove('hidden');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Request';
+            }
+        });
+    </script>
+</body>
+</html>

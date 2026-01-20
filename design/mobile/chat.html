@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chats Screen (Dark Mode)</title>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b8cee",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#0B1116","card-dark": "#151e29",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .wave-bg {
+            background: linear-gradient(180deg, rgba(43, 140, 238, 0.08) 0%, rgba(246, 247, 248, 0) 100%);
+        }
+        .dark .wave-bg {
+            background: linear-gradient(180deg, rgba(43, 140, 238, 0.12) 0%, rgba(11, 17, 22, 0) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-gray-100 font-display overflow-x-hidden min-h-screen relative flex flex-col">
+<div class="absolute top-0 left-0 right-0 h-80 wave-bg pointer-events-none z-0"></div>
+<header class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl px-4 pt-6 pb-2 flex items-center justify-between border-b border-transparent dark:border-white/5 transition-colors">
+<h2 class="text-3xl font-bold leading-tight tracking-tight text-[#111418] dark:text-white">Chats</h2>
+<div class="flex gap-2">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">add_comment</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-transparent dark:text-gray-300 text-gray-600 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_vert</span>
+</button>
+</div>
+</header>
+<div class="px-4 py-2 relative z-10">
+<label class="flex w-full items-center h-12 rounded-2xl bg-white dark:bg-[#1a232e] shadow-sm shadow-blue-900/5 dark:shadow-black/20 ring-1 ring-gray-100 dark:ring-white/5 focus-within:ring-2 focus-within:ring-primary transition-all group">
+<div class="flex items-center justify-center pl-4 text-gray-400 dark:text-gray-500 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">search</span>
+</div>
+<input class="flex-1 w-full bg-transparent border-none text-base font-normal text-[#111418] dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 px-3" placeholder="Search conversations, music..."/>
+</label>
+</div>
+<div class="relative w-full z-10 mt-3">
+<div class="flex gap-3 px-4 overflow-x-auto hide-scrollbar pb-2">
+<button class="flex-shrink-0 px-5 h-9 flex items-center justify-center rounded-full bg-primary text-white text-sm font-medium shadow-md shadow-primary/20 transition-transform active:scale-95">
+            All
+        </button>
+<button class="flex-shrink-0 px-5 h-9 flex items-center justify-center rounded-full bg-white dark:bg-[#1a232e] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-white/5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#202b38] transition-colors">
+            Unread
+            <span class="ml-2 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
+</button>
+<button class="flex-shrink-0 px-5 h-9 flex items-center justify-center rounded-full bg-white dark:bg-[#1a232e] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-white/5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#202b38] transition-colors">
+            Guest Rooms
+        </button>
+<button class="flex-shrink-0 px-5 h-9 flex items-center justify-center rounded-full bg-white dark:bg-[#1a232e] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-white/5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#202b38] transition-colors">
+<span class="material-symbols-outlined mr-1" style="font-size: 16px;">smart_toy</span>
+            AI
+        </button>
+</div>
+</div>
+<div class="mt-5 px-4 z-10">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Pinned &amp; Live</h3>
+</div>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-4">
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0">
+<div class="relative group cursor-pointer">
+<div class="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-primary to-cyan-400 group-hover:scale-105 transition-transform duration-300">
+<div class="w-full h-full rounded-full border-2 border-white dark:border-background-dark overflow-hidden bg-gray-800">
+<img alt="Smiling woman portrait" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOojtXY7FjLeIhYfq3w2-aUPx7BTiI_YMPietwB-vhvIQKKuSNZMjf0Wbgb5YcTU7vSWe58DddD9IJ1ybufZYMiLDxgd7j_n8SaIurNpTSyHgiw28HSv1EWCQXDQ541w_IqSCxz3BIxXdRn-r3iwhDbDOkeH8bHAu5eHYiT-7KufAXrNQdtkP9cmbadvR7iucEeLGR7cO6zrY_o6pYO2iaKFd-k7pnWU4_2P-Cnavo4YeDeBvqRGMIpDAYIJWnDb6T-nfZf6brHco"/>
+</div>
+</div>
+<div class="absolute bottom-0 right-0 w-5 h-5 bg-white dark:bg-card-dark rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary" style="font-size: 14px; font-weight: 700;">push_pin</span>
+</div>
+</div>
+<span class="text-xs font-medium text-center truncate w-full text-gray-700 dark:text-gray-300">Sarah</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0">
+<div class="relative group cursor-pointer">
+<div class="w-16 h-16 rounded-full p-0.5 border-2 border-dashed border-primary animate-spin-slow">
+<div class="w-full h-full rounded-full border-2 border-white dark:border-background-dark overflow-hidden bg-gray-800 animate-none" style="transform: rotate(calc(-1 * var(--tw-rotate)));">
+<img alt="Vibrant abstract party lights" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgomEudDVcZuM5WhIZvk11XkpGbecd0HNr89phPozvNRr933rJdXfE-NX5f2n_UXyTQCWLbqQh81vKNYv7jC3C0WCaYSUiJ57nyMVHNJ8fLkDDbNaDXrHxveHuft-1t8CRPMWKPeaXwe7NXt7v7VBt74-I0jsjRTVrBadw1gVjKLzgdEKt4BRhdfp-pgWqLiS_w9yOhjMkmpSnJVU9kxUr_wXqQwJVKmNptkEv04WXC6iqi4ObhwZX4W7cQrTxfopKs6XztOcCXsQ"/>
+</div>
+</div>
+<div class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-bold px-1.5 rounded-full border border-white dark:border-background-dark shadow-sm z-10">LIVE</div>
+</div>
+<span class="text-xs font-medium text-center truncate w-full text-gray-700 dark:text-gray-300">Chill Vibes</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0">
+<div class="relative group cursor-pointer">
+<div class="w-16 h-16 rounded-full overflow-hidden bg-gray-800 border-2 border-transparent group-hover:border-gray-700 transition-colors">
+<img alt="Man with beard portrait" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm6MF0tY7JFa_4qgYkkGLVwS3EyJJnahQZ2FiBG1ZQKSuHoeX8RZLyQs7JspH8nKm5h0rktv52LKQzPOPO3G5HOyv9ApYoLVkWd0jpuL233xNRujNcqgIS8A_F6WPhSCaNESzO4hTXbnsuyYwgi01EftWxc7ZFsEl5wjlr76k7VpFBcDs6VaYvR5CPKkAdquqXaKmp7XEbjyTbh-FcxqeG5KB_y8eWrxwpY5ez5_AjPosD0RuFw5uWQfBv44pRL0y_zPUAsdnOAvE"/>
+</div>
+<div class="absolute bottom-0 right-0 w-5 h-5 bg-white dark:bg-card-dark rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary" style="font-size: 14px; font-weight: 700;">push_pin</span>
+</div>
+</div>
+<span class="text-xs font-medium text-center truncate w-full text-gray-700 dark:text-gray-300">Alex</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
+<div class="relative">
+<div class="w-16 h-16 rounded-full overflow-hidden bg-white/5 border-2 border-dashed border-gray-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-gray-400" style="font-size: 24px;">add</span>
+</div>
+</div>
+<span class="text-xs font-medium text-center truncate w-full text-gray-500">Your Story</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col flex-1 pb-24 z-10 mt-2">
+<div class="relative z-10 flex items-center gap-4 px-4 py-3.5 bg-background-light dark:bg-background-dark hover:bg-white dark:hover:bg-[#151e29] transition-colors cursor-pointer active:bg-gray-50 dark:active:bg-[#1a232e] border-b border-transparent dark:border-white/5">
+<div class="relative shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800">
+<img alt="Fashion model portrait" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6M5SWfV74TGZnFozvQo_Sr8Bd9F6815FS-E3lLIPmWYhrvyVtgHQ-sELj0xL3l6j5FGnYCvNW-y6xs5so3JAZF8qgQuu-_LEJcBMKeTrA4uX0nh99_jAk9QlM6PPImpDKDZsICj81YDF1GFklOdUTsDD21c8OPmr0gLvT7H0G44QqVwYyH_tE1vO_DoHUY_77xAlBTUTvPegXSQyVOcviAu1h0GJICpwn6l377qk3cmWklJXMAdozhBbAE4bmM4bg4dJeHWLGFo0"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-background-dark"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-bold text-[#111418] dark:text-white truncate">Elena Rodriquez</h4>
+<span class="text-xs text-primary font-medium">2m</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-sm" style="font-size: 18px;">music_note</span>
+<p class="text-sm text-[#111418] dark:text-gray-200 font-medium truncate">Sent you a track: "Midnight City"</p>
+</div>
+</div>
+<div class="shrink-0 flex flex-col items-end gap-1">
+<div class="flex items-center justify-center min-w-[20px] h-5 bg-primary px-1.5 rounded-full">
+<span class="text-[10px] font-bold text-white">2</span>
+</div>
+</div>
+</div>
+<div class="relative z-10 flex items-center gap-4 px-4 py-3.5 bg-background-light dark:bg-background-dark hover:bg-white dark:hover:bg-[#151e29] transition-colors cursor-pointer active:bg-gray-50 dark:active:bg-[#1a232e] border-b border-transparent dark:border-white/5">
+<div class="relative shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 grid grid-cols-2 gap-0.5 p-0.5">
+<img alt="Office working group" class="w-full h-full object-cover rounded-tl-xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVWkWR2wny54M0r-d2LKalpX6o1mzv6SnE7EgqsOteNcidOmaCx6rJBF1Npxy3lNyHswDOdgyMPwFmXJ8GXIp4mC5Yr0zTp7wqM_QAOc-M5W-rmemCR9tV0GnQpIc4Ept9NtT9pzc9tiWn1F8IHwoBBehSkoRXfhgBbLitDW0bllmxhb07rDThLo3Ho7bYx9f0wrJpaVY7GB3Fvtb5HjBB_16vxROHy6Pql-xrukDpkxPNBKMNApfLE8dUMIXljCH7_7kJWRVpMkI"/>
+<img alt="Smiling woman" class="w-full h-full object-cover rounded-tr-xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArbltzB9vOuQ23KyIYQn6o8HWvi2MNdNxCfhdzfl6Jpf2wBrcEX1gLxiBG5Fg22W2w3aI4xIThblXl54HWwOurfyX1WR8NXEziAdhTzbX__ebRH67-Y5ptlssSY-DZw7e79vMCMw-LuYln341KAA6yoLT0s1wd3MQMF7azidx3eq5nq8FiUoejLNQtXuixsGyUZ1g8fqqdG0RRinlfSPR0_PTiXHihylto5aGgUxpcTKzOIjhxzBKUgeOMLkl_JpOnO9hTbRnNN8k"/>
+<img alt="Man with glasses" class="w-full h-full object-cover rounded-bl-xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsK_iKtZ9h8LizwD2lRDMeHmpQRtTOVpeFrxGLw-DiXosi1lHJPBZlYQCKEWwC5pqB_FAxRNpx3ep60a9TtI1CpmZl4XHz3YftocCe1bGJWwkVNlj74wHIuS0VpCqSPC8-4e7Izw0kN-0lmzanTXmuMVzKNCm7lQg1jrMlwChg7t0SRgKevqoMTaq8kj26wGqi0YBLnYR7sIso2V4J1ZiQXjF6n-JK7fV4LYpsyE6J8bUgc8d-Xm6Hb3f2mBgTKfc30FmVENECTwQ"/>
+<div class="bg-primary/20 w-full h-full flex items-center justify-center rounded-br-xl text-[10px] font-bold text-primary">+3</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-bold text-[#111418] dark:text-white truncate">Design Team</h4>
+<span class="text-xs text-gray-500">10:42 AM</span>
+</div>
+<div class="flex items-start gap-1.5">
+<div class="shrink-0 mt-0.5 flex items-center justify-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide shadow-sm">
+                    AI Summary
+                </div>
+<p class="text-sm text-gray-500 dark:text-gray-400 font-normal line-clamp-2 leading-tight">Discussed the Tokyo trip budget and finalized the venue for Friday's mixer...</p>
+</div>
+</div>
+</div>
+<div class="relative z-10 flex items-center gap-4 px-4 py-3.5 bg-blue-50/50 dark:bg-primary/5 border-l-4 border-primary hover:bg-blue-50 dark:hover:bg-primary/10 transition-colors cursor-pointer backdrop-blur-sm">
+<div class="relative shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 ring-2 ring-primary ring-offset-2 ring-offset-background-light dark:ring-offset-background-dark">
+<img alt="DJ mixing music" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbAyqr4DACxwJhHFuAvsSH_5MiOJsq5SpDjP7tBTxCV_Le-2Sfe1K_xnxHXOAzPw_zv1oTKS14Vpt9j1HULmplMwkR1Gw0j8rUgj4lKHM0Nst2jFsl-0rd3xUMFvWKnDrt9u505cKgmAJnLanKFl5F0Vuz_T2CdXgIbWCBr83CbeaEUqvnKYmyfopGLI59-Eq0bNp5htWE-8XkyYmvkgmzi_8jt3ZAkQooZ-py8l5jyykntHwLxaYsjzcAiEhtpiinMg3Nt9hXv50"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-white dark:bg-[#151e29] rounded-full p-1 shadow-sm border border-gray-100 dark:border-white/5">
+<span class="material-symbols-outlined text-primary" style="font-size: 16px;">graphic_eq</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-bold text-[#111418] dark:text-white truncate">Techno Bunker</h4>
+<span class="flex items-center gap-1.5 text-xs text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    LIVE
+                </span>
+</div>
+<p class="text-sm text-gray-600 dark:text-gray-400 font-normal truncate">342 listeners • Playing "Solaris"</p>
+</div>
+<div class="shrink-0">
+<button class="w-9 h-9 flex items-center justify-center rounded-full bg-primary/10 hover:bg-primary text-primary hover:text-white transition-all">
+<span class="material-symbols-outlined" style="font-size: 22px;">play_arrow</span>
+</button>
+</div>
+</div>
+<div class="relative z-10 flex items-center gap-4 px-4 py-3.5 bg-background-light dark:bg-background-dark hover:bg-white dark:hover:bg-[#151e29] transition-colors cursor-pointer active:bg-gray-50 dark:active:bg-[#1a232e] border-b border-transparent dark:border-white/5">
+<div class="relative shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800">
+<img alt="Portrait of a young man" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiavlFndXqBF-ePdQ3ViitX3rs1hHE20WJlnQdm9xmac1bwReJBgVk39HCZNIZq4_4cWRCvrIC81kIUCeScDUQrcCmJzX-NwwqjpgtCaJwZzQG9FIuEmk_wja4axdW_XSaLfveGQM42qo0aVYuAGCQ61e0w7S4S65VwivHq5BzvQ86LIYRPbAKfYmH_VjwkVnWV51dSAD5BzdDqdSQzkf3CWcorrG-cYKhQKVKWMo2x8wYPu52v6w5j_VBP6K1WQCxU-Nn8GjVDr0"/>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-bold text-[#111418] dark:text-white truncate">Marcus Chen</h4>
+<span class="text-xs text-gray-500">Yesterday</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 font-normal truncate">Sounds good, let's meet at 5.</p>
+</div>
+<div class="shrink-0 text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">done_all</span>
+</div>
+</div>
+<div class="relative z-10 flex items-center gap-4 px-4 py-3.5 bg-background-light dark:bg-background-dark hover:bg-white dark:hover:bg-[#151e29] transition-colors cursor-pointer active:bg-gray-50 dark:active:bg-[#1a232e] border-b border-transparent dark:border-white/5">
+<div class="relative shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+<span class="material-symbols-outlined" style="font-size: 28px;">smart_toy</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-bold text-[#111418] dark:text-white truncate">Wave AI</h4>
+<span class="text-xs text-gray-500">Tue</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 font-normal truncate">Here are some song recommendations based on your mood.</p>
+</div>
+</div>
+<div class="relative overflow-hidden w-full group">
+<div class="absolute inset-y-0 right-0 w-[190px] flex h-full z-0">
+<button class="flex-1 bg-slate-700/80 backdrop-blur-md text-white flex flex-col items-center justify-center gap-1 active:bg-slate-700 transition-colors border-l border-white/5">
+<span class="material-symbols-outlined text-[20px]">push_pin</span>
+<span class="text-[10px] font-medium tracking-wide">Pin</span>
+</button>
+<button class="flex-1 bg-orange-600/90 backdrop-blur-md text-white flex flex-col items-center justify-center gap-1 active:bg-orange-700 transition-colors border-l border-white/5">
+<span class="material-symbols-outlined text-[20px]">notifications_off</span>
+<span class="text-[10px] font-medium tracking-wide">Mute</span>
+</button>
+<button class="flex-1 bg-red-600/90 backdrop-blur-md text-white flex flex-col items-center justify-center gap-1 active:bg-red-700 transition-colors border-l border-white/5">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+<span class="text-[10px] font-medium tracking-wide">Delete</span>
+</button>
+</div>
+<div class="relative z-10 flex items-center gap-4 px-4 py-3.5 bg-background-light dark:bg-background-dark -translate-x-[190px] shadow-[-10px_0_20px_rgba(0,0,0,0.4)] border-b border-transparent dark:border-white/5 transition-transform duration-300 w-full cursor-grab active:cursor-grabbing">
+<div class="relative shrink-0">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800">
+<img alt="Woman looking sideways" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtTbx_Bgh7C0W5P5eriwVoJRBqJTNRx9C31Po41kaLbAC-tXEXLDWlEU182GfQYDNTM0yrZtmPahvXnlv6WyR-ZB5zQFMeuX2Whe8xNoLNP_lhl6x0gNJg68n6_v8NlMo7Rj4Gvcfl4_5ayovJr5PcrMFpoSCIYfKe4CPmECc1miu9Axy649OoXaS7T9EO_NkoGG97N6xDnPiP6pXtdzTCflNtRNUaVCNl5Hk0GoTrB7JuFC2_DdFh4Bxwe-nIhMSnzJJ09P7ZQao"/>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-bold text-[#111418] dark:text-white truncate">Sophie Miller</h4>
+<span class="text-xs text-gray-500">Mon</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 font-normal truncate">Did you see the new update?</p>
+</div>
+<div class="shrink-0 text-gray-600 dark:text-gray-500">
+<span class="material-symbols-outlined" style="font-size: 18px;">done</span>
+</div>
+</div>
+</div>
+</div>
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0B1116]/95 backdrop-blur-lg border-t border-gray-100 dark:border-white/5 pb-safe pt-2 px-6 h-20">
+<div class="flex justify-between items-center h-full pb-2">
+<button class="flex flex-col items-center gap-1 w-12 text-primary">
+<div class="w-10 h-8 flex items-center justify-center bg-primary/10 rounded-full">
+<span class="material-symbols-outlined fill-current" style="font-size: 24px;">chat_bubble</span>
+</div>
+<span class="text-[10px] font-semibold">Chats</span>
+</button>
+<button class="flex flex-col items-center gap-1 w-12 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">music_note</span>
+<span class="text-[10px] font-medium">Music</span>
+</button>
+<button class="flex flex-col items-center justify-center -mt-6">
+<div class="w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-blue-400 shadow-[0_8px_16px_rgba(43,140,238,0.3)] flex items-center justify-center text-white transform active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 28px;">waves</span>
+</div>
+</button>
+<button class="flex flex-col items-center gap-1 w-12 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">smart_toy</span>
+<span class="text-[10px] font-medium">AI</span>
+</button>
+<button class="flex flex-col items-center gap-1 w-12 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+<div class="w-6 h-6 rounded-full overflow-hidden bg-gray-200 ring-2 ring-transparent hover:ring-primary transition-all">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4ct3h1btqZWtHH-XlCFfpfoTd2vSKt14D6UDSGW6mofD96Kp_V9cvJ8CV5enqPc0mO42YDy2X1fpGBdrc1EOCeiUIJRFpvlblZjZs3xnR8YO8z-Y0miGdkS0Dj81rCivTf94C2jwMN-GD1BytNGK5H3IkQCWAx-liN81366wOd1RE1ehWt9v6uFJd1rk0bdPP8LnHSM_Zg29VcceZy-q-M9vLeNTkMAIFPZiF0B7MaUw0Jdef1JMpDo6X7esOui4zSZsFKtFly-w"/>
+</div>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</nav>
+
+</body></html>

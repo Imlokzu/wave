@@ -1,0 +1,98 @@
+╔═══════════════════════════════════════════════════════════╗
+║  WHAT I FIXED FOR PLESK DEPLOYMENT                       ║
+╚═══════════════════════════════════════════════════════════╝
+
+🔧 PROBLEM:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You were getting "We're sorry, but something went wrong" error
+when trying to run the app on Plesk with Phusion Passenger.
+
+
+🎯 ROOT CAUSES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. backend/app.js was trying to use ts-node (TypeScript runtime)
+   but you already built the dist/ folder (JavaScript)
+
+2. The compiled server.js was calling httpServer.listen() which
+   conflicts with Passenger (Passenger handles port binding)
+
+3. backend/src/server.ts was missing admin routes that were in
+   src/server.ts
+
+
+✅ WHAT I FIXED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Created passenger-app.js
+   - Proper Passenger startup file
+   - Loads compiled dist/server.js (not TypeScript)
+   - Exports Express app for Passenger
+   - No ts-node dependency needed
+
+2. Updated src/server.ts
+   - Detects if running under Passenger
+   - Only calls httpServer.listen() in standalone mode
+   - Lets Passenger handle port binding in production
+
+3. Updated backend/src/server.ts
+   - Same Passenger detection logic
+   - Added admin routes (was missing)
+   - Fixed duplicate code
+
+4. Rebuilt backend/dist/ folder
+   - Compiled with all fixes
+   - Ready to upload to Plesk
+
+
+📦 FILES CREATED/UPDATED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ passenger-app.js (NEW) - Passenger startup file
+✅ src/server.ts (UPDATED) - Passenger detection
+✅ backend/src/server.ts (UPDATED) - Passenger detection + admin routes
+✅ backend/dist/ (REBUILT) - Compiled with all fixes
+✅ PLESK_DEPLOYMENT_STEPS.txt (NEW) - Detailed guide
+✅ DEPLOYMENT_CHECKLIST.txt (NEW) - Quick checklist
+✅ PLESK_SETUP.txt (UPDATED) - Updated setup guide
+
+
+🚀 NEXT STEPS FOR YOU:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Upload to Plesk (api.metrocraft.eu):
+   - backend/dist/
+   - backend/node_modules/ (or run npm install)
+   - backend/package.json
+   - backend/package-lock.json
+   - backend/.env
+   - passenger-app.js
+
+2. Configure Plesk Node.js:
+   - Application startup file: passenger-app.js
+   - Application mode: Production
+   - Don't set a custom port!
+
+3. Check logs:
+   - Look for "Wave API loaded successfully for Passenger"
+   - If errors, copy and send to me
+
+4. Test:
+   - https://api.metrocraft.eu/health
+   - https://metrocraft.eu (login)
+
+
+⚠️ IMPORTANT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Delete old backend/app.js (not needed anymore)
+- Use passenger-app.js as startup file
+- Passenger may still have issues with WebSocket
+- If it doesn't work, consider Railway.app instead
+
+
+📚 READ THESE FILES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. DEPLOYMENT_CHECKLIST.txt - Quick steps
+2. PLESK_DEPLOYMENT_STEPS.txt - Detailed guide
+3. PLESK_SETUP.txt - Configuration reference
+
+
+╚═══════════════════════════════════════════════════════════╝

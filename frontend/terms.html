@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Terms of Service - Wave Messenger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0db9f2",
+                        "background-dark": "#101e23",
+                        "surface-dark": "#16262c",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, rgba(13, 185, 242, 0.1) 0%, transparent 50%);
+        }
+        .section-card {
+            transition: all 0.3s ease;
+        }
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(13, 185, 242, 0.15);
+        }
+    </style>
+    <script src="/config.js"></script>
+</head>
+<body class="bg-background-dark text-slate-100 font-display relative overflow-x-hidden">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 pointer-events-none opacity-30">
+        <div class="absolute top-20 right-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-20 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+    </div>
+    <div class="max-w-4xl mx-auto px-6 py-12 relative z-10">
+        <div class="mb-12">
+            <a href="/chat.html" class="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-all hover:gap-3 mb-8">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Back to Wave
+            </a>
+            <div class="gradient-bg rounded-2xl p-8 border border-primary/20">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-3xl">description</span>
+                    </div>
+                    <div>
+                        <h1 class="text-5xl font-black text-white mb-2">Terms of Service</h1>
+                        <p class="text-slate-400 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">schedule</span>
+                            Last updated: December 28, 2025
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6 text-slate-300 leading-relaxed">
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">1</span>
+                    Acceptance of Terms
+                </h2>
+                <p>By accessing and using Wave Messenger ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">2</span>
+                    Description of Service
+                </h2>
+                <p>Wave Messenger provides real-time messaging, AI chat assistance, music streaming, and social feed aggregation services. The Service may be modified, suspended, or discontinued at any time without notice.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">3</span>
+                    User Accounts
+                </h2>
+                <p class="mb-3">When creating an account, you agree to:</p>
+                <ul class="list-disc list-inside space-y-2 ml-4">
+                    <li>Provide accurate and complete information</li>
+                    <li>Maintain the security of your password</li>
+                    <li>Accept responsibility for all activities under your account</li>
+                    <li>Notify us immediately of any unauthorized access</li>
+                </ul>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">4</span>
+                    Acceptable Use
+                </h2>
+                <p class="mb-3">You agree NOT to:</p>
+                <ul class="list-disc list-inside space-y-2 ml-4">
+                    <li>Use the Service for any illegal purposes</li>
+                    <li>Harass, abuse, or harm other users</li>
+                    <li>Upload malicious code or viruses</li>
+                    <li>Attempt to gain unauthorized access to the Service</li>
+                    <li>Spam or send unsolicited messages</li>
+                    <li>Impersonate others or misrepresent your identity</li>
+                    <li>Violate intellectual property rights</li>
+                </ul>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">5</span>
+                    Content
+                </h2>
+                <p class="mb-3">You retain ownership of content you upload. By uploading content, you grant Wave Messenger a license to store, process, and display your content as necessary to provide the Service.</p>
+                <p>We reserve the right to remove content that violates these terms or is otherwise objectionable.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">6</span>
+                    Wave Pro Subscription
+                </h2>
+                <p class="mb-3">Wave Pro is a paid subscription service that provides:</p>
+                <ul class="list-disc list-inside space-y-2 ml-4">
+                    <li>Unlimited AI conversations</li>
+                    <li>Music upload and download capabilities</li>
+                    <li>Priority support</li>
+                    <li>Exclusive features</li>
+                </ul>
+                <p class="mt-3">Subscriptions are billed according to the plan you select. You may cancel at any time, but refunds are not provided for partial billing periods.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">7</span>
+                    Intellectual Property
+                </h2>
+                <p>The Service, including its design, code, and content, is protected by copyright and other intellectual property laws. You may not copy, modify, or distribute any part of the Service without permission.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">8</span>
+                    Privacy
+                </h2>
+                <p>Your use of the Service is also governed by our <a href="/privacy.html" class="text-primary hover:underline">Privacy Policy</a>.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">9</span>
+                    Disclaimers
+                </h2>
+                <p class="mb-3">THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. We do not guarantee:</p>
+                <ul class="list-disc list-inside space-y-2 ml-4">
+                    <li>Uninterrupted or error-free service</li>
+                    <li>Accuracy or reliability of content</li>
+                    <li>Security of data transmission</li>
+                    <li>Compatibility with all devices</li>
+                </ul>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">10</span>
+                    Limitation of Liability
+                </h2>
+                <p>Wave Messenger shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">11</span>
+                    Termination
+                </h2>
+                <p>We reserve the right to suspend or terminate your account at any time for violation of these terms or for any other reason at our discretion.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">12</span>
+                    Changes to Terms
+                </h2>
+                <p>We may update these Terms of Service at any time. Continued use of the Service after changes constitutes acceptance of the new terms.</p>
+            </section>
+
+            <section class="section-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">13</span>
+                    Contact
+                </h2>
+                <p>For questions about these terms, please contact us through the <a href="/help.html" class="text-primary hover:underline">Help Center</a>.</p>
+            </section>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-slate-700/50 text-center">
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <img src="/nobackwave.png" alt="Wave" class="h-8 w-8 object-contain opacity-50" />
+                <span class="text-slate-500 font-semibold">Wave Messenger</span>
+            </div>
+            <p class="text-slate-400 text-sm">© 2025 Wave Messenger. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

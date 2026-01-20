@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wave Messenger</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0db9f2",
+                        "primary-dark": "#0a91be",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#101e23",
+                        "surface-dark": "#18282f",
+                        "accent-dark": "#223f49",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #223f49;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #315a68;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display overflow-hidden h-screen flex">
+<!-- Left Sidebar -->
+<aside class="w-80 flex flex-col border-r border-accent-dark bg-[#0b1418] shrink-0 z-20">
+<!-- App Header -->
+<div class="p-5 flex items-center gap-3">
+<div class="size-10 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-background-dark shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[24px]">waves</span>
+</div>
+<div>
+<h1 class="text-lg font-bold leading-none tracking-tight">Wave</h1>
+<p class="text-xs text-primary/80 font-medium">AI-Powered</p>
+</div>
+</div>
+<!-- Search -->
+<div class="px-4 pb-2">
+<div class="flex w-full items-center rounded-xl bg-accent-dark/50 border border-transparent focus-within:border-primary/50 transition-colors h-10 px-3 gap-2">
+<span class="material-symbols-outlined text-[#90bccb] text-[20px]">search</span>
+<input class="bg-transparent border-none text-sm text-white placeholder-[#90bccb] w-full focus:ring-0 p-0" placeholder="Search chats..."/>
+</div>
+</div>
+<!-- Chat List -->
+<div class="flex-1 overflow-y-auto px-2 py-2 space-y-1">
+<div class="px-3 py-2 text-xs font-semibold text-[#90bccb] uppercase tracking-wider">Direct Messages</div>
+<!-- Active Chat Item -->
+<button class="w-full flex items-center gap-3 p-3 rounded-xl bg-accent-dark border border-accent-dark/50 relative group transition-all">
+<div class="relative">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of Sarah Jenkings" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBNAF6aS5jhNDghH04TlZZ8QNW2YKbXvzLjZoYYVm43m4Vp9IF4CJ3xi2rc_1Zq-MrhY9fNgRt2U5PXzkWgAmv7LABhh7z9SfFbQXEMsarvqLegwNDanoELokh9qWD5YRK3n-FPnvw1tRxewavOZh972JISFxdTztbOE248o0FqZW8ZSigoR9FBvefOjqbGi8hQ_z-Ykxa_9VJ7e625gvKisq4Bu3l9trnG0E-ZXVpMpCu6rGS5MS9gk89xwzbbvsBXnecFqqrKk9Y')"></div>
+<div class="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-accent-dark"></div>
+</div>
+<div class="flex flex-col items-start flex-1 min-w-0">
+<div class="flex justify-between w-full">
+<span class="text-sm font-semibold truncate">Sarah Jenkings</span>
+<span class="text-[10px] text-[#90bccb]">10:42 AM</span>
+</div>
+<p class="text-xs text-[#90bccb] truncate w-full text-left">Sent an attachment</p>
+</div>
+</button>
+<!-- Inactive Chat Item -->
+<button class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent-dark/30 transition-colors group">
+<div class="relative">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of Alex Dev" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDIvpKCR-BCjSgiaZCCYaqin8lQNV5rz2kzIIk2BBvLBld8R7PLEE6zBkM8pBjoAlijDbsQVrUCB8RhEsO9kBTbRJzVQyoGZH9SEJESrCOOUt-pYqnarYiSTnpnbh0i1VRcrryRgE2-O6u64nymAKDlQ6c4blQFJSaREL7St1GAsW5K1ibilPp_vGHK6eaAWdffAYAEbHMpPJ87cqqBHS6-RNs72pbIw-qqNjWote_FfkQj0VJVDTYij-_W5pVmjyoNIFKVPSWIhek')"></div>
+<div class="absolute bottom-0 right-0 size-3 bg-gray-500 rounded-full border-2 border-[#0b1418]"></div>
+</div>
+<div class="flex flex-col items-start flex-1 min-w-0">
+<div class="flex justify-between w-full">
+<span class="text-sm font-medium text-white/90 truncate">Alex (Dev)</span>
+<span class="text-[10px] text-[#55707b]">Yesterday</span>
+</div>
+<p class="text-xs text-[#55707b] truncate w-full text-left">Hey, did anyone check the latest...</p>
+</div>
+</button>
+<div class="px-3 py-2 mt-4 text-xs font-semibold text-[#90bccb] uppercase tracking-wider">Rooms</div>
+<!-- Room Item -->
+<button class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent-dark/30 transition-colors group">
+<div class="size-10 rounded-full bg-surface-dark flex items-center justify-center border border-accent-dark text-white font-bold">
+                    PA
+                </div>
+<div class="flex flex-col items-start flex-1 min-w-0">
+<div class="flex justify-between w-full">
+<span class="text-sm font-medium text-white/90 truncate">Project Alpha</span>
+<span class="text-[10px] text-primary">2m</span>
+</div>
+<p class="text-xs text-white font-medium truncate w-full text-left"><span class="text-primary">@Alex:</span> Deployment started</p>
+</div>
+<div class="size-2 rounded-full bg-primary shrink-0"></div>
+</button>
+<button class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent-dark/30 transition-colors group">
+<div class="size-10 rounded-full bg-surface-dark flex items-center justify-center border border-accent-dark text-white font-bold">
+                    DS
+                </div>
+<div class="flex flex-col items-start flex-1 min-w-0">
+<div class="flex justify-between w-full">
+<span class="text-sm font-medium text-white/90 truncate">Design System</span>
+</div>
+<p class="text-xs text-[#55707b] truncate w-full text-left">Meeting at 3 PM</p>
+</div>
+</button>
+</div>
+<!-- Bottom Navigation Bar (Sidebar Footer) -->
+<div class="p-2 bg-[#0b1418] border-t border-accent-dark">
+<nav class="flex justify-around items-center rounded-xl bg-surface-dark p-1">
+<button class="flex flex-col items-center justify-center p-2 rounded-lg text-primary bg-accent-dark/50 flex-1">
+<span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+<span class="text-[10px] font-medium mt-1">Chats</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-accent-dark/30 transition-colors flex-1">
+<span class="material-symbols-outlined text-[24px]">smart_toy</span>
+<span class="text-[10px] font-medium mt-1">AI</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-accent-dark/30 transition-colors flex-1">
+<span class="material-symbols-outlined text-[24px]">grid_view</span>
+<span class="text-[10px] font-medium mt-1">Rooms</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-accent-dark/30 transition-colors flex-1">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="text-[10px] font-medium mt-1">Settings</span>
+</button>
+</nav>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background-dark relative">
+<!-- Header -->
+<header class="h-16 border-b border-accent-dark flex items-center justify-between px-6 bg-[#101e23]/95 backdrop-blur-sm z-10">
+<div class="flex items-center gap-4">
+<div class="relative">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of Sarah Jenkings in header" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBev1EK5XZrT06UMOvK1GEgwCtK0SoFz2xgSVTCHg2DaCGy9t4vOmeyp0IUsXGSf3IX6vU-dbYUuDbMGC_MzRwY-IyzVdaAnWj-NN21zqn6U8HwFUZ_sDl9_BGZWd7g6flNLRjFi9vNTxNkwrElgiZPeo3Hc9hi0YGt91FM0pm4APCgn5mdq6nOjoc0u25hePTeiEXgQi1uwGVxdAJ1HgU1uP0JaCr7DA5YZQJbWO57wxZemYkVNAC--bzjS9HDeWSPJf3pvBdvXvc')"></div>
+<div class="absolute bottom-0 right-0 size-2.5 bg-green-500 rounded-full border-2 border-background-dark"></div>
+</div>
+<div>
+<h2 class="text-white font-bold leading-tight">Sarah Jenkings</h2>
+<div class="flex items-center gap-1.5">
+<span class="size-1.5 rounded-full bg-green-500 animate-pulse"></span>
+<p class="text-[#90bccb] text-xs font-medium">Online</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="size-9 rounded-full bg-accent-dark text-white flex items-center justify-center hover:bg-accent-dark/80 transition-colors">
+<span class="material-symbols-outlined text-[20px]">call</span>
+</button>
+<button class="size-9 rounded-full bg-accent-dark text-white flex items-center justify-center hover:bg-accent-dark/80 transition-colors">
+<span class="material-symbols-outlined text-[20px]">videocam</span>
+</button>
+<button class="size-9 rounded-full bg-transparent text-[#90bccb] flex items-center justify-center hover:bg-accent-dark/30 transition-colors border border-transparent hover:border-accent-dark">
+<span class="material-symbols-outlined text-[20px]">info</span>
+</button>
+</div>
+</header>
+<!-- Messages Stream -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
+<!-- Timestamp -->
+<div class="flex justify-center">
+<span class="text-[10px] font-medium text-[#55707b] bg-accent-dark/30 px-3 py-1 rounded-full">Today, 9:41 AM</span>
+</div>
+<!-- Peer Message -->
+<div class="flex items-end gap-3 max-w-[80%]">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0" data-alt="Portrait of Sarah" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCfFCmJ0Sutm7z3n53bBBU0ToxsuyeX-HVVqdglLxFNNinu0O7gFOkprPN0GZGKxebrMT7yPKYkT6-pBl6voVMcNutpzgW3iXIeL6f2TYhKROnJZCjjPgVJmTrD95IUwRBVBc3tVCklFpVGEgzdpaZH3wdIxDk3d8QhW1Ccj7dnUv6pOKFIALOxp88iH5hOTCZBBK4pM7aGcww4-y3LF2UB4NRSylB2Nk1BRrGjB6sNsfjTsN-MA9qn-Yzypvresb7iXxkdc28JoeU')"></div>
+<div class="flex flex-col gap-1">
+<div class="px-4 py-3 bg-accent-dark rounded-2xl rounded-bl-none text-white/90 text-sm leading-relaxed shadow-sm">
+                        Hey! 👋 Could you send over the latest mockups for the dashboard? I want to run them by the AI for a quick accessibility check.
+                    </div>
+<span class="text-[10px] text-[#55707b] pl-1">9:42 AM</span>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex items-end gap-3 max-w-[80%] self-end flex-row-reverse">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0" data-alt="Portrait of User" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC4UP7to62hPtiEv-RPvb6lOldiWjgxtYhq9xlEP8yiXbs8tJKMLvRwO9sN-cZn6wcORboirLCM67aXzuTfmRTcg-xH01vq86oRVu8Vf6I-ToibUjDlJAQZMykRCujkow5pRYEknjz9aWvHdkxyRstd9GviI66Zig_q7mcvT_WR-XKs2zD063_BUDvibBgQMDV36rA3_z_VP09A2q044XLR88c_wDe9p9sn5ZN_3-4ivR6cvLNG7c13YLk9GYhD3SohszuCgoW1bj0')"></div>
+<div class="flex flex-col gap-1 items-end">
+<div class="px-4 py-3 bg-gradient-to-br from-[#0db9f2] to-[#0891be] rounded-2xl rounded-br-none text-white text-sm leading-relaxed shadow-md shadow-primary/10">
+                        Sure thing! I'm uploading them now.
+                    </div>
+<div class="px-4 py-3 bg-gradient-to-br from-[#0db9f2] to-[#0891be] rounded-2xl rounded-tr-none text-white text-sm leading-relaxed shadow-md shadow-primary/10">
+                        I actually used the new AI drafting tool to generate some of the copy text. Let me know what you think.
+                    </div>
+<div class="flex items-center gap-1 pr-1">
+<span class="text-[10px] text-[#55707b]">9:44 AM</span>
+<span class="material-symbols-outlined text-[12px] text-primary">done_all</span>
+</div>
+</div>
+</div>
+<!-- AI Response Message -->
+<div class="flex items-start gap-3 max-w-[85%]">
+<div class="size-8 rounded-full bg-surface-dark border border-primary/30 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(13,185,242,0.3)]">
+<span class="material-symbols-outlined text-[16px] text-primary">smart_toy</span>
+</div>
+<div class="flex flex-col gap-2 w-full">
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold text-white">Wave AI</span>
+<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary uppercase tracking-wide border border-primary/20">Bot</span>
+</div>
+<div class="p-4 rounded-xl border border-primary/30 bg-[#0f1920] shadow-[0_0_20px_-5px_rgba(13,185,242,0.15)] relative overflow-hidden group">
+<!-- Glow effect -->
+<div class="absolute -top-10 -right-10 w-20 h-20 bg-primary/20 blur-3xl rounded-full pointer-events-none"></div>
+<div class="text-sm text-gray-200 leading-relaxed relative z-10">
+<p class="mb-2">I've analyzed the attached mockups for accessibility.</p>
+<ul class="list-disc list-inside space-y-1 text-gray-400 pl-1">
+<li><span class="text-gray-300 font-medium">Contrast Ratio:</span> The grey text on the dark card needs higher contrast (currently 3.5:1, target 4.5:1).</li>
+<li><span class="text-gray-300 font-medium">Focus States:</span> Primary buttons are missing a clear focus ring indicator.</li>
+</ul>
+<div class="mt-3 flex gap-2">
+<button class="text-xs bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-3 py-1.5 rounded-lg transition-colors font-medium">Apply Fixes</button>
+<button class="text-xs bg-surface-dark hover:bg-accent-dark text-gray-400 border border-accent-dark px-3 py-1.5 rounded-lg transition-colors">Dismiss</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Typing Indicator (Peer) -->
+<div class="flex items-end gap-3">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0 opacity-50" data-alt="Portrait of Sarah" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDz-C-0IG-m-RwCb9lP-_F6s5N3VmSKA39v8Fc28gakcb9QfgOYFsO7MmP9_kA2UX67TSA2d8nIu_yn5tHvr7TbpqMDAxJ4TnffPAPpLWYy33JLHKXPwWMXrobcoDdIvGeYZc3S74Dc77LlY7FuuYn1ziozPZxJyb7d7NpVwGfmXkT-2dg40Ry-mHRxOPVyGKMW7kJKow9X45pX_EWyAyffNkaXGmBBbmqOY6my8HwlZX7wyUTReEI0Vacj4qA0hEQ091doDBu0k8M')"></div>
+<div class="px-4 py-3 bg-accent-dark/50 rounded-2xl rounded-bl-none flex gap-1 items-center h-10">
+<span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
+<span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.1s]"></span>
+<span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-6 pt-2 bg-gradient-to-t from-background-dark via-background-dark to-transparent z-20">
+<!-- AI Suggestion Panel (Visible because user typed @ai) -->
+<div class="mb-3 ml-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
+<div class="bg-surface-dark border border-primary/30 rounded-xl shadow-2xl shadow-black/50 overflow-hidden w-80 flex flex-col">
+<div class="bg-gradient-to-r from-primary/20 to-transparent p-2 px-3 border-b border-primary/20 flex justify-between items-center">
+<span class="text-xs font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                            AI Commands
+                        </span>
+<span class="text-[9px] text-primary/60 uppercase">Press Tab</span>
+</div>
+<div class="p-1">
+<button class="w-full text-left px-3 py-2 text-sm text-white hover:bg-primary/10 hover:text-primary rounded-lg transition-colors flex items-center gap-2 group">
+<div class="size-6 rounded bg-accent-dark group-hover:bg-primary/20 flex items-center justify-center text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[14px]">summarize</span>
+</div>
+<div class="flex flex-col">
+<span class="font-medium">Summarize</span>
+<span class="text-[10px] text-gray-500 group-hover:text-primary/70">Summarize the last 50 messages</span>
+</div>
+</button>
+<button class="w-full text-left px-3 py-2 text-sm text-white bg-accent-dark/40 border border-primary/30 rounded-lg transition-colors flex items-center gap-2 mt-1">
+<div class="size-6 rounded bg-primary/20 flex items-center justify-center text-primary transition-colors">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+</div>
+<div class="flex flex-col">
+<span class="font-medium">Draft Response</span>
+<span class="text-[10px] text-gray-500">Generate a polite reply</span>
+</div>
+</button>
+<button class="w-full text-left px-3 py-2 text-sm text-white hover:bg-primary/10 hover:text-primary rounded-lg transition-colors flex items-center gap-2 mt-1 group">
+<div class="size-6 rounded bg-accent-dark group-hover:bg-primary/20 flex items-center justify-center text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[14px]">translate</span>
+</div>
+<div class="flex flex-col">
+<span class="font-medium">Translate</span>
+<span class="text-[10px] text-gray-500 group-hover:text-primary/70">Translate to Spanish</span>
+</div>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Input Field -->
+<div class="relative flex items-end gap-2 bg-surface-dark rounded-2xl p-2 border border-accent-dark focus-within:border-primary/50 focus-within:shadow-[0_0_0_1px_rgba(13,185,242,0.5)] transition-all">
+<button class="p-2 text-[#90bccb] hover:text-primary hover:bg-accent-dark rounded-xl transition-colors shrink-0">
+<span class="material-symbols-outlined text-[24px]">add_circle</span>
+</button>
+<div class="flex-1 py-2 max-h-32 overflow-y-auto">
+<!-- Simulating Text Input with contenteditable-like appearance for the @ai demo -->
+<div class="text-sm text-white outline-none w-full bg-transparent font-normal">
+<span class="text-primary font-medium bg-primary/10 px-1 rounded">@ai</span> Draft response
+                    </div>
+</div>
+<div class="flex items-center gap-1 shrink-0 pb-1">
+<button class="p-1.5 text-[#90bccb] hover:text-white hover:bg-accent-dark rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">sentiment_satisfied</span>
+</button>
+<button class="p-1.5 text-[#90bccb] hover:text-white hover:bg-accent-dark rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+<button class="ml-1 p-2 bg-primary hover:bg-primary-dark text-background-dark rounded-xl transition-colors shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px] font-bold">send</span>
+</button>
+</div>
+</div>
+<div class="text-center mt-2">
+<p class="text-[10px] text-[#55707b]">Press <kbd class="font-sans bg-accent-dark px-1 rounded text-gray-400">Enter</kbd> to send, <kbd class="font-sans bg-accent-dark px-1 rounded text-gray-400">Shift + Enter</kbd> for new line</p>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,67 @@
+╔═══════════════════════════════════════════════════════════╗
+║  WAVE APP - PLESK DEPLOYMENT CHECKLIST                   ║
+╚═══════════════════════════════════════════════════════════╝
+
+STEP 1: BUILD LOCALLY ✅ (DONE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Ran "npm run build" in backend folder
+✅ Created passenger-app.js startup file
+✅ Fixed server.ts to work with Passenger
+
+
+STEP 2: UPLOAD TO PLESK ⏳ (YOUR TURN)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Upload these files to api.metrocraft.eu:
+
+□ backend/dist/ folder
+□ backend/node_modules/ folder (or run "npm install" in Plesk)
+□ backend/package.json
+□ backend/package-lock.json
+□ backend/.env
+□ passenger-app.js (from root folder)
+
+
+STEP 3: CONFIGURE PLESK NODE.JS ⏳ (YOUR TURN)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Go to: Websites & Domains → api.metrocraft.eu → Node.js
+
+□ Application mode: Production
+□ Application startup file: passenger-app.js
+□ Application root: /httpdocs (or your upload path)
+□ Click "Enable Node.js" or "Restart App"
+
+
+STEP 4: CHECK LOGS ⏳ (YOUR TURN)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Go to: Websites & Domains → api.metrocraft.eu → Protokolle
+
+Look for:
+□ "Wave API loaded successfully for Passenger" ✅
+□ "Passenger will handle port binding" ✅
+□ No error messages ✅
+
+
+STEP 5: TEST ⏳ (YOUR TURN)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ Visit https://api.metrocraft.eu/health
+□ Should see: {"status":"ok",...}
+□ Visit https://metrocraft.eu
+□ Try login: lokzu2 / ml120998
+□ Check if chat works
+
+
+WHAT CHANGED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Server now detects Passenger and doesn't try to bind to port
+✅ Created passenger-app.js that properly exports Express app
+✅ Added admin routes to backend server
+✅ Rebuilt dist/ folder with all fixes
+
+
+IF IT DOESN'T WORK:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Copy the error from Protokolle and send it to me!
+
+Or consider Railway.app - it's easier for Node.js + WebSocket apps.
+
+╚═══════════════════════════════════════════════════════════╝

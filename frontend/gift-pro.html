@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Gift Pro - WaveChat</title>
+    <script src="/js/theme-init.js"></script>
+    <link href="/css/theme.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="/js/auth-guard.js"></script>
+    <script src="/js/mobile-detector.js"></script>
+    <script src="/js/update-checker.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0db9f2",
+                        "primary-hover": "#0a91be",
+                        "background-dark": "#101e22",
+                        "surface-dark": "#16262c",
+                        "surface-dark-lighter": "#1d2f36",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { min-height: 100vh; scrollbar-width: thin; scrollbar-color: #1d2f36 #101e22; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #101e22; }
+        ::-webkit-scrollbar-thumb { background-color: #1d2f36; border-radius: 20px; }
+    </style>
+    <script src="/config.js"></script>
+</head>
+<body class="bg-background-dark font-display text-white antialiased">
+    <div class="min-h-screen flex flex-col max-w-4xl mx-auto p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-3">
+                <a href="/settings.html" class="flex items-center justify-center size-10 rounded-full hover:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined text-slate-400">arrow_back</span>
+                </a>
+                <h1 class="text-2xl font-bold">Gift Pro Subscription</h1>
+            </div>
+        </div>
+
+        <!-- Gift Info Card -->
+        <div class="bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-3xl p-6 mb-6 border border-primary/30">
+            <div class="flex items-start gap-4">
+                <div class="bg-primary/20 p-3 rounded-2xl">
+                    <span class="material-symbols-outlined text-3xl text-primary">card_giftcard</span>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold mb-2">Give the Gift of Pro</h2>
+                    <p class="text-slate-300 text-sm mb-3">Search for a user and generate a gift request. The system will create a file with payment instructions to send to @lokzu.</p>
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <span class="material-symbols-outlined text-sm">info</span>
+                        <span>Pro will be activated manually after payment confirmation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="bg-surface-dark rounded-3xl p-6 mb-6 border border-white/5">
+            <h3 class="text-lg font-semibold mb-4">Search User</h3>
+            <div class="relative mb-4">
+                <input 
+                    type="text" 
+                    id="userSearch" 
+                    placeholder="Search by username or nickname..." 
+                    class="w-full bg-background-dark text-white rounded-xl px-4 py-3 pl-12 border border-white/10 focus:border-primary/50 focus:outline-none"
+                    oninput="searchUsers()"
+                />
+                <span class="material-symbols-outlined absolute left-4 top-3.5 text-slate-400">search</span>
+            </div>
+            
+            <!-- Search Results -->
+            <div id="searchResults" class="space-y-2 max-h-96 overflow-y-auto">
+                <!-- Results will appear here -->
+            </div>
+        </div>
+
+        <!-- Selected User -->
+        <div id="selectedUserSection" class="hidden bg-surface-dark rounded-3xl p-6 border border-white/5">
+            <h3 class="text-lg font-semibold mb-4">Selected User</h3>
+            <div id="selectedUserCard" class="bg-background-dark rounded-xl p-4 mb-4">
+                <!-- Selected user info will appear here -->
+            </div>
+            
+            <!-- Duration Selection -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Subscription Duration</label>
+                <select id="duration" class="w-full bg-background-dark text-white rounded-xl px-4 py-3 border border-white/10 focus:border-primary/50 focus:outline-none">
+                    <option value="1">1 Month - $5</option>
+                    <option value="3">3 Months - $12 (Save $3)</option>
+                    <option value="6">6 Months - $20 (Save $10)</option>
+                    <option value="12">12 Months - $35 (Save $25)</option>
+                </select>
+            </div>
+
+            <!-- Message -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Gift Message (Optional)</label>
+                <textarea 
+                    id="giftMessage" 
+                    placeholder="Add a personal message..." 
+                    class="w-full bg-background-dark text-white rounded-xl px-4 py-3 border border-white/10 focus:border-primary/50 focus:outline-none resize-none"
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <!-- Generate Button -->
+            <button 
+                onclick="generateGiftRequest()" 
+                class="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+            >
+                <span class="material-symbols-outlined">card_giftcard</span>
+                <span>Generate Gift Request</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-surface-dark rounded-3xl p-6 w-full max-w-2xl border border-white/10 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-primary">Gift Request Generated!</h3>
+                <button onclick="closeSuccessModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="bg-background-dark rounded-xl p-4 mb-4">
+                <div class="flex items-start gap-3 mb-4">
+                    <span class="material-symbols-outlined text-green-400">check_circle</span>
+                    <div>
+                        <p class="text-slate-300 mb-2">Your gift request has been generated. Follow these steps:</p>
+                        <ol class="list-decimal list-inside space-y-1 text-sm text-slate-400">
+                            <li>Download the gift request file below</li>
+                            <li>Send it to <span class="text-primary font-semibold">@lokzu</span> via DM</li>
+                            <li>Wait for payment confirmation and activation</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gift Request Content -->
+            <div class="bg-background-dark rounded-xl p-4 mb-4 border border-white/10">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Gift Request Details</span>
+                    <button onclick="copyToClipboard()" class="text-xs text-primary hover:text-primary-hover flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">content_copy</span>
+                        Copy
+                    </button>
+                </div>
+                <pre id="giftRequestContent" class="text-xs text-slate-300 whitespace-pre-wrap font-mono overflow-x-auto"></pre>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3">
+                <button onclick="downloadGiftRequest()" class="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-hover transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">download</span>
+                    Download File
+                </button>
+                <button onclick="openDMToLokzu()" class="flex-1 py-3 rounded-xl bg-surface-dark-lighter text-white font-semibold hover:bg-slate-600 transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">send</span>
+                    Message @lokzu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedUser = null;
+        let giftRequestData = null;
+        let searchTimeout = null;
+
+        // Check authentication
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            window.location.href = '/login.html';
+        }
+
+        async function searchUsers() {
+            const query = document.getElementById('userSearch').value.trim();
+            const resultsContainer = document.getElementById('searchResults');
+
+            // Clear timeout if exists
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">Type at least 2 characters to search</p>';
+                return;
+            }
+
+            // Show loading
+            resultsContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">Searching...</p>';
+
+            // Debounce search
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Search failed');
+                    }
+
+                    const result = await response.json();
+                    const users = result.data || result.users || result;
+                    
+                    if (!Array.isArray(users)) {
+                        throw new Error('Invalid response format');
+                    }
+                    
+                    displaySearchResults(users);
+                } catch (error) {
+                    console.error('Search error:', error);
+                    resultsContainer.innerHTML = '<p class="text-red-400 text-sm text-center py-4">Search failed. Please try again.</p>';
+                }
+            }, 300);
+        }
+
+        function displaySearchResults(users) {
+            const resultsContainer = document.getElementById('searchResults');
+
+            if (users.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No users found</p>';
+                return;
+            }
+
+            resultsContainer.innerHTML = users.map(user => `
+                <div class="bg-background-dark rounded-xl p-4 hover:bg-surface-dark-lighter transition-all cursor-pointer border border-white/5 hover:border-primary/30" onclick='selectUser(${JSON.stringify(user).replace(/'/g, "&#39;")})'>
+                    <div class="flex items-center gap-3">
+                        <div class="bg-primary/20 rounded-full size-12 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary">person</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <p class="font-semibold">${user.nickname || user.username}</p>
+                                ${user.is_pro ? '<span class="px-2 py-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">PRO</span>' : ''}
+                            </div>
+                            <p class="text-sm text-slate-400">@${user.username}</p>
+                        </div>
+                        <span class="material-symbols-outlined text-slate-400">chevron_right</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectUser(user) {
+            selectedUser = user;
+            const section = document.getElementById('selectedUserSection');
+            const card = document.getElementById('selectedUserCard');
+
+            card.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary/20 rounded-full size-16 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl text-primary">person</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <p class="text-lg font-bold">${user.nickname || user.username}</p>
+                            ${user.is_pro ? '<span class="px-2 py-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">PRO</span>' : ''}
+                        </div>
+                        <p class="text-sm text-slate-400">@${user.username}</p>
+                        ${user.is_pro ? '<p class="text-xs text-yellow-400 mt-1">⚠️ This user already has Pro</p>' : ''}
+                    </div>
+                </div>
+            `;
+
+            section.classList.remove('hidden');
+            section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function generateGiftRequest() {
+            if (!selectedUser) return;
+
+            const duration = document.getElementById('duration').value;
+            const message = document.getElementById('giftMessage').value.trim();
+            const gifterUsername = localStorage.getItem('username');
+            const gifterNickname = localStorage.getItem('nickname');
+
+            const prices = { '1': '$5', '3': '$12', '6': '$20', '12': '$35' };
+            const price = prices[duration];
+
+            const requestId = `GIFT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+            const timestamp = new Date().toISOString();
+
+            giftRequestData = {
+                requestId,
+                timestamp,
+                gifter: {
+                    username: gifterUsername,
+                    nickname: gifterNickname
+                },
+                recipient: {
+                    username: selectedUser.username,
+                    nickname: selectedUser.nickname,
+                    userId: selectedUser.id
+                },
+                subscription: {
+                    duration: `${duration} month${duration > 1 ? 's' : ''}`,
+                    price: price
+                },
+                message: message || 'No message',
+                status: 'pending'
+            };
+
+            const content = `
+═══════════════════════════════════════════════════
+        WAVECAT PRO GIFT REQUEST
+═══════════════════════════════════════════════════
+
+Request ID: ${requestId}
+Generated: ${new Date(timestamp).toLocaleString()}
+
+───────────────────────────────────────────────────
+FROM (GIFTER)
+───────────────────────────────────────────────────
+Username: @${gifterUsername}
+Nickname: ${gifterNickname || 'N/A'}
+
+───────────────────────────────────────────────────
+TO (RECIPIENT)
+───────────────────────────────────────────────────
+Username: @${selectedUser.username}
+Nickname: ${selectedUser.nickname || 'N/A'}
+User ID: ${selectedUser.id}
+Current Status: ${selectedUser.is_pro ? 'PRO' : 'FREE'}
+
+───────────────────────────────────────────────────
+SUBSCRIPTION DETAILS
+───────────────────────────────────────────────────
+Duration: ${duration} month${duration > 1 ? 's' : ''}
+Price: ${price}
+
+───────────────────────────────────────────────────
+GIFT MESSAGE
+───────────────────────────────────────────────────
+${message || 'No message'}
+
+───────────────────────────────────────────────────
+PAYMENT INSTRUCTIONS
+───────────────────────────────────────────────────
+1. Contact @lokzu via DM on WaveChat
+2. Send this gift request file
+3. Provide payment via agreed method
+4. Wait for confirmation and activation
+
+───────────────────────────────────────────────────
+ADMIN NOTES (for @lokzu)
+───────────────────────────────────────────────────
+[ ] Payment received
+[ ] Pro activated for @${selectedUser.username}
+[ ] Confirmation sent to @${gifterUsername}
+
+Activation Command:
+UPDATE flux_users SET is_pro = true WHERE id = '${selectedUser.id}';
+
+═══════════════════════════════════════════════════
+        Thank you for supporting WaveChat!
+═══════════════════════════════════════════════════
+`.trim();
+
+            document.getElementById('giftRequestContent').textContent = content;
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        function copyToClipboard() {
+            const content = document.getElementById('giftRequestContent').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        function downloadGiftRequest() {
+            const content = document.getElementById('giftRequestContent').textContent;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `WaveChat-Gift-${giftRequestData.requestId}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function openDMToLokzu() {
+            window.location.href = '/chat.html?dm=lokzu';
+        }
+    </script>
+</body>
+</html>

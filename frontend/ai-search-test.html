@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Search Test - Wave Messenger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/config.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">🔍 AI Web Search Test (DeepSeek-R1 + DuckDuckGo)</h1>
+        
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Search</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Your Question:</label>
+                    <input type="text" id="question" 
+                           class="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="e.g., What are the latest AI developments in 2025?"
+                           value="What are the latest AI developments in 2025?">
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="enableSearch" checked class="w-4 h-4">
+                        <span>Enable Web Search</span>
+                    </label>
+                </div>
+                
+                <button onclick="testAIChat()" 
+                        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
+                    Ask AI
+                </button>
+            </div>
+        </div>
+        
+        <div id="loading" class="hidden bg-gray-800 rounded-lg p-6 mb-6">
+            <div class="flex items-center gap-3">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span>AI is thinking and searching the web...</span>
+            </div>
+        </div>
+        
+        <div id="response" class="hidden bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">AI Response:</h2>
+            <div id="responseContent" class="prose prose-invert max-w-none whitespace-pre-wrap"></div>
+        </div>
+        
+        <div id="error" class="hidden bg-red-900/50 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-2">Error:</h2>
+            <div id="errorContent"></div>
+        </div>
+        
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">How it works:</h2>
+            <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                <li>You ask a question</li>
+                <li>DeepSeek-R1 AI analyzes if it needs web search</li>
+                <li>If needed, it searches DuckDuckGo for current information</li>
+                <li>AI uses search results to provide accurate, up-to-date answer</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        async function testAIChat() {
+            const question = document.getElementById('question').value;
+            const enableSearch = document.getElementById('enableSearch').checked;
+            
+            if (!question.trim()) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('response').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/ai-chat/simple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: question,
+                        enableSearch
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                document.getElementById('loading').classList.add('hidden');
+                
+                if (data.success) {
+                    // Show response
+                    document.getElementById('responseContent').textContent = data.response;
+                    document.getElementById('response').classList.remove('hidden');
+                } else {
+                    // Show error
+                    document.getElementById('errorContent').textContent = data.message || 'Unknown error';
+                    document.getElementById('error').classList.remove('hidden');
+                }
+            } catch (error) {
+                // Hide loading
+                document.getElementById('loading').classList.add('hidden');
+                
+                // Show error
+                document.getElementById('errorContent').textContent = error.message;
+                document.getElementById('error').classList.remove('hidden');
+            }
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('question').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                testAIChat();
+            }
+        });
+    </script>
+</body>
+</html>

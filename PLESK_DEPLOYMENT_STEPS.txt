@@ -1,0 +1,147 @@
+═══════════════════════════════════════════════════════════════
+  WAVE APP - PLESK DEPLOYMENT GUIDE (FINAL VERSION)
+═══════════════════════════════════════════════════════════════
+
+📦 WHAT TO UPLOAD TO PLESK (api.metrocraft.eu)
+═══════════════════════════════════════════════════════════════
+
+Upload ONLY these files/folders from the "backend" folder:
+
+✅ backend/dist/              (compiled JavaScript - REQUIRED)
+✅ backend/node_modules/      (dependencies - REQUIRED)
+✅ backend/package.json       (REQUIRED)
+✅ backend/package-lock.json  (REQUIRED)
+✅ backend/.env               (environment variables - REQUIRED)
+✅ passenger-app.js           (from root folder - REQUIRED)
+
+❌ DO NOT upload:
+   - backend/src/ (TypeScript source - not needed)
+   - backend/app.js (old file - not needed)
+   - Any other files
+
+
+🔧 PLESK NODE.JS SETTINGS
+═══════════════════════════════════════════════════════════════
+
+Go to: Websites & Domains → api.metrocraft.eu → Node.js
+
+Set these values:
+
+1. Application mode: Production
+2. Application root: /httpdocs (or wherever you uploaded files)
+3. Application startup file: passenger-app.js
+4. Application URL: https://api.metrocraft.eu
+5. Node.js version: Latest available (18.x or higher)
+
+⚠️ IMPORTANT: DO NOT set a custom port! Passenger handles this automatically.
+
+
+📝 VERIFY .ENV FILE
+═══════════════════════════════════════════════════════════════
+
+Make sure backend/.env contains:
+
+PORT=3001
+NODE_ENV=production
+FRONTEND_URL=https://metrocraft.eu
+API_URL=https://api.metrocraft.eu
+ADMIN_URL=https://admin.metrocraft.eu
+SUPABASE_URL=https://ocvusoidmvjlbssblnxw.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jdnVzb2lkbXZqbGJzc2Jsbnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzAzODcsImV4cCI6MjA4MTU0NjM4N30.O6YZPYdSWfDME7ElzzDcpFg5DL1YUSrMc9yulDdyHB0
+SUPABASE_BUCKET=files
+IMGBB_API_KEY=1606b78ff8eef2cbbbb20bba455dfdeb
+OPENAI_API_KEY=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
+LANGSEARCH_API_KEY=sk-be0d888dbef54155b92b1232b3dcc28c
+
+
+🔍 AFTER UPLOADING - CHECK LOGS
+═══════════════════════════════════════════════════════════════
+
+Go to: Websites & Domains → api.metrocraft.eu → Protokolle (Logs)
+
+Look for these SUCCESS messages:
+✅ "Wave API loaded successfully for Passenger"
+✅ "WaveChat Server loaded for Passenger"
+✅ "Passenger will handle port binding"
+
+If you see ERRORS, common issues:
+❌ "Cannot find module" → node_modules missing, run "npm install" in Plesk
+❌ "Missing SUPABASE_URL" → .env file missing or wrong location
+❌ "Permission denied" → File permissions issue, contact Plesk support
+
+
+🌐 NGINX CONFIGURATION (OPTIONAL)
+═══════════════════════════════════════════════════════════════
+
+If you need WebSocket support, add this to nginx settings:
+
+Go to: Websites & Domains → api.metrocraft.eu → Apache & nginx Settings
+→ Additional nginx directives:
+
+location /socket.io/ {
+    proxy_pass http://127.0.0.1:$PASSENGER_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+Note: Passenger sets $PASSENGER_PORT automatically
+
+
+🧪 TESTING THE DEPLOYMENT
+═══════════════════════════════════════════════════════════════
+
+1. Test health endpoint:
+   https://api.metrocraft.eu/health
+   
+   Should return:
+   {"status":"ok","timestamp":"...","services":{...}}
+
+2. Test from frontend:
+   Open https://metrocraft.eu
+   Try to login with: lokzu2 / ml120998
+
+3. Check admin panel:
+   https://admin.metrocraft.eu
+   Login with same credentials
+
+
+⚠️ CRITICAL NOTES
+═══════════════════════════════════════════════════════════════
+
+1. The server code now detects Passenger automatically and won't try to
+   bind to a port (Passenger does this for you)
+
+2. If you see "upstream timed out" errors, the app is taking too long to
+   start. Check logs for the real error.
+
+3. WebSocket (Socket.IO) may not work perfectly with Passenger. If chat
+   doesn't work, you may need to deploy the backend to Railway.app or
+   similar Node.js hosting instead.
+
+4. SSL certificate: Make sure "Let's Encrypt" is enabled for api.metrocraft.eu
+   in Plesk. iOS requires HTTPS for API calls.
+
+
+🆘 IF IT STILL DOESN'T WORK
+═══════════════════════════════════════════════════════════════
+
+Alternative: Deploy backend to Railway.app (free tier)
+
+1. Go to railway.app
+2. Create new project from GitHub
+3. Add environment variables from .env
+4. Railway will auto-detect Node.js and run "npm start"
+5. Get the Railway URL (e.g., https://your-app.railway.app)
+6. Update frontend files to use Railway URL instead of api.metrocraft.eu
+
+This is easier than Plesk for Node.js apps with WebSocket!
+
+
+═══════════════════════════════════════════════════════════════
+  END OF GUIDE
+═══════════════════════════════════════════════════════════════

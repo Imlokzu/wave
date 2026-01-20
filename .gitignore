@@ -1,0 +1,85 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+feed-bot/.venv/
+feed-bot/__pycache__/
+backend/feed-bot/.venv/
+backend/feed-bot/__pycache__/
+__pycache__/
+
+# Build outputs
+dist/
+backend/dist/
+*.tsbuildinfo
+
+# Environment variables (IMPORTANT - contains secrets!)
+.env
+backend/.env
+feed-bot/.env
+backend/feed-bot/.env
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Uploads and user data
+uploads/
+backend/uploads/
+
+# Session files
+feed-bot/session.session
+feed-bot/session.session-journal
+backend/feed-bot/session.session
+backend/feed-bot/session.session-journal
+
+# State files
+feed-bot/state.json
+backend/feed-bot/state.json
+
+# Channel data (can be large)
+feed-bot/channels/
+backend/feed-bot/channels/
+
+# Compiled Python
+*.pyc
+*.pyo
+*.pyd
+
+# Package files
+*.zip
+*.tar.gz
+*.rar
+backend/dist (2).zip
+ngrok.zip
+frontend-deploy/front.zip
+
+# Test files (optional - uncomment if you don't want to sync)
+# test-*.js
+# test-*.html
+# verify-*.js
+
+# Passenger files
+.passenger/
+
+# Git files
+*.orig

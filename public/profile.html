@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Profile - WaveChat</title>
+    <script src="/js/theme-init.js"></script>
+    <link href="/css/theme.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="/js/auth-guard.js"></script>
+    <script src="/js/mobile-detector.js"></script>
+    <script src="/js/update-checker.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0db9f2",
+                        "primary-glow": "#0db9f280",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#101e22",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#16262c",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                    backgroundImage: {
+                        'wave-pattern': "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1440 320%22%3E%3Cpath fill=%22%230db9f2%22 fill-opacity=%220.1%22 d=%22M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z%22%3E%3C/path%3E%3C/svg%3E')",
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'blob': 'blob 7s infinite'
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' }
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-card {
+            background: rgba(16, 22, 29, 0.65);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-display text-gray-100 overflow-x-hidden transition-colors duration-300">
+    <div class="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMDAwMDAwIi8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz4KPC9zdmc+')] opacity-20 pointer-events-none z-0"></div>
+    <div class="fixed top-0 left-0 w-full h-[60vh] bg-gradient-to-b from-[#1a3a5a] via-[#05080a] to-[#05080a] -z-10 pointer-events-none"></div>
+    <div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/20 blur-[100px] -z-10 animate-blob"></div>
+    <div class="fixed bottom-[10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-blue-600/10 blur-[80px] -z-10 animate-blob animation-delay-2000"></div>
+    <div class="fixed top-[40%] right-[20%] w-[300px] h-[300px] rounded-full bg-cyan-500/10 blur-[60px] -z-10 animate-blob animation-delay-4000"></div>
+    
+    <div class="relative flex min-h-screen w-full flex-col z-10">
+        <div class="flex items-center p-6 justify-between sticky top-0 z-50 bg-background-dark/80 backdrop-blur-md">
+            <a href="/chat.html" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all text-white border border-white/5">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div class="flex flex-col items-center">
+                <h2 class="text-white text-base font-bold leading-tight tracking-wide" id="profileUsername">@username</h2>
+                <div class="h-1 w-12 bg-primary/50 rounded-full mt-1"></div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="/feed.html" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all text-white border border-white/5">
+                    <span class="material-symbols-outlined">newspaper</span>
+                </a>
+                <a href="/music.html" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all text-white border border-white/5">
+                    <span class="material-symbols-outlined">music_note</span>
+                </a>
+                <a href="/ai-chat.html" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all text-white border border-white/5">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                </a>
+                <a href="/settings.html" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all text-white border border-white/5">
+                    <span class="material-symbols-outlined">settings</span>
+                </a>
+            </div>
+        </div>
+        
+        <main class="flex-1 flex flex-col items-center px-6 pb-8 w-full max-w-4xl mx-auto">
+            <div class="w-full glass-card rounded-[2.5rem] p-8 mt-2 flex flex-col items-center gap-6 relative overflow-hidden group border-t border-white/10">
+                <div class="absolute inset-0 bg-wave-pattern opacity-10 pointer-events-none bg-[length:100%_auto]"></div>
+                
+                <div class="flex flex-col items-center gap-4 relative z-10 w-full mt-2">
+                    <div class="relative">
+                        <div class="absolute inset-0 rounded-full bg-primary blur-xl opacity-40"></div>
+                        <div id="profileAvatar" class="bg-center bg-no-repeat bg-cover rounded-full w-28 h-28 border-[3px] border-surface-dark ring-2 ring-primary/50 shadow-2xl relative z-10"></div>
+                        <div class="absolute bottom-1 right-1 size-7 bg-[#10161d] rounded-full flex items-center justify-center z-20">
+                            <div class="size-4 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-center justify-center text-center gap-1">
+                        <div class="flex items-center gap-2">
+                            <h1 id="profileName" class="text-3xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-200 drop-shadow-sm">User</h1>
+                            <span class="material-symbols-outlined text-primary text-[22px] drop-shadow-[0_0_10px_rgba(57,148,239,0.5)]" title="Verified">verified</span>
+                        </div>
+                        <p class="text-gray-400 font-medium text-sm tracking-wide" id="profileBio">Digital explorer • Audiophile</p>
+                        <div class="mt-3 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm shadow-inner">
+                            <span class="text-lg animate-pulse-slow">🌊</span>
+                            <span class="text-xs font-medium text-gray-300">Vibing in the guest room</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 w-full border-y border-white/5 py-4 bg-white/[0.02]">
+                    <div class="flex flex-col items-center justify-center border-r border-white/5 group-hover:bg-white/[0.02] transition-colors rounded-l-lg">
+                        <span class="font-bold text-lg text-white" id="messageCount">0</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Messages</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center border-r border-white/5 group-hover:bg-white/[0.02] transition-colors">
+                        <span class="font-bold text-lg text-white" id="roomCount">0</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Rooms</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center group-hover:bg-white/[0.02] transition-colors rounded-r-lg">
+                        <span class="font-bold text-lg text-white" id="friendCount">0</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Friends</span>
+                    </div>
+                </div>
+                
+                <div class="flex w-full gap-3">
+                    <button onclick="openManageAccount()" class="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-semibold hover:bg-white/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                        Manage Account
+                    </button>
+                    <button onclick="editProfile()" class="flex-1 h-11 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold shadow-[0_0_15px_rgba(57,148,239,0.3)] hover:shadow-[0_0_25px_rgba(57,148,239,0.5)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 border border-white/10">
+                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                        Edit Profile
+                    </button>
+                </div>
+                
+                <div class="text-center px-2 py-1">
+                    <p class="text-gray-300 text-sm leading-relaxed font-light">
+                        Digital explorer & music enthusiast. Always looking for new waves to ride. Building the future of AI convos. 🤖✨
+                    </p>
+                </div>
+                
+                <div class="w-full">
+                    <div class="flex items-center justify-between mb-3 pl-1 pr-1">
+                        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Theme</p>
+                    </div>
+                    <div class="flex gap-3 px-1">
+                        <button onclick="setTheme('blue')" class="size-8 rounded-full bg-[#3994ef] ring-2 ring-offset-2 ring-offset-[#10161d] ring-white/30 shadow-[0_0_10px_#3994ef] transition-transform hover:scale-110"></button>
+                        <button onclick="setTheme('emerald')" class="size-8 rounded-full bg-emerald-500 ring-0 hover:ring-2 ring-offset-2 ring-offset-[#10161d] ring-white/30 opacity-40 hover:opacity-100 transition-all hover:scale-110"></button>
+                        <button onclick="setTheme('violet')" class="size-8 rounded-full bg-violet-500 ring-0 hover:ring-2 ring-offset-2 ring-offset-[#10161d] ring-white/30 opacity-40 hover:opacity-100 transition-all hover:scale-110"></button>
+                        <button onclick="setTheme('rose')" class="size-8 rounded-full bg-rose-500 ring-0 hover:ring-2 ring-offset-2 ring-offset-[#10161d] ring-white/30 opacity-40 hover:opacity-100 transition-all hover:scale-110"></button>
+                        <button onclick="setTheme('amber')" class="size-8 rounded-full bg-amber-500 ring-0 hover:ring-2 ring-offset-2 ring-offset-[#10161d] ring-white/30 opacity-40 hover:opacity-100 transition-all hover:scale-110"></button>
+                    </div>
+                </div>
+                
+                <div class="w-full pt-4 border-t border-white/5">
+                    <div class="flex justify-between items-center px-2">
+                        <a class="flex flex-col items-center gap-2 group" href="#">
+                            <div class="size-12 rounded-2xl bg-[#1a1a1a] border border-white/5 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-pink-500 group-hover:to-purple-600 group-hover:border-transparent transition-all duration-300 shadow-lg group-hover:shadow-pink-500/20">
+                                <span class="material-symbols-outlined text-gray-400 group-hover:text-white text-[22px] transition-colors">photo_camera</span>
+                            </div>
+                            <span class="text-[10px] font-medium text-gray-500 group-hover:text-pink-400 transition-colors">Insta</span>
+                        </a>
+                        <a class="flex flex-col items-center gap-2 group" href="#">
+                            <div class="size-12 rounded-2xl bg-[#1a1a1a] border border-white/5 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-cyan-600 group-hover:border-transparent transition-all duration-300 shadow-lg group-hover:shadow-blue-500/20">
+                                <span class="material-symbols-outlined text-gray-400 group-hover:text-white text-[22px] transition-colors">language</span>
+                            </div>
+                            <span class="text-[10px] font-medium text-gray-500 group-hover:text-blue-400 transition-colors">Web</span>
+                        </a>
+                        <a class="flex flex-col items-center gap-2 group" href="#">
+                            <div class="size-12 rounded-2xl bg-[#1a1a1a] border border-white/5 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-indigo-500 group-hover:to-violet-600 group-hover:border-transparent transition-all duration-300 shadow-lg group-hover:shadow-indigo-500/20">
+                                <span class="material-symbols-outlined text-gray-400 group-hover:text-white text-[22px] transition-colors">chat</span>
+                            </div>
+                            <span class="text-[10px] font-medium text-gray-500 group-hover:text-indigo-400 transition-colors">Disc</span>
+                        </a>
+                        <a class="flex flex-col items-center gap-2 group" href="#">
+                            <div class="size-12 rounded-2xl bg-[#1a1a1a] border border-white/5 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-green-500 group-hover:to-emerald-600 group-hover:border-transparent transition-all duration-300 shadow-lg group-hover:shadow-green-500/20">
+                                <span class="material-symbols-outlined text-gray-400 group-hover:text-white text-[22px] transition-colors">library_music</span>
+                            </div>
+                            <span class="text-[10px] font-medium text-gray-500 group-hover:text-green-400 transition-colors">Spotify</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="shareProfile()" class="mt-8 flex items-center gap-2 px-8 py-3 rounded-full bg-surface-dark border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.3)] text-xs font-bold text-gray-400 hover:text-white hover:border-primary/50 transition-all group">
+                <span class="material-symbols-outlined text-[18px] group-hover:text-primary transition-colors">ios_share</span>
+                Share Profile
+            </button>
+        </main>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" onclick="if(event.target === this) closeEditModal()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div onclick="event.stopPropagation()" class="bg-[#1e2433] rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-white/10 shadow-2xl">
+            <div class="sticky top-0 bg-[#1e2433] border-b border-white/10 p-6 flex items-center justify-between z-10">
+                <h2 class="text-xl font-bold text-white">Edit Profile</h2>
+                <button onclick="closeEditModal()" class="size-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all">
+                    <span class="material-symbols-outlined text-white text-[20px]">close</span>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Avatar Upload -->
+                <div>
+                    <label class="text-sm font-semibold text-slate-300 mb-3 block">Profile Picture</label>
+                    <div class="flex items-center gap-4">
+                        <div id="modalAvatar" class="size-20 rounded-full bg-cover bg-center border-2 border-primary/50"></div>
+                        <div class="flex-1 space-y-2">
+                            <input type="file" id="avatarInput" accept="image/*" class="hidden">
+                            <button onclick="document.getElementById('avatarInput').click()" class="w-full px-4 py-2 rounded-lg bg-primary hover:bg-primary/80 text-white text-sm font-semibold transition-all">
+                                Upload New Photo
+                            </button>
+                            <button onclick="removeAvatar()" class="w-full px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-semibold transition-all">
+                                Remove Photo
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Max 5MB. JPG, PNG, GIF, or WebP</p>
+                </div>
+
+                <!-- Bio -->
+                <div>
+                    <label class="text-sm font-semibold text-slate-300 mb-2 block">Bio</label>
+                    <textarea id="bioInput" rows="3" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none" placeholder="Tell us about yourself..."></textarea>
+                </div>
+
+                <!-- Social Links -->
+                <div>
+                    <label class="text-sm font-semibold text-slate-300 mb-3 block">Social Links</label>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="size-10 rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-white text-[20px]">photo_camera</span>
+                            </div>
+                            <input type="url" id="instagramInput" placeholder="Instagram URL" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:outline-none text-sm">
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="size-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-white text-[20px]">language</span>
+                            </div>
+                            <input type="url" id="websiteInput" placeholder="Website URL" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:outline-none text-sm">
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="size-10 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-white text-[20px]">chat</span>
+                            </div>
+                            <input type="url" id="discordInput" placeholder="Discord URL" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:outline-none text-sm">
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="size-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-white text-[20px]">library_music</span>
+                            </div>
+                            <input type="url" id="spotifyInput" placeholder="Spotify URL" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary focus:outline-none text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <button onclick="saveProfile()" class="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-blue-600 text-white font-semibold shadow-lg hover:shadow-primary/50 transition-all">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/features-api.js"></script>
+    <script>
+        const authToken = localStorage.getItem('wave_session') || localStorage.getItem('authToken');
+        
+        // Debug: Check what's in localStorage
+        console.log('Auth token:', authToken);
+        console.log('All localStorage:', { ...localStorage });
+        
+        if (!authToken) {
+            console.log('No auth token found, redirecting to login');
+            window.location.href = '/login.html';
+        }
+
+        async function loadProfile() {
+            const userId = localStorage.getItem('userId');
+            const username = localStorage.getItem('username');
+            const nickname = localStorage.getItem('nickname');
+
+            // Set basic info from localStorage
+            document.getElementById('profileName').textContent = nickname || 'User';
+            document.getElementById('profileUsername').textContent = username ? `@${username}` : '@user';
+
+            // Set default avatar
+            const avatar = document.getElementById('profileAvatar');
+            avatar.style.backgroundImage = 'url("/nobackweave.png")';
+
+            // Try to load profile from backend
+            try {
+                const response = await fetch('/api/profile/me', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const profile = data.profile;
+                    
+                    if (profile) {
+                        // Update bio if available
+                        if (profile.bio) {
+                            document.getElementById('profileBio').textContent = profile.bio;
+                        }
+                        
+                        // Update avatar if available
+                        if (profile.avatarUrl || profile.avatar) {
+                            avatar.style.backgroundImage = `url("${profile.avatarUrl || profile.avatar}")`;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+            }
+
+            // Load real stats from backend
+            try {
+                // Get DM count
+                const dmResponse = await fetch('/api/dms', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (dmResponse.ok) {
+                    const dmData = await dmResponse.json();
+                    document.getElementById('messageCount').textContent = dmData.conversations?.length || 0;
+                }
+
+                // Get room count
+                const roomResponse = await fetch('/api/rooms', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (roomResponse.ok) {
+                    const roomData = await roomResponse.json();
+                    document.getElementById('roomCount').textContent = roomData.rooms?.length || 0;
+                }
+
+                // Get friends count (users you've messaged)
+                const usersResponse = await fetch('/api/users/search?q=', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (usersResponse.ok) {
+                    const usersData = await usersResponse.json();
+                    document.getElementById('friendCount').textContent = usersData.users?.length || 0;
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                // Keep at 0 if failed
+            }
+        }
+
+        async function setTheme(color) {
+            const themeColors = {
+                'blue': { primary: '#0db9f2', accent: '#0db9f2' },
+                'emerald': { primary: '#10b981', accent: '#34d399' },
+                'violet': { primary: '#8b5cf6', accent: '#a78bfa' },
+                'rose': { primary: '#f43f5e', accent: '#fb7185' },
+                'amber': { primary: '#f59e0b', accent: '#fbbf24' }
+            };
+
+            const colors = themeColors[color];
+            if (!colors) return;
+
+            try {
+                const response = await fetch('/api/profile/theme', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        primaryColor: colors.primary,
+                        accentColor: colors.accent
+                    })
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('theme', color);
+                    showToast(`Theme set to ${color}!`);
+                } else {
+                    throw new Error('Failed to update theme');
+                }
+            } catch (error) {
+                console.error('Failed to update theme:', error);
+                showToast('Failed to update theme');
+            }
+        }
+
+        function openManageAccount() {
+            window.location.href = '/settings.html';
+        }
+
+        function editProfile() {
+            // Open modal
+            const modal = document.getElementById('editProfileModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Load current values
+            const currentBio = document.getElementById('profileBio').textContent;
+            document.getElementById('bioInput').value = currentBio;
+            
+            // Set modal avatar
+            const currentAvatar = document.getElementById('profileAvatar').style.backgroundImage;
+            document.getElementById('modalAvatar').style.backgroundImage = currentAvatar;
+            
+            // Load social links from profile (if stored)
+            // TODO: Load from backend when social links are implemented
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editProfileModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Handle avatar file selection
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatarInput = document.getElementById('avatarInput');
+            if (avatarInput) {
+                avatarInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Validate file
+                        if (file.size > 5 * 1024 * 1024) {
+                            showToast('File too large. Max 5MB');
+                            return;
+                        }
+                        
+                        if (!file.type.startsWith('image/')) {
+                            showToast('Please select an image file');
+                            return;
+                        }
+                        
+                        // Preview image
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            document.getElementById('modalAvatar').style.backgroundImage = `url('${e.target.result}')`;
+                        };
+                        reader.readAsDataURL(file);
+                        
+                        // Upload immediately
+                        await uploadAvatar(file);
+                    }
+                });
+            }
+        });
+
+        async function uploadAvatar(file) {
+            try {
+                const userId = localStorage.getItem('userId');
+                const formData = new FormData();
+                formData.append('avatar', file);
+                
+                const response = await fetch(`/api/users/${userId}/avatar`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.avatarUrl) {
+                        // Update all avatar displays
+                        const avatarUrl = `url('${data.avatarUrl}')`;
+                        document.getElementById('profileAvatar').style.backgroundImage = avatarUrl;
+                        document.getElementById('modalAvatar').style.backgroundImage = avatarUrl;
+                        showToast('Avatar updated!');
+                    }
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (error) {
+                console.error('Avatar upload error:', error);
+                showToast('Failed to upload avatar');
+            }
+        }
+
+        async function removeAvatar() {
+            if (!confirm('Remove your profile picture?')) return;
+            
+            try {
+                const userId = localStorage.getItem('userId');
+                const response = await fetch(`/api/users/${userId}/avatar`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const defaultAvatar = 'url("/nobackweave.png")';
+                    document.getElementById('profileAvatar').style.backgroundImage = defaultAvatar;
+                    document.getElementById('modalAvatar').style.backgroundImage = defaultAvatar;
+                    showToast('Avatar removed');
+                } else {
+                    throw new Error('Remove failed');
+                }
+            } catch (error) {
+                console.error('Avatar remove error:', error);
+                showToast('Failed to remove avatar');
+            }
+        }
+
+        async function saveProfile() {
+            const bio = document.getElementById('bioInput').value.trim();
+            const instagram = document.getElementById('instagramInput').value.trim();
+            const website = document.getElementById('websiteInput').value.trim();
+            const discord = document.getElementById('discordInput').value.trim();
+            const spotify = document.getElementById('spotifyInput').value.trim();
+            
+            let successCount = 0;
+            let errorCount = 0;
+            
+            try {
+                // Update bio
+                if (bio) {
+                    try {
+                        const bioResponse = await fetch('/api/profile/bio', {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ bio })
+                        });
+                        
+                        if (bioResponse.ok) {
+                            document.getElementById('profileBio').textContent = bio;
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+                    } catch (e) {
+                        console.error('Bio update error:', e);
+                        errorCount++;
+                    }
+                }
+                
+                // Update social links
+                const socialLinks = [
+                    { platform: 'instagram', url: instagram },
+                    { platform: 'website', url: website },
+                    { platform: 'discord', url: discord },
+                    { platform: 'spotify', url: spotify }
+                ];
+                
+                for (const link of socialLinks) {
+                    if (link.url) {
+                        try {
+                            const response = await fetch('/api/profile/social-link', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(link)
+                            });
+                            
+                            if (response.ok) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        } catch (e) {
+                            console.error(`${link.platform} update error:`, e);
+                            errorCount++;
+                        }
+                    }
+                }
+                
+                closeEditModal();
+                
+                if (errorCount === 0) {
+                    showToast('Profile updated successfully!');
+                } else if (successCount > 0) {
+                    showToast(`Profile partially updated (${errorCount} errors)`);
+                } else {
+                    showToast('Failed to update profile');
+                }
+            } catch (error) {
+                console.error('Save profile error:', error);
+                showToast('Failed to save profile');
+            }
+        }
+
+        async function updateBio(bio) {
+            try {
+                const response = await fetch('/api/profile/bio', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ bio })
+                });
+
+                if (response.ok) {
+                    document.getElementById('profileBio').textContent = bio;
+                    showToast('Bio updated!');
+                } else {
+                    throw new Error('Failed to update bio');
+                }
+            } catch (error) {
+                console.error('Failed to update bio:', error);
+                showToast('Failed to update bio');
+            }
+        }
+
+        async function shareProfile() {
+            const username = localStorage.getItem('username');
+            const profileUrl = `${window.location.origin}/profile.html?user=${username}`;
+            
+            // Try native share API first
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `${username}'s Wave Profile`,
+                        text: `Check out my Wave profile!`,
+                        url: profileUrl
+                    });
+                    showToast('Profile shared!');
+                    return;
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.error('Share failed:', error);
+                    }
+                }
+            }
+            
+            // Fallback to clipboard
+            try {
+                await navigator.clipboard.writeText(profileUrl);
+                showToast('Profile link copied to clipboard!');
+            } catch (error) {
+                // Final fallback - show the URL
+                prompt('Copy your profile link:', profileUrl);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-full shadow-lg z-50 animate-pulse';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        loadProfile();
+    </script>
+    
+    <!-- Bottom Navigation (Desktop Sidebar Style) -->
+    <nav class="hidden lg:block fixed bottom-6 left-6 z-50">
+        <div class="p-2 bg-[#0b1418] border border-slate-800/40 rounded-xl shadow-2xl">
+            <div class="flex items-center gap-1 rounded-xl bg-background-dark p-1">
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/chat.html">
+                    <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+                    <span class="text-[10px] font-medium mt-1">Chats</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/ai-chat.html">
+                    <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+                    <span class="text-[10px] font-medium mt-1">AI</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/feed.html">
+                    <span class="material-symbols-outlined text-[24px]">newspaper</span>
+                    <span class="text-[10px] font-medium mt-1">Feed</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/music.html">
+                    <span class="material-symbols-outlined text-[24px]">music_note</span>
+                    <span class="text-[10px] font-medium mt-1">Music</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-primary bg-primary/10 transition-colors" href="/profile.html">
+                    <span class="material-symbols-outlined text-[24px]">person</span>
+                    <span class="text-[10px] font-medium mt-1">Profile</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/settings.html">
+                    <span class="material-symbols-outlined text-[24px]">settings</span>
+                    <span class="text-[10px] font-medium mt-1">Settings</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface-dark/95 backdrop-blur-lg border-t border-slate-800">
+        <div class="flex justify-between items-center h-20 px-6 pb-2">
+            <a href="/chat.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">chat_bubble</span>
+                <span class="text-[10px] font-medium">Chats</span>
+            </a>
+            
+            <a href="/music.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">music_note</span>
+                <span class="text-[10px] font-medium">Music</span>
+            </a>
+            
+            <a href="/feed.html" class="flex flex-col items-center justify-center -mt-6">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-blue-400 shadow-[0_8px_16px_rgba(43,140,238,0.3)] flex items-center justify-center text-white transform active:scale-95 transition-transform">
+                    <span class="material-symbols-outlined" style="font-size: 28px;">newspaper</span>
+                </div>
+            </a>
+            
+            <a href="/ai-chat.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">smart_toy</span>
+                <span class="text-[10px] font-medium">AI</span>
+            </a>
+            
+            <a href="/profile.html" class="flex flex-col items-center gap-1 w-12 text-primary transition-colors">
+                <div class="w-10 h-8 flex items-center justify-center bg-primary/10 rounded-full">
+                    <span class="material-symbols-outlined fill-current text-[20px]">person</span>
+                </div>
+                <span class="text-[10px] font-semibold">Profile</span>
+            </a>
+        </div>
+    </nav>
+</body>
+</html>

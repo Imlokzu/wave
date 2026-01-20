@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Wave - Settings & Pro</title>
+    <script src="/js/auth-guard.js"></script>
+    <script src="/js/mobile-detector.js"></script>
+    <script src="/js/update-checker.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0db9f2",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#101e23",
+                        "surface-dark": "#16262c",
+                        "surface-dark-hover": "#1e323a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem", 
+                        "lg": "0.75rem", 
+                        "xl": "1rem", 
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #101e23; }
+        ::-webkit-scrollbar-thumb { background: #223f49; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #315a68; }
+
+        .glass-panel {
+            background: rgba(22, 38, 44, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .pro-gradient {
+            background: linear-gradient(135deg, rgba(13, 185, 242, 0.2) 0%, rgba(16, 30, 35, 0) 100%);
+        }
+        
+        .pro-border {
+            position: relative;
+        }
+        
+        .pro-border::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem; 
+            padding: 1px; 
+            background: linear-gradient(135deg, #0db9f2, transparent); 
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude; 
+            pointer-events: none;
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex flex-col overflow-x-hidden text-slate-900 dark:text-slate-100 selection:bg-primary/30 pb-28 lg:pb-0">
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-[#223f49]">
+        <div class="px-6 md:px-12 lg:px-40 flex justify-center h-16">
+            <div class="max-w-[960px] w-full flex items-center justify-between">
+                <div class="flex items-center gap-4 text-white">
+                    <img src="/nobackweave.png" alt="Wave" class="h-8 w-8 object-contain" />
+                    <h2 class="text-white text-xl font-bold leading-tight tracking-tight">Wave</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="hidden md:flex items-center justify-center size-10 rounded-full hover:bg-surface-dark-hover transition-colors text-[#90bccb]">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <div id="userAvatar" class="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-[#223f49] cursor-pointer" style='background-image: url("/nobackweave.png");'></div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="flex-1 flex flex-col items-center w-full px-6 md:px-12 lg:px-40 pb-28 pt-8">
+        <div class="max-w-[960px] w-full flex flex-col gap-8">
+            <!-- Breadcrumbs -->
+            <nav class="flex items-center gap-2 text-sm">
+                <a class="text-[#90bccb] hover:text-white transition-colors" href="/chat.html">Home</a>
+                <span class="material-symbols-outlined text-[#90bccb] text-base">chevron_right</span>
+                <span class="text-white font-medium">Settings</span>
+            </nav>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Sidebar Navigation (Settings Menu) -->
+                <div class="lg:col-span-3 flex flex-col gap-1">
+                    <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mb-2">Account</h3>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-surface-dark-hover font-medium text-sm" data-tab="general">
+                        <span class="material-symbols-outlined text-primary">person</span>
+                        General
+                    </button>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-[#90bccb] hover:bg-surface-dark hover:text-white transition-colors font-medium text-sm" data-tab="privacy">
+                        <span class="material-symbols-outlined">lock</span>
+                        Privacy & Security
+                    </button>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-[#90bccb] hover:bg-surface-dark hover:text-white transition-colors font-medium text-sm" data-tab="notifications">
+                        <span class="material-symbols-outlined">notifications</span>
+                        Notifications
+                    </button>
+                    
+                    <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mt-6 mb-2">Preferences</h3>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-[#90bccb] hover:bg-surface-dark hover:text-white transition-colors font-medium text-sm" data-tab="accessibility">
+                        <span class="material-symbols-outlined">accessibility</span>
+                        Accessibility
+                    </button>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-[#90bccb] hover:bg-surface-dark hover:text-white transition-colors font-medium text-sm" data-tab="appearance">
+                        <span class="material-symbols-outlined">palette</span>
+                        Appearance
+                    </button>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-[#90bccb] hover:bg-surface-dark hover:text-white transition-colors font-medium text-sm" data-tab="language">
+                        <span class="material-symbols-outlined">language</span>
+                        Language & Region
+                    </button>
+                    
+                    <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mt-6 mb-2">Advanced</h3>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-[#90bccb] hover:bg-surface-dark hover:text-white transition-colors font-medium text-sm" data-tab="api">
+                        <span class="material-symbols-outlined">api</span>
+                        API & Integrations
+                    </button>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-[#90bccb] hover:bg-surface-dark hover:text-white transition-colors font-medium text-sm" data-tab="data">
+                        <span class="material-symbols-outlined">storage</span>
+                        Data & Storage
+                    </button>
+                    <button class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-[#90bccb] hover:bg-surface-dark hover:text-white transition-colors font-medium text-sm" data-tab="about">
+                        <span class="material-symbols-outlined">info</span>
+                        About
+                    </button>
+                </div>
+                
+                <!-- Main Content Area -->
+                <div class="lg:col-span-9 flex flex-col gap-6">
+                    <!-- Pro Card -->
+                    <section id="proCard" class="pro-border relative overflow-hidden rounded-xl bg-surface-dark shadow-lg">
+                        <div class="pro-gradient absolute inset-0 pointer-events-none"></div>
+                        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between p-6 gap-6">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center gap-3">
+                                    <h2 id="proTitle" class="text-white text-2xl font-bold tracking-tight">Wave Pro</h2>
+                                    <span id="proBadge" class="hidden inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary text-black shadow-[0_0_10px_rgba(13,185,242,0.5)]">
+                                        PREMIUM
+                                    </span>
+                                </div>
+                                <p id="proDescription" class="text-[#90bccb] text-sm max-w-md leading-relaxed">
+                                    Upgrade to unlock unlimited AI conversations, priority support, and exclusive features.
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0 flex gap-3">
+                                <a href="/gift-pro.html" id="upgradeProBtn" class="group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-5 py-2.5 text-black font-bold text-sm transition-all hover:bg-[#34caff] active:scale-95">
+                                    <span>Upgrade to Pro</span>
+                                    <span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                </a>
+                                <button id="manageProBtn" onclick="window.location.href='/gift-pro.html'" class="hidden group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-5 py-2.5 text-black font-bold text-sm transition-all hover:bg-[#34caff] active:scale-95">
+                                    <span>Manage Subscription</span>
+                                    <span class="material-symbols-outlined text-lg">settings</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="absolute -right-10 -bottom-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+                    </section>
+                    
+                    <!-- General Settings Tab -->
+                    <section id="generalTab" class="settings-content flex flex-col gap-6 pt-2">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-4">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">General Settings</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Manage your profile and account preferences.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Profile Section -->
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">Profile Information</h4>
+                            <div class="flex flex-col gap-4">
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium" for="displayName">Display Name</label>
+                                    <input id="displayName" class="block w-full rounded-lg border-[#223f49] bg-[#101e23] px-4 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm transition-all shadow-sm" placeholder="Your display name" type="text"/>
+                                </div>
+                                
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium" for="username">Username</label>
+                                    <input id="username" class="block w-full rounded-lg border-[#223f49] bg-[#101e23] px-4 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm transition-all shadow-sm" placeholder="@username" type="text"/>
+                                </div>
+                                
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium" for="bio">Bio</label>
+                                    <textarea id="bio" class="block w-full rounded-lg border-[#223f49] bg-[#101e23] px-4 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm transition-all shadow-sm resize-none" placeholder="Tell us about yourself..." rows="3"></textarea>
+                                </div>
+                                
+                                <div class="flex justify-end pt-2">
+                                    <button id="saveProfile" class="bg-primary text-black px-6 py-2 rounded-lg text-sm font-bold hover:bg-[#34caff] shadow-lg shadow-primary/20 transition-all active:scale-95">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Privacy & Security Tab -->
+                    <section id="privacyTab" class="settings-content hidden flex-col gap-6 pt-2">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-4">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">Privacy & Security</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Control your privacy and security settings.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">Privacy Settings</h4>
+                            <div class="flex flex-col gap-4">
+                                <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
+                                    <div>
+                                        <p class="text-white font-medium">Profile Visibility</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Who can see your profile</p>
+                                    </div>
+                                    <select id="profileVisibility" class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
+                                        <option value="everyone">Everyone</option>
+                                        <option value="friends">Friends Only</option>
+                                        <option value="private">Private</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
+                                    <div>
+                                        <p class="text-white font-medium">Online Status</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Show when you're online</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="onlineStatus" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
+                                    <div>
+                                        <p class="text-white font-medium">Read Receipts</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Let others know when you've read their messages</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="readReceipts" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-3">
+                                    <div>
+                                        <p class="text-white font-medium">Typing Indicators</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Show when you're typing</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="typingIndicators" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">Security</h4>
+                            <div class="flex flex-col gap-3">
+                                <button class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">password</span>
+                                        <div>
+                                            <p class="text-white font-medium text-sm">Change Password</p>
+                                            <p class="text-[#90bccb] text-xs">Update your password</p>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
+                                </button>
+                                
+                                <button class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">shield</span>
+                                        <div>
+                                            <p class="text-white font-medium text-sm">Two-Factor Authentication</p>
+                                            <p class="text-[#90bccb] text-xs">Add an extra layer of security</p>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
+                                </button>
+                                
+                                <button class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">devices</span>
+                                        <div>
+                                            <p class="text-white font-medium text-sm">Active Sessions</p>
+                                            <p class="text-[#90bccb] text-xs">Manage your logged-in devices</p>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Notifications Tab -->
+                    <section id="notificationsTab" class="settings-content hidden flex-col gap-6 pt-2">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-4">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">Notification Preferences</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Control how you receive notifications.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <div class="flex flex-col gap-4">
+                                <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
+                                    <div>
+                                        <p class="text-white font-medium">Desktop Notifications</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Receive notifications on your desktop</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="desktopNotifications" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
+                                    <div>
+                                        <p class="text-white font-medium">Sound Notifications</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Play sound for new messages</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="soundNotifications" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-3">
+                                    <div>
+                                        <p class="text-white font-medium">Message Previews</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Show message content in notifications</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="messagePreview" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Language & Region Tab -->
+                    <section id="languageTab" class="settings-content hidden flex-col gap-6 pt-2">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-4">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">Language & Region</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Customize language and regional settings.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <div class="flex flex-col gap-4">
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Display Language</label>
+                                    <select id="displayLanguage" class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
+                                        <option value="en-US">English (US)</option>
+                                        <option value="en-GB">English (UK)</option>
+                                        <option value="es">Español</option>
+                                        <option value="fr">Français</option>
+                                        <option value="de">Deutsch</option>
+                                        <option value="ja">日本語</option>
+                                        <option value="ko">한국어</option>
+                                        <option value="zh">中文</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Time Zone</label>
+                                    <select id="timeZone" class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
+                                        <option value="auto">Auto-detect</option>
+                                        <option value="America/Los_Angeles">(UTC-08:00) Pacific Time</option>
+                                        <option value="America/New_York">(UTC-05:00) Eastern Time</option>
+                                        <option value="Europe/London">(UTC+00:00) London</option>
+                                        <option value="Europe/Paris">(UTC+01:00) Paris</option>
+                                        <option value="Asia/Tokyo">(UTC+09:00) Tokyo</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Date Format</label>
+                                    <select id="dateFormat" class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
+                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium">Time Format</label>
+                                    <select id="timeFormat" class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
+                                        <option value="12">12-hour (AM/PM)</option>
+                                        <option value="24">24-hour</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Accessibility Tab -->
+                    <section id="accessibilityTab" class="settings-content hidden flex-col gap-4 pt-0">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">Accessibility</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Make Wave more accessible for you.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Text Size - Most Important -->
+                        <div class="bg-surface-dark rounded-xl p-4 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-3">Text Size</h4>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center gap-4">
+                                    <span class="text-[#90bccb] text-xs">A</span>
+                                    <input id="textSizeSlider" type="range" min="12" max="20" value="16" class="flex-1 h-2 bg-[#223f49] rounded-lg appearance-none cursor-pointer accent-primary">
+                                    <span class="text-[#90bccb] text-xl">A</span>
+                                </div>
+                                <p class="text-[#90bccb] text-xs text-center" id="textSizeValue">16px</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Visual Settings -->
+                        <div class="bg-surface-dark rounded-xl p-4 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-3">Visual</h4>
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center justify-between py-2 border-b border-[#223f49]">
+                                    <div>
+                                        <p class="text-white font-medium">Reduce Motion</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Minimize animations</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="reduceMotion" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-2">
+                                    <div>
+                                        <p class="text-white font-medium">High Contrast</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Better visibility</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="highContrast" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Keyboard Settings -->
+                        <div class="bg-surface-dark rounded-xl p-4 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-3">Keyboard</h4>
+                            <div class="flex flex-col gap-4">
+                                <div class="flex items-center justify-between py-3">
+                                    <div>
+                                        <p class="text-white font-medium">Keyboard Shortcuts</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Enable keyboard navigation</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="keyboardShortcuts" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Appearance Tab -->
+                    <section id="appearanceTab" class="settings-content hidden flex-col gap-4 pt-0">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">Appearance</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Customize how Wave looks.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">Theme</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <button class="theme-option flex flex-col items-center gap-3 p-4 rounded-lg border-2 border-primary bg-surface-dark-hover transition-all" data-theme="dark">
+                                    <div class="w-full h-24 rounded-lg bg-gradient-to-br from-[#101e23] to-[#16262c] border border-[#223f49]"></div>
+                                    <span class="text-white font-medium">Dark</span>
+                                    <span class="material-symbols-outlined text-primary">check_circle</span>
+                                </button>
+                                
+                                <button class="theme-option flex flex-col items-center gap-3 p-4 rounded-lg border-2 border-[#223f49] hover:border-primary transition-all" data-theme="light">
+                                    <div class="w-full h-24 rounded-lg bg-gradient-to-br from-[#f5f8f8] to-white border border-slate-300"></div>
+                                    <span class="text-white font-medium">Light</span>
+                                </button>
+                                
+                                <button class="theme-option flex flex-col items-center gap-3 p-4 rounded-lg border-2 border-[#223f49] hover:border-primary transition-all" data-theme="auto">
+                                    <div class="w-full h-24 rounded-lg bg-gradient-to-r from-[#101e23] via-[#16262c] to-[#f5f8f8] border border-[#223f49]"></div>
+                                    <span class="text-white font-medium">Auto</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- API Tab -->
+                    <section id="apiTab" class="settings-content hidden flex-col gap-4 pt-0">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">API Configuration</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Manage your LLM connections and usage limits.</p>
+                            </div>
+                            <button class="text-primary text-sm font-medium hover:underline">View Documentation</button>
+                        </div>
+                        
+                        <!-- AI Model Selection -->
+                        <div class="bg-surface-dark rounded-xl border border-[#223f49] overflow-hidden">
+                            <div class="px-6 py-4 border-b border-[#223f49]">
+                                <h4 class="text-white font-bold flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">psychology</span>
+                                    AI Model Selection
+                                </h4>
+                                <p class="text-[#90bccb] text-xs mt-1">Choose your preferred AI model for chat</p>
+                            </div>
+                            <div id="aiModelsContainer">
+                                <div class="px-6 py-8 text-center">
+                                    <div class="inline-flex items-center gap-2 text-[#90bccb]">
+                                        <span class="material-symbols-outlined animate-spin">progress_activity</span>
+                                        <span class="text-sm">Loading AI models...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- API Key Input -->
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <form class="flex flex-col gap-5" onsubmit="event.preventDefault();">
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-white text-sm font-medium flex items-center gap-2" for="apikey">
+                                        OpenRouter API Key
+                                        <span class="material-symbols-outlined text-[#5a7d8a] text-sm cursor-help" title="Your key is encrypted locally">info</span>
+                                    </label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <span class="material-symbols-outlined text-[#5a7d8a]">key</span>
+                                        </div>
+                                        <input id="apikey" class="block w-full rounded-lg border-[#223f49] bg-[#101e23] pl-10 pr-24 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm transition-all shadow-sm" name="apikey" placeholder="sk-or-v1-xxxxxxxxxxxxxxxx" type="password"/>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                            <button class="text-[#5a7d8a] hover:text-white p-1 rounded transition-colors" type="button" onclick="toggleApiKeyVisibility()">
+                                                <span class="material-symbols-outlined text-xl" id="apiKeyToggleIcon">visibility_off</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-primary/5 rounded-lg p-4 border border-primary/10 flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-primary mt-0.5">lightbulb</span>
+                                    <div class="flex flex-col gap-1">
+                                        <p class="text-white text-sm font-medium">Need an API Key?</p>
+                                        <p class="text-[#90bccb] text-xs leading-normal">
+                                            Generate your key from the OpenRouter dashboard. This allows Wave to connect directly to models like GPT-4, Claude 3, and Llama 3.
+                                        </p>
+                                        <a class="text-primary text-xs font-bold hover:underline mt-1 inline-flex items-center gap-1" href="https://openrouter.ai/keys" target="_blank">
+                                            Go to OpenRouter Dashboard
+                                            <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-end pt-2">
+                                    <button type="button" class="bg-surface-dark-hover border border-[#223f49] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2c4652] transition-colors mr-3">Cancel</button>
+                                    <button id="saveApiKey" type="submit" class="bg-primary text-black px-6 py-2 rounded-lg text-sm font-bold hover:bg-[#34caff] shadow-lg shadow-primary/20 transition-all active:scale-95">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+                    
+                    <!-- Data & Storage Tab -->
+                    <section id="dataTab" class="settings-content hidden flex-col gap-4 pt-0">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">Data & Storage</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Manage your data and storage preferences.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">Storage Usage</h4>
+                            <div class="flex flex-col gap-4" id="storageBreakdown">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[#90bccb] text-sm">Images</span>
+                                    <span class="text-white font-medium" id="storageImages">Calculating...</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[#90bccb] text-sm">Videos</span>
+                                    <span class="text-white font-medium" id="storageVideos">Calculating...</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[#90bccb] text-sm">Files</span>
+                                    <span class="text-white font-medium" id="storageFiles">Calculating...</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[#90bccb] text-sm">Cache</span>
+                                    <span class="text-white font-medium" id="storageCache">Calculating...</span>
+                                </div>
+                                <div class="h-px bg-[#223f49] my-2"></div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-white font-bold">Total</span>
+                                    <span class="text-primary font-bold" id="storageTotal">Calculating...</span>
+                                </div>
+                                <div class="w-full bg-[#223f49] rounded-full h-2 mt-2">
+                                    <div id="storageProgress" class="bg-primary h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                                <p class="text-xs text-[#90bccb] text-center" id="storageLimit">0 GB / 5 GB used</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">Data Management</h4>
+                            <div class="flex flex-col gap-3">
+                                <button onclick="clearCacheData()" class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">delete_sweep</span>
+                                        <div>
+                                            <p class="text-white font-medium text-sm">Clear Cache</p>
+                                            <p class="text-[#90bccb] text-xs">Free up space</p>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
+                                </button>
+                                
+                                <button onclick="exportData()" class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">download</span>
+                                        <div>
+                                            <p class="text-white font-medium text-sm">Export Data</p>
+                                            <p class="text-[#90bccb] text-xs">Download your data</p>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
+                                </button>
+                                
+                                <button onclick="deleteAllData()" class="flex items-center justify-between p-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors border border-red-500/20">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-red-400">delete_forever</span>
+                                        <div>
+                                            <p class="text-red-400 font-medium text-sm">Delete All Data</p>
+                                            <p class="text-red-400/70 text-xs">Permanently delete all your data</p>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-red-400">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">Auto-Download</h4>
+                            <div class="flex flex-col gap-4">
+                                <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
+                                    <div>
+                                        <p class="text-white font-medium">Photos</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Automatically download photos</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="autoDownloadPhotos" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-3">
+                                    <div>
+                                        <p class="text-white font-medium">Videos</p>
+                                        <p class="text-[#90bccb] text-xs mt-1">Automatically download videos</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="autoDownloadVideos" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- About Tab -->
+                    <section id="aboutTab" class="settings-content hidden flex-col gap-4 pt-0">
+                        <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
+                            <div>
+                                <h3 class="text-white text-lg font-bold">About Wave</h3>
+                                <p class="text-[#90bccb] text-sm mt-1">Information about Wave Messenger.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49] text-center">
+                            <img src="/nobackwave.png" alt="Wave" class="h-32 w-32 mx-auto mb-4 object-contain" />
+                            <h4 class="text-white text-2xl font-bold mb-2">Wave Messenger</h4>
+                            <p class="text-primary font-medium mb-4">Version 4.2.0 • December 2025</p>
+                            <p class="text-[#90bccb] text-sm max-w-md mx-auto leading-relaxed">
+                                A modern, feature-rich messaging platform with AI capabilities, designed for seamless communication.
+                            </p>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">Links</h4>
+                            <div class="flex flex-col gap-3">
+                                <a href="/changelog.html" target="_blank" class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">history</span>
+                                        <p class="text-white font-medium text-sm">Changelog</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
+                                </a>
+                                
+                                <a href="/terms.html" target="_blank" class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">description</span>
+                                        <p class="text-white font-medium text-sm">Terms of Service</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
+                                </a>
+                                
+                                <a href="/privacy.html" target="_blank" class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">privacy_tip</span>
+                                        <p class="text-white font-medium text-sm">Privacy Policy</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
+                                </a>
+                                
+                                <a href="/help.html" target="_blank" class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">help</span>
+                                        <p class="text-white font-medium text-sm">Help Center</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
+                                </a>
+                                
+                                <a href="/report-bug.html" target="_blank" class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary">bug_report</span>
+                                        <p class="text-white font-medium text-sm">Report a Bug</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
+                            <h4 class="text-white font-bold mb-4">System Information</h4>
+                            <div class="flex flex-col gap-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-[#90bccb]">Platform</span>
+                                    <span class="text-white font-medium">Web</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-[#90bccb]">Browser</span>
+                                    <span class="text-white font-medium" id="browserInfo">Loading...</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-[#90bccb]">Last Updated</span>
+                                    <span class="text-white font-medium">Dec 2024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bottom Navigation (Desktop Sidebar Style) -->
+    <nav class="hidden lg:block fixed bottom-6 left-6 z-50">
+        <div class="p-2 bg-[#0b1418] border border-slate-800/40 rounded-xl shadow-2xl">
+            <div class="flex items-center gap-1 rounded-xl bg-background-dark p-1">
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/chat.html">
+                    <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+                    <span class="text-[10px] font-medium mt-1">Chats</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/ai-chat.html">
+                    <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+                    <span class="text-[10px] font-medium mt-1">AI</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/feed.html">
+                    <span class="material-symbols-outlined text-[24px]">newspaper</span>
+                    <span class="text-[10px] font-medium mt-1">Feed</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/music.html">
+                    <span class="material-symbols-outlined text-[24px]">music_note</span>
+                    <span class="text-[10px] font-medium mt-1">Music</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/profile.html">
+                    <span class="material-symbols-outlined text-[24px]">person</span>
+                    <span class="text-[10px] font-medium mt-1">Profile</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-primary bg-primary/10 transition-colors" href="/settings.html">
+                    <span class="material-symbols-outlined text-[24px]">settings</span>
+                    <span class="text-[10px] font-medium mt-1">Settings</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface-dark/95 backdrop-blur-lg border-t border-slate-800">
+        <div class="flex justify-between items-center h-20 px-6 pb-2">
+            <a href="/chat.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">chat_bubble</span>
+                <span class="text-[10px] font-medium">Chats</span>
+            </a>
+            
+            <a href="/music.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">music_note</span>
+                <span class="text-[10px] font-medium">Music</span>
+            </a>
+            
+            <a href="/feed.html" class="flex flex-col items-center justify-center -mt-6">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-blue-400 shadow-[0_8px_16px_rgba(43,140,238,0.3)] flex items-center justify-center text-white transform active:scale-95 transition-transform">
+                    <span class="material-symbols-outlined" style="font-size: 28px;">newspaper</span>
+                </div>
+            </a>
+            
+            <a href="/ai-chat.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">smart_toy</span>
+                <span class="text-[10px] font-medium">AI</span>
+            </a>
+            
+            <a href="/profile.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <div class="w-6 h-6 rounded-full overflow-hidden bg-slate-700 ring-2 ring-transparent hover:ring-primary transition-all">
+                    <span class="material-symbols-outlined text-slate-400 text-[20px]">person</span>
+                </div>
+                <span class="text-[10px] font-medium">Profile</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- All JavaScript is in settings.js -->
+    <script src="/js/settings.js"></script>
+    
+    <script>
+        // Tab switching
+        document.querySelectorAll('.settings-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                // Update active tab
+                document.querySelectorAll('.settings-tab').forEach(t => {
+                    t.classList.remove('bg-surface-dark-hover', 'text-white');
+                    t.classList.add('text-[#90bccb]');
+                    t.querySelector('.material-symbols-outlined').classList.remove('text-primary');
+                });
+                tab.classList.add('bg-surface-dark-hover', 'text-white');
+                tab.classList.remove('text-[#90bccb]');
+                tab.querySelector('.material-symbols-outlined').classList.add('text-primary');
+                
+                // Show corresponding content
+                document.querySelectorAll('.settings-content').forEach(content => {
+                    content.classList.add('hidden');
+                    content.classList.remove('flex');
+                });
+                const targetContent = document.getElementById(tabName + 'Tab');
+                if (targetContent) {
+                    targetContent.classList.remove('hidden');
+                    targetContent.classList.add('flex');
+                }
+            });
+        });
+        
+        // API Key visibility toggle
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('apikey');
+            const icon = document.getElementById('apiKeyToggleIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility_off';
+            }
+        }
+        
+        // Theme switching
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.dataset.theme;
+                
+                // Update active theme
+                document.querySelectorAll('.theme-option').forEach(opt => {
+                    opt.classList.remove('border-primary', 'bg-surface-dark-hover');
+                    opt.classList.add('border-[#223f49]');
+                    const check = opt.querySelector('.material-symbols-outlined');
+                    if (check) check.remove();
+                });
+                
+                option.classList.add('border-primary', 'bg-surface-dark-hover');
+                option.classList.remove('border-[#223f49]');
+                
+                const check = document.createElement('span');
+                check.className = 'material-symbols-outlined text-primary';
+                check.textContent = 'check_circle';
+                option.appendChild(check);
+                
+                // Apply theme
+                localStorage.setItem('theme', theme);
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                } else {
+                    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

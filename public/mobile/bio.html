@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile (Dark Mode)</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/js/api.js"></script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111418] dark:text-gray-100 overflow-x-hidden transition-colors duration-300">
+<div class="relative flex min-h-screen w-full flex-col z-10">
+<div class="flex items-center p-4 justify-between sticky top-0 z-50">
+<button onclick="window.location.href='/mobile/chat.html'" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 dark:bg-white/5 hover:bg-white/20 backdrop-blur-md transition-all text-[#111418] dark:text-white border border-white/5">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex flex-col items-center">
+<h2 class="text-[#111418] dark:text-white text-base font-bold leading-tight tracking-wide" id="profileUsername">Profile</h2>
+<div class="h-1 w-12 bg-primary/50 rounded-full mt-1"></div>
+</div>
+<button onclick="window.location.href='/mobile/settings.html'" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 dark:bg-white/5 hover:bg-white/20 backdrop-blur-md transition-all text-[#111418] dark:text-white border border-white/5">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<main class="flex-1 flex flex-col items-center px-4 pb-8 w-full max-w-md mx-auto">
+<div class="w-full glass-card rounded-[2.5rem] p-6 mt-2 flex flex-col items-center gap-6 relative overflow-hidden group border-t border-white/10">
+<div class="flex flex-col items-center gap-4 relative z-10 w-full mt-2">
+<div class="relative">
+<div class="bg-primary rounded-full w-28 h-28 flex items-center justify-center text-white text-4xl font-bold shadow-2xl" id="profileAvatar">
+U
+</div>
+<div class="absolute bottom-1 right-1 size-7 bg-[#10161d] rounded-full flex items-center justify-center z-20">
+<div class="size-4 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center text-center gap-1">
+<h1 class="text-3xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-200 drop-shadow-sm" id="profileName">Loading...</h1>
+<p class="text-gray-400 font-medium text-sm tracking-wide" id="profileBio">WaveChat User</p>
+</div>
+</div>
+<div class="flex w-full gap-3">
+<button onclick="window.location.href='/mobile/chat.html'" class="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-semibold hover:bg-white/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+Message
+</button>
+<button onclick="window.location.href='/mobile/settings.html'" class="flex-1 h-11 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-semibold shadow-[0_0_15px_rgba(57,148,239,0.3)] hover:shadow-[0_0_25px_rgba(57,148,239,0.5)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 border border-white/10">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+Settings
+</button>
+</div>
+</div>
+</main>
+</div>
+
+<script>
+// Mobile Profile - Backend Integration
+const authToken = localStorage.getItem('authToken');
+if (!authToken) window.location.href = '/login.html';
+
+async function loadProfile() {
+    try {
+        const response = await api.request('/api/profile');
+        const profile = response.profile || response;
+        
+        document.getElementById('profileUsername').textContent = `@${profile.username || 'user'}`;
+        document.getElementById('profileName').textContent = profile.nickname || profile.username || 'User';
+        document.getElementById('profileBio').textContent = profile.bio || 'WaveChat User';
+        document.getElementById('profileAvatar').textContent = (profile.nickname || profile.username || 'U')[0].toUpperCase();
+        
+    } catch (error) {
+        console.error('Failed to load profile:', error);
+        document.getElementById('profileName').textContent = 'Error loading profile';
+    }
+}
+
+loadProfile();
+</script>
+</body></html>

@@ -1,0 +1,43 @@
+═══════════════════════════════════════════════════════════════
+  SUPPORT-NACHRICHT FÜR PLESK (DEUTSCH)
+═══════════════════════════════════════════════════════════════
+
+Betreff: Node.js Versionsproblem - Passenger verwendet falsche Version
+
+Nachricht:
+
+Hallo,
+
+in meinem Plesk Node.js-Panel ist Version 21.7.3 ausgewählt, aber wenn ich meine Anwendung starte, wird tatsächlich Node.js 12.x verwendet.
+
+Wenn ich `npm run start` ausführe (das `node dist/server.js` ausführt), erhalte ich diesen Fehler:
+
+```
+SyntaxError: Unexpected token '.'
+at wrapSafe (internal/modules/cjs/loader.js:915:16)
+```
+
+Dieser Fehler-Pfad (`internal/modules/cjs/loader.js:915`) stammt von Node.js 12, nicht von Node.js 21. Meine Anwendung verwendet moderne JavaScript-Syntax (Optional Chaining `?.`), die Node.js 14+ erfordert.
+
+Domain: api.metrocraft.eu
+
+Bitte konfigurieren Sie Passenger so, dass Node.js 18 oder 21 für diese Domain verwendet wird.
+
+Vielen Dank!
+
+═══════════════════════════════════════════════════════════════
+
+ODER KÜRZER:
+
+Hallo,
+
+Plesk zeigt Node.js 21.7.3 an, aber Passenger verwendet Node.js 12.
+Meine App funktioniert nicht wegen "SyntaxError: Unexpected token '.'"
+
+Domain: api.metrocraft.eu
+
+Bitte Node.js 18+ für Passenger aktivieren.
+
+Danke!
+
+═══════════════════════════════════════════════════════════════

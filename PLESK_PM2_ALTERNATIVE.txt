@@ -1,0 +1,43 @@
+═══════════════════════════════════════════════════════════════
+  ALTERNATIVE: USE PM2 INSTEAD OF PASSENGER IN PLESK
+═══════════════════════════════════════════════════════════════
+
+If Passenger keeps using the wrong Node.js version, you can use PM2
+(a Node.js process manager) instead.
+
+STEPS:
+
+1. Disable Node.js in Plesk panel
+   - Go to: Websites & Domains → api.metrocraft.eu → Node.js
+   - Click "Disable Node.js"
+
+2. Install PM2 globally (via SSH or Plesk terminal):
+   npm install -g pm2
+
+3. Create ecosystem.config.js file:
+   (Upload this to your Plesk directory)
+
+4. Start the app with PM2:
+   cd /var/www/vhosts/.../api.metrocraft.eu
+   pm2 start ecosystem.config.js
+   pm2 save
+   pm2 startup
+
+5. Configure nginx to proxy to your app:
+   - Go to: Apache & nginx Settings
+   - Add nginx directives (see below)
+
+NGINX CONFIGURATION:
+
+location / {
+    proxy_pass http://127.0.0.1:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+}
+
+This bypasses Passenger completely and uses PM2 to manage your Node.js app.
+
+═══════════════════════════════════════════════════════════════

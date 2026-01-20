@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Linkify Function</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .test-case { margin: 20px 0; padding: 15px; background: #2a2a2a; border-radius: 8px; }
+        .test-case h3 { margin-top: 0; color: #0db9f2; }
+        .input { background: #1a1a1a; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .output { background: #0a0a0a; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        a { color: #0db9f2; text-decoration: underline; }
+        .inline-block { display: inline-block; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .bg-primary\/20 { background-color: rgba(13, 185, 242, 0.2); }
+        .text-primary { color: #0db9f2; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .text-sm { font-size: 0.875rem; }
+        .font-medium { font-weight: 500; }
+        .border { border-width: 1px; }
+        .border-primary\/40 { border-color: rgba(13, 185, 242, 0.4); }
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-2 { gap: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .bg-gray-700\/50 { background-color: rgba(55, 65, 81, 0.5); }
+        .text-gray-300 { color: #d1d5db; }
+        .border-gray-600 { border-color: #4b5563; }
+    </style>
+</head>
+<body>
+    <h1>Linkify Function Test Cases</h1>
+    
+    <div class="test-case">
+        <h3>Test 1: Button URLs from Bot (🔗 Links:)</h3>
+        <div class="input">
+            <strong>Input:</strong><br>
+            <pre>Breaking news about tech!
+
+🔗 Links:
+News: https://example.com/news
+Markets: https://example.com/markets
+YouTube: https://youtube.com/@channel</pre>
+        </div>
+        <div class="output">
+            <strong>Output:</strong><br>
+            <div id="test1"></div>
+        </div>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 2: Button-like Text (No URLs)</h3>
+        <div class="input">
+            <strong>Input:</strong><br>
+            <pre>News | Markets | YouTube</pre>
+        </div>
+        <div class="output">
+            <strong>Output:</strong><br>
+            <div id="test2"></div>
+        </div>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 3: Regular URLs in Text</h3>
+        <div class="input">
+            <strong>Input:</strong><br>
+            <pre>Check out this article: https://example.com/article and this one https://example.com/another</pre>
+        </div>
+        <div class="output">
+            <strong>Output:</strong><br>
+            <div id="test3"></div>
+        </div>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 4: Mixed Content</h3>
+        <div class="input">
+            <strong>Input:</strong><br>
+            <pre>Latest updates from our channel!
+
+Visit https://example.com for more info.
+
+🔗 Links:
+Subscribe: https://example.com/subscribe
+Donate: https://example.com/donate</pre>
+        </div>
+        <div class="output">
+            <strong>Output:</strong><br>
+            <div id="test4"></div>
+        </div>
+    </div>
+
+    <script>
+        // Copy the linkifyText function from feed.html
+        function linkifyText(text) {
+            if (!text) return '';
+            
+            // Handle button URLs section (🔗 Links:)
+            // This is added by the bot when it extracts inline button URLs
+            const linksPattern = /🔗 Links:\n((?:.+: https?:\/\/.+\n?)+)/g;
+            text = text.replace(linksPattern, (match, linksSection) => {
+                const links = linksSection.trim().split('\n');
+                const buttonHtml = links.map(link => {
+                    const [buttonText, url] = link.split(': ');
+                    if (buttonText && url) {
+                        return `<a href="${url.trim()}" target="_blank" rel="noopener noreferrer" class="inline-block px-4 py-2 bg-primary/20 text-primary rounded-lg text-sm font-medium border border-primary/40">${buttonText.trim()}</a>`;
+                    }
+                    return '';
+                }).filter(h => h).join(' ');
+                return `<div class="flex flex-wrap gap-2 mt-3 mb-2">${buttonHtml}</div>`;
+            });
+            
+            // Handle Telegram button-style text (News | Markets | YouTube)
+            // These show as text but aren't clickable since bot doesn't capture URLs
+            const buttonPattern = /^([^|\n]+(?:\s*\|\s*[^|\n]+)+)\s*$/gm;
+            text = text.replace(buttonPattern, (match) => {
+                const buttons = match.split('|').map(b => b.trim()).filter(b => b);
+                if (buttons.length > 1) {
+                    // Style as button group (not clickable, just visual)
+                    const buttonHtml = buttons.map(btn => 
+                        `<span class="inline-block px-3 py-1.5 bg-gray-700/50 text-gray-300 rounded-lg text-sm font-medium border border-gray-600">${btn}</span>`
+                    ).join(' ');
+                    return `<div class="flex flex-wrap gap-2 mt-2">${buttonHtml}</div>`;
+                }
+                return match;
+            });
+            
+            // Make actual URLs clickable
+            text = text.replace(/(https?:\/\/[^\s]+)/g, (url) => {
+                let cleanUrl = url;
+                let trailingPunct = '';
+                const lastChar = url.slice(-1);
+                if (['.', ',', '!', '?', ')', ']', '}', ':'].includes(lastChar)) {
+                    cleanUrl = url.slice(0, -1);
+                    trailingPunct = lastChar;
+                }
+                
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-primary underline">${cleanUrl}</a>${trailingPunct}`;
+            });
+            
+            return text;
+        }
+
+        // Run tests
+        const test1 = `Breaking news about tech!
+
+🔗 Links:
+News: https://example.com/news
+Markets: https://example.com/markets
+YouTube: https://youtube.com/@channel`;
+
+        const test2 = `News | Markets | YouTube`;
+
+        const test3 = `Check out this article: https://example.com/article and this one https://example.com/another`;
+
+        const test4 = `Latest updates from our channel!
+
+Visit https://example.com for more info.
+
+🔗 Links:
+Subscribe: https://example.com/subscribe
+Donate: https://example.com/donate`;
+
+        document.getElementById('test1').innerHTML = linkifyText(test1);
+        document.getElementById('test2').innerHTML = linkifyText(test2);
+        document.getElementById('test3').innerHTML = linkifyText(test3);
+        document.getElementById('test4').innerHTML = linkifyText(test4);
+    </script>
+</body>
+</html>

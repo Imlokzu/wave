@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>App Settings (Dark Mode)</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#38bdf8","primary-dark": "#0ea5e9",
+                        "background-dark": "#0f172a","card-dark": "#1e293b","surface-dark": "#334155","accent-glow": "rgba(56, 189, 248, 0.5)",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "1.5rem",
+                        "xl": "2rem",
+                        "2xl": "2.5rem"
+                    },
+                    animation: {
+                        'wave-slow': 'subtle-drift 15s ease infinite',
+                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'subtle-drift': {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' },
+                        },
+                        'pulse-glow': {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '.8' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+    width: 6px
+    }
+::-webkit-scrollbar-track {
+    background: #0f172a
+    }
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 10px
+    }
+.wave-bg {
+    background: linear-gradient(-45deg, #0f172a, #1e293b, #0c4a6e, #0f172a);
+    background-size: 400% 400%;
+    animation: subtle-drift 15s ease infinite
+    }
+.wave-header-overlay {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCOOMNrLNi-il-TwryaKzj8dQ9c_tqhKGnLhCFPxNY_Ilb6UOkGnMOAvwPXlOHLp0nbjheOHbZBZ7l20KYq-HquCu9v5owWCfEIvwObZOt9J-n-EQE6ZMDM6ztbKCZv2b0B8hf8A5CfsTpvwmsjuzvFbShn91DR_Zj4vJdLSABqmNzUfseefhfZLlLZstmWH43AAHlY-ncLgpGSzCQ9xHrwnYTZ3sgjDLGkNpieLbRP8VXqMra_Ra907PBeexAxDuDaB4YifM_GP_g);
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: cover
+    }
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }.toggle-checkbox:checked {
+    right: 0;
+    border-color: #38bdf8
+    }
+.toggle-checkbox:checked + .toggle-label {
+    background-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.6)
+    }.glass-panel {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05)
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-slate-100 font-display antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="relative w-full wave-bg pb-12 pt-safe-top overflow-hidden">
+<div class="absolute inset-0 wave-header-overlay opacity-30 pointer-events-none"></div>
+<div class="relative z-10 flex items-center px-6 py-4 justify-between pt-12">
+<button class="flex size-10 items-center justify-center rounded-full bg-surface-dark/40 text-white backdrop-blur-md hover:bg-surface-dark/70 transition-all active:scale-95">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-white text-lg font-bold tracking-tight">FluxWave Settings</h1>
+<button class="flex size-10 items-center justify-center rounded-full bg-surface-dark/40 text-white backdrop-blur-md hover:bg-surface-dark/70 transition-all active:scale-95">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+<div class="relative z-10 mt-2 px-6 flex flex-col items-center gap-5">
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+<div class="relative bg-center bg-no-repeat bg-cover rounded-full h-24 w-24 ring-4 ring-background-dark shadow-2xl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD6UN3qrS2x6aKp_HIfR6sYG7ytsndlzVjwmctpGzSTxjwQnak5QQv8aKKLQF-Z2iErYzztl51HbrklK2vv02E17Pvq4j0Dr_Z7e3blyaTjjzB3DVnpnczPtVxA4UpoNyr93v8Lt0gYFP9RPyVof168Ry7ikyBzXWnvlF47ZPqV62KY_0DRYE7lWq4eIk5ewTA25UUjMFDOvtQTSkcgRhLB6CA4_sqNPfYwBsGYP4hYxg9rMhk_-n3kSxD4SlHNFDJEuVWOoZJRqtI");'>
+</div>
+<div class="absolute bottom-0 right-0 bg-background-dark p-1 rounded-full">
+<div class="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-primary/40">PRO</div>
+</div>
+</div>
+<div class="text-center">
+<h2 class="text-2xl font-bold text-white leading-tight">Alex River</h2>
+<div class="flex items-center justify-center gap-1 text-slate-400 text-sm font-medium mt-1">
+<span>@ariver_wave</span>
+<span class="w-1 h-1 rounded-full bg-slate-500"></span>
+<span class="text-primary">Online</span>
+</div>
+</div>
+<button class="mt-1 flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-blue-500/20 text-primary text-sm font-bold border border-primary/30 shadow-[0_0_15px_rgba(56,189,248,0.15)] hover:shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:bg-primary/30 transition-all duration-300">
+<span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                Manage Account
+            </button>
+</div>
+</div>
+<div class="flex flex-col gap-5 px-4 pb-24 -mt-6 relative z-20">
+<div class="flex flex-col gap-0 rounded-3xl overflow-hidden glass-panel shadow-lg shadow-black/20">
+<div class="px-6 py-4 border-b border-slate-700/50 bg-slate-800/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">shield</span>
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Privacy &amp; Security</h3>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-4 border-b border-slate-700/30 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors h-10 w-10">
+<span class="material-symbols-outlined">masks</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-semibold leading-none text-slate-200">Spoof Mode</p>
+<p class="text-xs text-slate-500 mt-1.5">Mask online status &amp; typing</p>
+</div>
+</div>
+<div class="relative inline-block w-12 h-7 align-middle select-none">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 left-1 top-1" id="spoof-mode" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300" for="spoof-mode"></label>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-4 border-b border-slate-700/30 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors h-10 w-10">
+<span class="material-symbols-outlined">block</span>
+</div>
+<p class="text-base font-semibold leading-none text-slate-200">Blocked Users</p>
+</div>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+<div class="flex items-center justify-between px-6 py-4 hover:bg-red-500/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-red-500/10 text-red-400 h-10 w-10 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">emergency_home</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-semibold leading-none text-red-400">Panic Clear</p>
+<p class="text-xs text-slate-500 mt-1.5">Wipe local cache instantly</p>
+</div>
+</div>
+<button class="px-5 py-2 rounded-full bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wide border border-red-500/20 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all">
+                    Wipe
+                </button>
+</div>
+</div>
+<div class="flex flex-col gap-0 rounded-3xl overflow-hidden glass-panel shadow-lg shadow-black/20">
+<div class="px-6 py-4 border-b border-slate-700/50 bg-slate-800/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">notifications</span>
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Notifications</h3>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-4 border-b border-slate-700/30 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors h-10 w-10">
+<span class="material-symbols-outlined">chat_bubble</span>
+</div>
+<p class="text-base font-semibold leading-none text-slate-200">Chat Notifications</p>
+</div>
+<div class="relative inline-block w-12 h-7 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 left-1 top-1" id="notif-push" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300" for="notif-push"></label>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors h-10 w-10">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-semibold leading-none text-slate-200">AI Helper Alerts</p>
+<p class="text-xs text-slate-500 mt-1.5">Suggestions &amp; summaries</p>
+</div>
+</div>
+<div class="relative inline-block w-12 h-7 align-middle select-none">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 left-1 top-1" id="notif-ai" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300" for="notif-ai"></label>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-0 rounded-3xl overflow-hidden glass-panel shadow-lg shadow-black/20">
+<div class="px-6 py-4 border-b border-slate-700/50 bg-slate-800/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">folder</span>
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Media &amp; Storage</h3>
+</div>
+</div>
+<div class="px-6 py-6 border-b border-slate-700/30">
+<div class="flex justify-between items-end mb-3">
+<span class="text-sm font-medium text-slate-300">Storage Usage</span>
+<span class="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20">2.4 GB / 5 GB</span>
+</div>
+<div class="h-2.5 w-full bg-slate-700/50 rounded-full overflow-hidden backdrop-blur-sm">
+<div class="h-full bg-gradient-to-r from-blue-500 to-primary w-[48%] rounded-full shadow-[0_0_15px_rgba(56,189,248,0.6)] animate-pulse"></div>
+</div>
+<div class="flex gap-3 mt-4">
+<button class="flex-1 text-xs py-2 rounded-xl bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">Clear Cache</button>
+<button class="flex-1 text-xs py-2 rounded-xl bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">Manage</button>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors h-10 w-10">
+<span class="material-symbols-outlined">cloud_upload</span>
+</div>
+<p class="text-base font-semibold leading-none text-slate-200">Cloud Backup</p>
+</div>
+<div class="relative inline-block w-12 h-7 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 left-1 top-1" id="cloud-backup" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300" for="cloud-backup"></label>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-0 rounded-3xl overflow-hidden glass-panel shadow-lg shadow-black/20">
+<div class="px-6 py-4 border-b border-slate-700/50 bg-slate-800/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">palette</span>
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Appearance</h3>
+</div>
+</div>
+<div class="px-6 py-4 flex items-center justify-between border-b border-slate-700/30">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 h-10 w-10">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<p class="text-base font-semibold leading-none text-slate-200">Theme</p>
+</div>
+<div class="flex gap-3 bg-slate-800/50 p-1.5 rounded-full">
+<button class="w-8 h-8 rounded-full bg-slate-900 border-2 border-primary ring-2 ring-primary/30 shadow-[0_0_10px_rgba(56,189,248,0.4)] flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">dark_mode</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+<span class="material-symbols-outlined text-[16px]">light_mode</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors">
+<span class="material-symbols-outlined text-[16px]">contrast</span>
+</button>
+</div>
+</div>
+<div class="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors h-10 w-10">
+<span class="material-symbols-outlined">format_size</span>
+</div>
+<p class="text-base font-semibold leading-none text-slate-200">Font Size</p>
+</div>
+<span class="text-sm font-medium text-slate-400">Medium</span>
+</div>
+</div>
+<div class="flex flex-col gap-0 rounded-3xl overflow-hidden glass-panel shadow-lg shadow-black/20">
+<div class="px-6 py-4 border-b border-slate-700/50 bg-slate-800/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">psychology</span>
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">AI Intelligence</h3>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-4 border-b border-slate-700/30 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors h-10 w-10">
+<span class="material-symbols-outlined">translate</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-semibold leading-none text-slate-200">Language Model</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-sm text-slate-400">Flux GPT-4</span>
+<span class="material-symbols-outlined text-slate-600 text-sm">chevron_right</span>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-2xl bg-slate-800 text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors h-10 w-10">
+<span class="material-symbols-outlined">mic</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-semibold leading-none text-slate-200">Voice Input</p>
+<p class="text-xs text-slate-500 mt-1.5">Always listen in chat</p>
+</div>
+</div>
+<div class="relative inline-block w-12 h-7 align-middle select-none">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 left-1 top-1" id="voice-input" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300" for="voice-input"></label>
+</div>
+</div>
+</div>
+<div class="mt-2 mb-8 flex flex-col items-center gap-4">
+<button class="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-800 border border-slate-700 py-4 font-bold text-slate-200 shadow-lg hover:bg-slate-700 hover:border-slate-600 hover:shadow-primary/10 transition-all">
+<span class="material-symbols-outlined text-primary">help</span>
+                Help &amp; Support Center
+            </button>
+<div class="flex gap-6 text-sm font-medium text-slate-500 mt-2">
+<a class="hover:text-primary hover:underline transition-colors" href="#">Terms</a>
+<a class="hover:text-primary hover:underline transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary hover:underline transition-colors" href="#">Credits</a>
+</div>
+<div class="text-center">
+<p class="text-xs text-slate-600 font-mono">FluxWave v4.2.0 (Build 9928-Dark)</p>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

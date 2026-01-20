@@ -1,0 +1,221 @@
+WAVE APP - FILES UPDATED FOR PRODUCTION DEPLOYMENT
+==================================================
+
+Date: January 9, 2026
+Status: ✅ COMPLETE - Ready for deployment
+
+BACKEND FILES UPDATED:
+----------------------
+
+1. ✅ backend/src/server.ts
+   - Updated CORS configuration to allow production domains
+   - Added: metrocraft.eu, api.metrocraft.eu, admin.metrocraft.eu
+   - Kept localhost URLs for development
+
+2. ✅ src/server.ts (root folder)
+   - Updated CORS configuration (same as backend/src/server.ts)
+   - Both backend locations now support production domains
+
+3. ✅ backend/.env
+   - Added production URL variables:
+     * FRONTEND_URL=https://metrocraft.eu
+     * API_URL=https://api.metrocraft.eu
+     * ADMIN_URL=https://admin.metrocraft.eu
+
+4. ✅ .env (root folder)
+   - Added same production URL variables as backend/.env
+
+FRONTEND FILES UPDATED:
+-----------------------
+
+5. ✅ public/js/api.js
+   - Added environment detection in APIClient constructor
+   - Auto-detects: localhost → http://localhost:3001
+   - Auto-detects: production → https://api.metrocraft.eu
+
+6. ✅ public/js/socket.js
+   - Added environment detection in connect() method
+   - WebSocket URL changes based on hostname
+   - Supports both development and production
+
+7. ✅ public/js/features-api.js
+   - Changed API_BASE from window.location.origin to environment detection
+   - All API calls now use correct URL automatically
+
+8. ✅ public/login.html
+   - Added API_BASE constant with environment detection
+   - Updated 2 fetch() calls to use API_BASE
+   - Login and session check now work in production
+
+9. ✅ public/signup.html
+   - Added API_BASE constant with environment detection
+   - Updated signup fetch() call to use API_BASE
+
+ADMIN PANEL FILES UPDATED:
+--------------------------
+
+10. ✅ admin/public/js/admin.js
+    - Added API_BASE constant with environment detection
+    - Updated ALL 15 fetch() calls to use API_BASE:
+      * loadStats()
+      * loadUsers()
+      * togglePro()
+      * toggleAdmin()
+      * deleteUser()
+      * loadBugReports()
+      * updateBugReport()
+      * loadProRequests()
+      * processProRequest()
+      * loadScamReports()
+      * updateScamReport()
+      * loadBans()
+      * confirmBan()
+      * unbanUser()
+      * User info fetch
+
+11. ✅ admin/public/login.html
+    - Added API_BASE constant with environment detection
+    - Updated 3 fetch() calls to use API_BASE:
+      * Initial admin check
+      * Login request
+      * Admin verification after login
+
+DOCUMENTATION CREATED:
+----------------------
+
+12. ✅ DEPLOYMENT_GUIDE.md
+    - Comprehensive step-by-step deployment guide
+    - Plesk-specific instructions
+    - Nginx reverse proxy configuration
+    - SSL setup instructions
+    - Troubleshooting section
+
+13. ✅ PLESK_SETUP.txt
+    - Quick reference for Plesk configuration
+    - Nginx configuration snippets
+    - Command reference
+    - Verification checklist
+
+14. ✅ PRODUCTION_CHANGES.txt
+    - Summary of all changes made
+    - Architecture overview
+    - Testing checklist
+    - Deployment steps
+
+15. ✅ UPDATED_FILES_SUMMARY.txt (this file)
+    - Complete list of updated files
+    - What was changed in each file
+
+TOTAL FILES MODIFIED: 11 files
+TOTAL FILES CREATED: 4 documentation files
+
+ENVIRONMENT DETECTION LOGIC:
+----------------------------
+
+All frontend files now use this pattern:
+
+```javascript
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3001'
+    : 'https://api.metrocraft.eu';
+```
+
+This means:
+✓ Development: Automatically uses localhost:3001
+✓ Production: Automatically uses api.metrocraft.eu
+✓ No code changes needed when deploying
+✓ No build step required
+✓ Works immediately after upload
+
+BACKEND CORS CONFIGURATION:
+---------------------------
+
+Both backend locations (src/server.ts and backend/src/server.ts) now allow:
+
+```typescript
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'https://metrocraft.eu',
+    'https://www.metrocraft.eu',
+    'https://app.metrocraft.eu',
+    'https://api.metrocraft.eu',
+    'https://admin.metrocraft.eu'
+  ],
+  credentials: true
+}));
+```
+
+DEPLOYMENT ARCHITECTURE:
+------------------------
+
+Development:
+  Frontend: http://localhost:5500 (or any port)
+  Backend:  http://localhost:3001
+  Admin:    http://localhost:5500/admin
+
+Production:
+  Frontend: https://metrocraft.eu → /public
+  Backend:  https://api.metrocraft.eu → nginx → localhost:3001
+  Admin:    https://admin.metrocraft.eu → /admin/public
+
+WHAT YOU NEED TO DO:
+--------------------
+
+1. Upload all files to Plesk server
+2. Configure 3 subdomains in Plesk:
+   - api.metrocraft.eu
+   - admin.metrocraft.eu
+   - metrocraft.eu (or app.metrocraft.eu)
+
+3. Setup nginx reverse proxy for api.metrocraft.eu
+   (Configuration provided in PLESK_SETUP.txt)
+
+4. Install SSL certificates (Let's Encrypt)
+
+5. In backend folder, run:
+   npm install --production
+   npm run build
+
+6. Start Node.js app on port 3001
+   (Use Plesk Node.js panel or PM2)
+
+7. Test:
+   - https://api.metrocraft.eu/health
+   - https://metrocraft.eu
+   - https://admin.metrocraft.eu
+
+VERIFICATION CHECKLIST:
+-----------------------
+
+After deployment, verify:
+✓ Backend health check returns {"status":"ok"}
+✓ Frontend loads without errors
+✓ Admin panel loads without errors
+✓ Login works
+✓ No CORS errors in browser console
+✓ WebSocket connections work
+✓ All API calls go to api.metrocraft.eu (check Network tab)
+
+IMPORTANT NOTES:
+----------------
+
+✓ Port 3001 is INTERNAL ONLY (not exposed to internet)
+✓ Nginx handles reverse proxy from api.metrocraft.eu to localhost:3001
+✓ All API keys stay in backend/.env (never in frontend)
+✓ Frontend automatically detects environment (no changes needed)
+✓ Both root src/ and backend/src/ have been updated
+
+ROLLBACK:
+---------
+
+If you need to rollback, the changes are minimal:
+- CORS settings in server.ts files
+- API_BASE constants in frontend files
+- All changes are non-breaking for development
+
+For detailed instructions, see DEPLOYMENT_GUIDE.md
+For quick Plesk setup, see PLESK_SETUP.txt

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>WAVE - Sign Up</title>
+    <!-- Theme Init (must be first to prevent flash) -->
+    <script src="/js/theme-init.js"></script>
+    <!-- Theme CSS -->
+    <link href="/css/theme.css" rel="stylesheet"/>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Theme Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3b82f6",
+                        "flux-base": "#0a0e1a",
+                        "flux-surface": "#0f1729",
+                        "flux-highlight": "#1e3a8a",
+                        "flux-text": "#f5f7f6",
+                        "flux-muted": "#94a3b8"
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                    boxShadow: {
+                        "glow": "0 0 40px -10px rgba(59, 130, 246, 0.3)",
+                        "input-focus": "0 0 0 2px rgba(59, 130, 246, 0.2)"
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f0c; }
+        ::-webkit-scrollbar-thumb { background: #1e3a8a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+        
+        .glass-panel {
+            background: rgba(17, 33, 23, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .password-strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .material-symbols-outlined:empty {
+            display: none;
+        }
+    </style>
+    <script src="/config.js"></script>
+</head>
+<body class="bg-flux-base text-flux-text font-display min-h-screen flex flex-col relative overflow-hidden selection:bg-primary selection:text-flux-base">
+    <!-- Ambient Background Glow -->
+    <div class="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px] pointer-events-none"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-flux-highlight/10 blur-[120px] pointer-events-none"></div>
+    
+    <!-- Main Layout Container -->
+    <div class="layout-container flex h-full grow flex-col z-10">
+        <div class="flex flex-1 justify-center items-center py-5 px-4 sm:px-0">
+            <!-- Signup Card -->
+            <div class="glass-panel w-full max-w-[480px] rounded-[2.5rem] p-8 sm:p-12 shadow-2xl relative overflow-hidden group/card transition-all duration-500 hover:shadow-glow">
+                <div class="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity pointer-events-none"></div>
+                
+                <div class="layout-content-container flex flex-col relative z-10">
+                    <!-- Header Section -->
+                    <div class="flex flex-col items-center gap-2 mb-10">
+                        <img src="/nobackweave.png" alt="WaveChat" class="h-16 w-16 mb-4 object-contain theme-logo" data-theme-logo />
+                        <h1 class="text-white text-5xl font-black leading-tight tracking-[-0.033em] text-center">WAVE</h1>
+                        <p class="text-flux-muted text-lg font-normal leading-normal text-center">Create your account</p>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div id="error-message" class="hidden mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"></div>
+                    
+                    <!-- Signup Form -->
+                    <form id="signup-form" class="flex flex-col gap-5 w-full">
+                        <!-- Username Field -->
+                        <div class="group/input">
+                            <label class="flex flex-col w-full">
+                                <span class="sr-only">Username</span>
+                                <div class="relative flex items-center">
+                                    <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors">
+                                        <span class="material-symbols-outlined">person</span>
+                                    </div>
+                                    <input 
+                                        id="username" 
+                                        name="username"
+                                        class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none" 
+                                        placeholder="Username" 
+                                        type="text" 
+                                        required
+                                        autocomplete="username"
+                                    />
+                                    <div id="username-check" class="absolute right-5 hidden">
+                                        <span class="material-symbols-outlined"></span>
+                                    </div>
+                                </div>
+                                <p id="username-hint" class="text-xs text-flux-muted mt-2 ml-5 hidden"></p>
+                            </label>
+                        </div>
+                        
+                        <!-- Nickname Field -->
+                        <div class="group/input">
+                            <label class="flex flex-col w-full">
+                                <span class="sr-only">Nickname</span>
+                                <div class="relative flex items-center">
+                                    <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors">
+                                        <span class="material-symbols-outlined">badge</span>
+                                    </div>
+                                    <input 
+                                        id="nickname" 
+                                        name="nickname"
+                                        class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-6 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none" 
+                                        placeholder="Display Name (optional)" 
+                                        type="text"
+                                        autocomplete="nickname"
+                                    />
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div class="group/input">
+                            <label class="flex flex-col w-full">
+                                <span class="sr-only">Password</span>
+                                <div class="relative flex items-center">
+                                    <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors">
+                                        <span class="material-symbols-outlined">lock</span>
+                                    </div>
+                                    <input 
+                                        id="password" 
+                                        name="password"
+                                        class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none" 
+                                        placeholder="Password (min 8 characters)" 
+                                        type="password" 
+                                        required
+                                        autocomplete="new-password"
+                                    />
+                                    <button 
+                                        type="button"
+                                        id="toggle-password"
+                                        class="absolute right-5 flex items-center justify-center text-flux-muted hover:text-primary transition-colors"
+                                    >
+                                        <span class="material-symbols-outlined">visibility</span>
+                                    </button>
+                                </div>
+                                <!-- Password Strength Indicator -->
+                                <div class="mt-2 ml-5 mr-5">
+                                    <div class="password-strength-bar bg-flux-surface" id="strength-bar"></div>
+                                    <p id="strength-text" class="text-xs text-flux-muted mt-1"></p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <!-- Confirm Password Field -->
+                        <div class="group/input">
+                            <label class="flex flex-col w-full">
+                                <span class="sr-only">Confirm Password</span>
+                                <div class="relative flex items-center">
+                                    <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors z-10">
+                                        <span class="material-symbols-outlined">lock_check</span>
+                                    </div>
+                                    <input 
+                                        id="confirm-password" 
+                                        name="confirm-password"
+                                        class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none relative z-0" 
+                                        placeholder="Confirm Password" 
+                                        type="password" 
+                                        required
+                                        autocomplete="new-password"
+                                    />
+                                    <div id="password-match-icon" class="absolute right-5 flex items-center justify-center hidden z-10">
+                                        <span class="material-symbols-outlined"></span>
+                                    </div>
+                                </div>
+                                <p id="password-match" class="text-xs mt-2 ml-5 hidden"></p>
+                            </label>
+                        </div>
+                        
+                        <!-- Signup Button -->
+                        <button 
+                            type="submit"
+                            id="signup-btn"
+                            class="group/btn relative mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 bg-primary hover:bg-[#2563eb] active:scale-[0.98] transition-all duration-200 text-white shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span class="text-lg font-bold leading-normal tracking-[0.015em] mr-2">Create Account</span>
+                            <span class="material-symbols-outlined text-[20px] transition-transform group-hover/btn:translate-x-1 font-bold">arrow_forward</span>
+                            <div class="absolute inset-0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10"></div>
+                        </button>
+                    </form>
+                    
+                    <!-- Footer Link -->
+                    <div class="mt-8 text-center">
+                        <p class="text-flux-muted text-sm font-normal">
+                            Already have an account? 
+                            <a class="text-primary hover:text-white font-medium hover:underline transition-colors decoration-primary/50 underline-offset-4" href="/login.html">Login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const usernameInput = document.getElementById('username');
+        const nicknameInput = document.getElementById('nickname');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const signupForm = document.getElementById('signup-form');
+        const errorMessage = document.getElementById('error-message');
+        const signupBtn = document.getElementById('signup-btn');
+        const usernameCheck = document.getElementById('username-check');
+        const usernameHint = document.getElementById('username-hint');
+        const strengthBar = document.getElementById('strength-bar');
+        const strengthText = document.getElementById('strength-text');
+        const passwordMatch = document.getElementById('password-match');
+        const passwordMatchIcon = document.getElementById('password-match-icon');
+        const passwordMatchIconSpan = passwordMatchIcon.querySelector('.material-symbols-outlined');
+
+        // Toggle password visibility
+        const togglePassword = document.getElementById('toggle-password');
+        const toggleIcon = togglePassword.querySelector('.material-symbols-outlined');
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            confirmPasswordInput.type = type;
+            toggleIcon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        });
+
+        // Check username availability
+        let usernameCheckTimeout;
+        usernameInput.addEventListener('input', () => {
+            clearTimeout(usernameCheckTimeout);
+            const username = usernameInput.value.trim();
+            
+            if (username.length < 3) {
+                usernameCheck.classList.add('hidden');
+                usernameHint.classList.add('hidden');
+                return;
+            }
+
+            usernameCheckTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/users/check?username=${encodeURIComponent(username)}`);
+                    const data = await response.json();
+                    
+                    const iconSpan = usernameCheck.querySelector('.material-symbols-outlined');
+                    
+                    if (data.available) {
+                        usernameCheck.classList.remove('hidden');
+                        iconSpan.textContent = 'check_circle';
+                        iconSpan.className = 'material-symbols-outlined text-primary';
+                        usernameHint.textContent = 'Username is available';
+                        usernameHint.className = 'text-xs text-primary mt-2 ml-5';
+                        usernameHint.classList.remove('hidden');
+                    } else {
+                        usernameCheck.classList.remove('hidden');
+                        iconSpan.textContent = 'cancel';
+                        iconSpan.className = 'material-symbols-outlined text-red-400';
+                        usernameHint.textContent = 'Username is taken';
+                        usernameHint.className = 'text-xs text-red-400 mt-2 ml-5';
+                        usernameHint.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Username check error:', error);
+                }
+            }, 500);
+        });
+
+        // Password strength indicator
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            let strength = 0;
+            
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+            const colors = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e'];
+            const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+            const widths = ['20%', '40%', '60%', '80%', '100%'];
+
+            if (password.length > 0) {
+                strengthBar.style.width = widths[strength];
+                strengthBar.style.backgroundColor = colors[strength];
+                strengthText.textContent = labels[strength];
+                strengthText.style.color = colors[strength];
+            } else {
+                strengthBar.style.width = '0%';
+                strengthText.textContent = '';
+            }
+
+            checkPasswordMatch();
+        });
+
+        // Check password match
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
+        function checkPasswordMatch() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (confirmPassword.length > 0) {
+                if (password === confirmPassword) {
+                    passwordMatch.textContent = 'Passwords match';
+                    passwordMatch.className = 'text-xs text-primary mt-2 ml-5';
+                    passwordMatch.classList.remove('hidden');
+                    
+                    // Show checkmark icon
+                    passwordMatchIcon.classList.remove('hidden');
+                    passwordMatchIconSpan.textContent = 'check_circle';
+                    passwordMatchIconSpan.className = 'material-symbols-outlined text-primary';
+                } else {
+                    passwordMatch.textContent = 'Passwords do not match';
+                    passwordMatch.className = 'text-xs text-red-400 mt-2 ml-5';
+                    passwordMatch.classList.remove('hidden');
+                    
+                    // Show X icon
+                    passwordMatchIcon.classList.remove('hidden');
+                    passwordMatchIconSpan.textContent = 'cancel';
+                    passwordMatchIconSpan.className = 'material-symbols-outlined text-red-400';
+                }
+            } else {
+                passwordMatch.classList.add('hidden');
+                passwordMatchIcon.classList.add('hidden');
+            }
+        }
+
+        // Handle signup form submission
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const nickname = nicknameInput.value.trim() || username;
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            // Hide previous errors
+            errorMessage.classList.add('hidden');
+
+            // Validate password length
+            if (password.length < 8) {
+                errorMessage.textContent = 'Password must be at least 8 characters long';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+
+            // Validate password match
+            if (password !== confirmPassword) {
+                errorMessage.textContent = 'Passwords do not match';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+            
+            // Disable button
+            signupBtn.disabled = true;
+            signupBtn.querySelector('span').textContent = 'Creating account...';
+
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, nickname, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store token and user info
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userId', data.user.id);
+                    localStorage.setItem('username', data.user.username);
+                    localStorage.setItem('nickname', data.user.nickname);
+                    
+                    // Show success message briefly
+                    signupBtn.querySelector('span').textContent = 'Success! Redirecting...';
+                    
+                    // Redirect to chat after brief delay
+                    setTimeout(() => {
+                        window.location.href = '/chat.html';
+                    }, 500);
+                } else {
+                    // Show error
+                    errorMessage.textContent = data.error || 'Signup failed';
+                    errorMessage.classList.remove('hidden');
+                    
+                    // Re-enable button
+                    signupBtn.disabled = false;
+                    signupBtn.querySelector('span').textContent = 'Create Account';
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                errorMessage.textContent = 'Network error. Please try again.';
+                errorMessage.classList.remove('hidden');
+                
+                // Re-enable button
+                signupBtn.disabled = false;
+                signupBtn.querySelector('span').textContent = 'Create Account';
+            }
+        });
+
+        // Animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shimmer {
+                100% { transform: translateX(100%); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

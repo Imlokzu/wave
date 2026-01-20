@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Received</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #101e23;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #101e23; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #16262c; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0db9f2 0%, #0a91be 100%); padding: 40px 30px; text-align: center;">
+                            <img src="{{app_url}}/nobackweave.png" alt="Wave" style="width: 60px; height: 60px; margin-bottom: 15px; filter: brightness(0) invert(1);">
+                            <div style="font-size: 48px; margin-bottom: 10px;">🛡️</div>
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 900;">Report Received</h1>
+                            <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">We're investigating</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <p style="margin: 0 0 20px 0; color: #ffffff; font-size: 16px; line-height: 1.6;">
+                                Hi <strong>{{username}}</strong>,
+                            </p>
+                            <p style="margin: 0 0 20px 0; color: #90bccb; font-size: 16px; line-height: 1.6;">
+                                Thank you for reporting {{report_type}}. We take all reports seriously and will investigate this matter promptly.
+                            </p>
+                            
+                            <div style="background-color: #101e23; border-left: 4px solid #0db9f2; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                                <h3 style="margin: 0 0 10px 0; color: #0db9f2; font-size: 16px;">Report Details:</h3>
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td style="padding: 5px 0; color: #5a7d8a; font-size: 14px;">Report ID:</td>
+                                        <td style="padding: 5px 0; color: #ffffff; font-size: 14px; text-align: right;"><strong>{{report_id}}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 0; color: #5a7d8a; font-size: 14px;">Type:</td>
+                                        <td style="padding: 5px 0; color: #ffffff; font-size: 14px; text-align: right;">{{report_type}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 0; color: #5a7d8a; font-size: 14px;">Status:</td>
+                                        <td style="padding: 5px 0; text-align: right;">
+                                            <span style="background-color: rgba(251,191,36,0.2); color: #fbbf24; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 700;">PENDING</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 0; color: #5a7d8a; font-size: 14px;">Submitted:</td>
+                                        <td style="padding: 5px 0; color: #ffffff; font-size: 14px; text-align: right;">{{submitted_date}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div style="background-color: rgba(13,185,242,0.1); border-radius: 12px; padding: 20px; margin: 30px 0;">
+                                <h3 style="margin: 0 0 10px 0; color: #0db9f2; font-size: 16px;">What happens next?</h3>
+                                <ul style="margin: 0; padding-left: 20px; color: #90bccb; line-height: 1.8; font-size: 14px;">
+                                    <li>Our moderation team will review your report</li>
+                                    <li>We'll investigate the reported content/user</li>
+                                    <li>Appropriate action will be taken if violations are found</li>
+                                    <li>You'll be notified of the outcome</li>
+                                </ul>
+                            </div>
+                            
+                            <p style="margin: 20px 0 0 0; color: #5a7d8a; font-size: 14px; text-align: center;">
+                                Your report helps keep Wave safe for everyone. Thank you! 🙏
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #101e23; padding: 30px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <p style="margin: 0 0 10px 0; color: #5a7d8a; font-size: 14px;">
+                                Need to add more information? <a href="{{app_url}}/help.html" style="color: #0db9f2; text-decoration: none;">Contact Support</a>
+                            </p>
+                            <p style="margin: 0; color: #5a7d8a; font-size: 12px;">
+                                © 2026 Wave Messenger. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

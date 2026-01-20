@@ -1,0 +1,143 @@
+WAVE APP - PRODUCTION DEPLOYMENT CHANGES
+=========================================
+
+Date: January 9, 2026
+Status: READY FOR DEPLOYMENT
+
+CHANGES MADE FOR PRODUCTION:
+-----------------------------
+
+1. FRONTEND API DETECTION (public/js/api.js)
+   ✓ Added environment detection in APIClient constructor
+   ✓ Automatically uses localhost:3001 for development
+   ✓ Automatically uses api.metrocraft.eu for production
+
+2. SOCKET.IO CONNECTION (public/js/socket.js)
+   ✓ Added environment detection in connect() method
+   ✓ Automatically connects to correct WebSocket URL based on hostname
+
+3. FEATURES API (public/js/features-api.js)
+   ✓ Changed API_BASE from window.location.origin to environment detection
+   ✓ Uses localhost:3001 for development, api.metrocraft.eu for production
+
+4. ADMIN PANEL API (admin/public/js/admin.js)
+   ✓ Added API_BASE constant with environment detection
+   ✓ Updated all 15 fetch() calls to use API_BASE variable
+   ✓ Includes: stats, users, bans, reports, pro requests, etc.
+
+5. ADMIN LOGIN PAGE (admin/public/login.html)
+   ✓ Added API_BASE constant with environment detection
+   ✓ Updated all 3 fetch() calls to use API_BASE
+
+6. BACKEND CORS (backend/src/server.ts)
+   ✓ Updated CORS configuration to allow production domains:
+     - https://metrocraft.eu
+     - https://www.metrocraft.eu
+     - https://app.metrocraft.eu
+     - https://api.metrocraft.eu
+     - https://admin.metrocraft.eu
+   ✓ Kept localhost URLs for development
+
+7. ENVIRONMENT VARIABLES (.env and backend/.env)
+   ✓ Added production URL variables:
+     - FRONTEND_URL=https://metrocraft.eu
+     - API_URL=https://api.metrocraft.eu
+     - ADMIN_URL=https://admin.metrocraft.eu
+
+8. DOCUMENTATION
+   ✓ Created comprehensive DEPLOYMENT_GUIDE.md
+   ✓ Created quick reference PLESK_SETUP.txt
+   ✓ Includes nginx configuration, SSL setup, troubleshooting
+
+DEPLOYMENT ARCHITECTURE:
+------------------------
+
+Development (localhost):
+  Frontend: http://localhost:5500 (or any port)
+  Backend:  http://localhost:3001
+  Admin:    http://localhost:5500/admin
+
+Production (metrocraft.eu):
+  Frontend: https://metrocraft.eu → /public
+  Backend:  https://api.metrocraft.eu → nginx proxy → localhost:3001
+  Admin:    https://admin.metrocraft.eu → /admin/public
+
+HOW IT WORKS:
+-------------
+
+All frontend JavaScript files now check window.location.hostname:
+  - If hostname is 'localhost' or '127.0.0.1' → use http://localhost:3001
+  - Otherwise → use https://api.metrocraft.eu
+
+This means:
+  ✓ NO code changes needed when deploying
+  ✓ Works in development automatically
+  ✓ Works in production automatically
+  ✓ No build step required for URL switching
+
+FILES MODIFIED:
+---------------
+1. public/js/api.js
+2. public/js/socket.js
+3. public/js/features-api.js
+4. admin/public/js/admin.js
+5. admin/public/login.html
+6. backend/src/server.ts
+7. .env
+8. backend/.env
+
+FILES CREATED:
+--------------
+1. DEPLOYMENT_GUIDE.md (comprehensive deployment instructions)
+2. PLESK_SETUP.txt (quick reference for Plesk configuration)
+3. PRODUCTION_CHANGES.txt (this file)
+
+TESTING CHECKLIST:
+------------------
+Before deploying, test locally:
+  ✓ Login works
+  ✓ Chat works
+  ✓ AI features work
+  ✓ Music upload works (Pro users)
+  ✓ Admin panel accessible
+  ✓ WebSocket connections stable
+
+After deploying, test production:
+  ✓ https://api.metrocraft.eu/health returns {"status":"ok"}
+  ✓ https://metrocraft.eu loads frontend
+  ✓ https://admin.metrocraft.eu loads admin panel
+  ✓ Login works on production
+  ✓ WebSocket connections work
+  ✓ All API calls go to api.metrocraft.eu
+  ✓ No CORS errors in browser console
+
+DEPLOYMENT STEPS:
+-----------------
+1. Upload all files to Plesk server
+2. Configure subdomains (api, admin)
+3. Setup nginx reverse proxy for api.metrocraft.eu
+4. Install SSL certificates (Let's Encrypt)
+5. Install Node.js dependencies in backend/
+6. Build TypeScript: npm run build
+7. Start Node.js app (Plesk Node.js panel or PM2)
+8. Test all endpoints
+
+IMPORTANT NOTES:
+----------------
+- Port 3001 is INTERNAL ONLY (not exposed to internet)
+- Nginx handles reverse proxy from api.metrocraft.eu to localhost:3001
+- All API keys should be in backend/.env (never in frontend)
+- Supabase handles database and file storage
+- WebSocket connections work through nginx proxy
+
+ROLLBACK PLAN:
+--------------
+If issues occur:
+1. Check Node.js app is running (pm2 status or Plesk panel)
+2. Check nginx configuration
+3. Check browser console for errors
+4. Check backend logs (pm2 logs or Plesk logs)
+5. Verify environment variables are set correctly
+
+For detailed instructions, see DEPLOYMENT_GUIDE.md
+For quick Plesk setup, see PLESK_SETUP.txt

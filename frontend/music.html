@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Music / Playlists - WaveChat</title>
+    <script src="/js/theme-init.js"></script>
+    <link href="/css/theme.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="/js/auth-guard.js"></script>
+    <script src="/js/mobile-detector.js"></script>
+    <script src="/js/update-checker.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0db9f2",
+                        "primary-dark": "#0a91be",
+                        "background-dark": "#101e22",
+                        "surface-dark": "#16262c",
+                        "surface-highlight": "#1d2f36",
+                        "accent-blue": "#0db9f2",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .wave-bar { animation: bounce 1.2s infinite ease-in-out; }
+        .wave-bar:nth-child(odd) { animation-duration: 0.8s; }
+        .wave-bar:nth-child(2n) { animation-duration: 1.1s; }
+        .wave-bar:nth-child(3n) { animation-duration: 1.3s; }
+        .wave-bar:nth-child(4n) { animation-duration: 0.9s; }
+        @keyframes bounce {
+            0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+            50% { transform: scaleY(1); opacity: 1; }
+        }
+    </style>
+    <script src="/config.js"></script>
+</head>
+<body class="bg-background-dark text-white font-display overflow-hidden select-none">
+    <div class="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full pointer-events-none z-0 mix-blend-screen"></div>
+    <div class="fixed bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 blur-[100px] rounded-full pointer-events-none z-0 mix-blend-screen"></div>
+    
+    <div class="relative flex h-screen w-full flex-col z-10 max-w-6xl mx-auto">
+        <div class="pt-14 px-6 pb-4 flex items-center justify-between sticky top-0 z-30 bg-background-dark/80 backdrop-blur-xl border-b border-white/5">
+            <div class="flex items-center gap-3">
+                <a href="/chat.html" class="flex items-center justify-center rounded-full size-12 bg-surface-dark hover:bg-surface-highlight transition-all border border-white/5">
+                    <span class="material-symbols-outlined text-white" style="font-size: 24px;">arrow_back</span>
+                </a>
+                <h2 class="text-3xl font-bold tracking-tight text-white">Playlists</h2>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="/feed.html" class="flex items-center justify-center rounded-full size-12 bg-surface-dark hover:bg-surface-highlight transition-all border border-white/5">
+                    <span class="material-symbols-outlined text-white" style="font-size: 24px;">newspaper</span>
+                </a>
+                <a href="/ai-chat.html" class="flex items-center justify-center rounded-full size-12 bg-surface-dark hover:bg-surface-highlight transition-all border border-white/5">
+                    <span class="material-symbols-outlined text-white" style="font-size: 24px;">smart_toy</span>
+                </a>
+                <a href="/profile.html" class="flex items-center justify-center rounded-full size-12 bg-surface-dark hover:bg-surface-highlight transition-all border border-white/5">
+                    <span class="material-symbols-outlined text-white" style="font-size: 24px;">person</span>
+                </a>
+                <a href="/settings.html" class="flex items-center justify-center rounded-full size-12 bg-surface-dark hover:bg-surface-highlight transition-all border border-white/5">
+                    <span class="material-symbols-outlined text-white" style="font-size: 24px;">settings</span>
+                </a>
+                <button class="flex items-center justify-center rounded-full size-12 bg-surface-dark hover:bg-surface-highlight transition-all border border-white/5">
+                    <span class="material-symbols-outlined text-white" style="font-size: 24px;">search</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="px-6 py-4 z-20">
+            <div class="flex h-12 w-full items-center rounded-full bg-surface-dark p-1 relative border border-white/5 shadow-inner max-w-md">
+                <div class="absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-surface-highlight border border-white/10 rounded-full shadow-lg z-0"></div>
+                <label class="z-10 flex-1 cursor-pointer flex items-center justify-center h-full rounded-full transition-all duration-200">
+                    <input checked class="hidden peer" name="view" type="radio" value="library"/>
+                    <span class="text-sm font-semibold text-white peer-checked:text-primary transition-colors">My Library</span>
+                </label>
+                <label class="z-10 flex-1 cursor-pointer flex items-center justify-center h-full rounded-full transition-all duration-200">
+                    <input class="hidden peer" name="view" type="radio" value="friends"/>
+                    <span class="text-sm font-medium text-slate-400 hover:text-white transition-colors">Friends' Mixes</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto no-scrollbar px-6 pb-48 pt-0 space-y-1">
+            <div class="flex gap-4 mb-8 overflow-x-auto no-scrollbar py-2 mask-linear">
+                <div class="flex flex-col items-center gap-3 min-w-[84px] group cursor-pointer">
+                    <div class="size-[72px] rounded-3xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
+                        <span class="material-symbols-outlined text-white" style="font-size: 32px;">favorite</span>
+                    </div>
+                    <span class="text-xs font-medium text-center text-slate-200">Liked</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[84px] group cursor-pointer">
+                    <div class="size-[72px] rounded-3xl bg-surface-dark border border-white/5 flex items-center justify-center group-hover:bg-surface-highlight transition-colors">
+                        <span class="material-symbols-outlined text-slate-400 group-hover:text-white transition-colors" style="font-size: 32px;">history</span>
+                    </div>
+                    <span class="text-xs font-medium text-center text-slate-400 group-hover:text-slate-200">Recent</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[84px] group cursor-pointer">
+                    <div class="size-[72px] rounded-3xl bg-surface-dark border border-white/5 flex items-center justify-center group-hover:bg-surface-highlight transition-colors relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <span class="material-symbols-outlined text-slate-400 group-hover:text-white transition-colors" style="font-size: 32px;">auto_awesome</span>
+                    </div>
+                    <span class="text-xs font-medium text-center text-slate-400 group-hover:text-slate-200">AI Mix</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between mb-3 px-1">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Your Playlists</div>
+                <div class="text-xs font-medium text-primary cursor-pointer hover:text-white transition-colors">Sort by</div>
+            </div>
+            
+            <div class="group flex items-center gap-4 bg-transparent hover:bg-white/5 active:bg-white/10 rounded-3xl p-3 pr-2 transition-all cursor-pointer border border-transparent hover:border-white/5">
+                <div class="relative shrink-0">
+                    <div class="bg-center bg-no-repeat bg-cover rounded-2xl size-16 shadow-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDCtkmpeCzR6hH87wbQ0Cyjdb4ZCe6TH1i_NGy3qqE57RcQNglHQhfiqb6YUgqLaYRLjVT8GJMCB9ppXO4fcL2qVrRcZvfEJ2tfTRppUJ7vSpn-CpszocfJ9A4emJJT-8wWXIKW1MvQYLLCgG8sVz3xMn252lU9_ufYD_t6LKifwvTmd191CExKlbeIhsHVW2pAEiiPcGrVyY82oDPK9fviVbStOOypfCq_-_OEsd9AqjIiVA05Ppa4qkHdyO33Wo9AWQJsdJGWqlY");'></div>
+                    <div class="absolute -bottom-1 -right-1 bg-[#10b981] rounded-full border-[3px] border-background-dark p-[2px] flex items-center justify-center shadow-sm">
+                        <span class="material-symbols-outlined text-white" style="font-size: 10px; font-weight: 900;">check</span>
+                    </div>
+                    <div class="absolute top-0 right-0 bg-primary text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">PRO</div>
+                </div>
+                <div class="flex flex-col justify-center flex-1 min-w-0 py-1">
+                    <p class="text-white text-[17px] font-bold leading-tight truncate">Chill Lo-Fi Beats</p>
+                    <div class="flex items-center gap-1.5 mt-1.5">
+                        <span class="material-symbols-outlined text-emerald-400" style="font-size: 16px;">offline_pin</span>
+                        <p class="text-slate-400 text-sm font-medium leading-none truncate">Available Offline • 24 Tracks</p>
+                    </div>
+                </div>
+                <div class="shrink-0 size-10 flex items-center justify-center text-slate-600 group-hover:text-slate-400 cursor-grab active:cursor-grabbing">
+                    <span class="material-symbols-outlined">drag_indicator</span>
+                </div>
+            </div>
+            
+            <div class="group flex items-center gap-4 bg-transparent hover:bg-white/5 active:bg-white/10 rounded-3xl p-3 pr-2 transition-all cursor-pointer border border-transparent hover:border-white/5">
+                <div class="relative shrink-0">
+                    <div class="bg-center bg-no-repeat bg-cover rounded-2xl size-16 shadow-lg opacity-90 group-hover:opacity-100 transition-opacity" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCspFMNHaJ6wCSaTsOTbnK-kk5z8-laXYe7mO5b47L19N_evhzQ_ZjFvposrlUVushxtL0dW757VOCdFihviqMW_YhnUlMSOHuVq_K-28YzCkSdMjr7e9hAyEAtnAVkLlskf-SmKjAHuzzAK9p7K60vg2CGlV63mfwa1jYy1-uAnH1GeDfvqvc_vq0Y7BGU0HQCnAJi8yLbumoURaEZJ2KZ0ec2_RVUOnFQ5PHHjNDj7r-eh3LMLDRwKRwROdz_9Ii8ee1vVDJyK3s");'></div>
+                </div>
+                <div class="flex flex-col justify-center flex-1 min-w-0 py-1">
+                    <div class="flex items-center gap-2">
+                        <p class="text-white text-[17px] font-bold leading-tight truncate">Gym Hype 2024</p>
+                    </div>
+                    <div class="flex items-center gap-1.5 mt-1.5">
+                        <span class="material-symbols-outlined text-primary" style="font-size: 16px;">stream</span>
+                        <p class="text-slate-400 text-sm font-medium leading-none truncate">Stream Only • High Quality</p>
+                    </div>
+                </div>
+                <div class="shrink-0 size-10 flex items-center justify-center text-slate-600 group-hover:text-slate-400 cursor-grab active:cursor-grabbing">
+                    <span class="material-symbols-outlined">drag_indicator</span>
+                </div>
+            </div>
+            
+            <div class="group flex items-center gap-4 bg-transparent hover:bg-white/5 active:bg-white/10 rounded-3xl p-3 pr-2 transition-all cursor-pointer border border-transparent hover:border-white/5">
+                <div class="relative shrink-0">
+                    <div class="bg-center bg-no-repeat bg-cover rounded-2xl size-16 shadow-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWMo8BcdhhaJTM0uETvi3gtKhMt6RC3e1uFtD0-CJ9uhXj-Vh4cOnIOHYprihPwYDPZdKoWrz62vDt7_C_qBlxI04gl0mABPXkmeaGxVXYM4rLkRf37XLZjJCisegmyzJEENpFJmuKZHOjn03Ndli-oTFZ5nB-WUq-HaIoRIE-EgpUtF-aiwWTN8R11TFPoqmnBR2qTzHHLbxr798_upzGXpRrTkVyYZTDX0UBj0kMFyNJUw2DYGJ-AX3UrApLcnATNaa5VfoJg4s");'></div>
+                    <div class="absolute -bottom-1 -right-1 bg-blue-500 rounded-full border-[3px] border-background-dark p-[3px] shadow-sm">
+                        <span class="material-symbols-outlined text-white block" style="font-size: 10px;">group</span>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center flex-1 min-w-0 py-1">
+                    <p class="text-white text-[17px] font-bold leading-tight truncate">Roadtrip West Coast</p>
+                    <p class="text-slate-400 text-sm font-medium leading-normal truncate mt-1">Shared by Sarah M.</p>
+                </div>
+                <div class="shrink-0 size-10 flex items-center justify-center text-slate-600 group-hover:text-slate-400 cursor-grab active:cursor-grabbing">
+                    <span class="material-symbols-outlined">drag_indicator</span>
+                </div>
+            </div>
+        </div>
+        
+        <button class="absolute bottom-[176px] right-6 z-30 size-14 bg-primary text-white rounded-full shadow-[0_4px_20px_rgba(56,189,248,0.5)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all hover:bg-primary-dark">
+            <span class="material-symbols-outlined" style="font-size: 28px;">add</span>
+        </button>
+        
+        <div class="absolute bottom-0 w-full z-40 pointer-events-none">
+            <div class="pointer-events-auto mx-4 mb-4 bg-[#111922]/90 backdrop-blur-2xl rounded-[2rem] p-2.5 shadow-2xl border border-white/10 relative overflow-hidden group">
+                <div class="absolute top-0 left-0 h-[2px] bg-white/5 w-full">
+                    <div class="h-full w-1/3 bg-primary rounded-r-full shadow-[0_0_10px_rgba(56,189,248,0.5)]"></div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-center bg-no-repeat bg-cover rounded-full size-[46px] shrink-0 animate-[spin_10s_linear_infinite] shadow-lg border border-white/5" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDRx9ZG9u9sPtHYKD5PKwVZeFp033_xjF97AUb7RIhd1dDa7kPLX8kYgkihGVqyKJuq_SdWSet9Y9UBMnUMpju1CQK9P-MEMPggIFXRLoSrHQXjLG81ZjURkqU3AtHK6uxxDQOgWrqlz8C1MCMjEXl7ARtl4ZtsJn3QrguHjCl0oIFTov0daVuPR3IlnWcRP8Av1zGqlbUhzovWmHdh1_sx4PTmQe0DCv34nkTMNHG7dpiTWRn0LEKN2Cu-24PPm96z7Q8HxfBoGB8");'>
+                        <div class="size-2.5 bg-[#111922] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-white/20"></div>
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                        <div class="flex items-center gap-2">
+                            <p class="text-white text-sm font-bold leading-tight truncate">Midnight City</p>
+                            <div class="flex items-end gap-[2px] h-3 pb-0.5">
+                                <div class="w-[3px] bg-primary rounded-full h-full wave-bar shadow-[0_0_5px_rgba(56,189,248,0.5)]"></div>
+                                <div class="w-[3px] bg-primary rounded-full h-2/3 wave-bar shadow-[0_0_5px_rgba(56,189,248,0.5)]"></div>
+                                <div class="w-[3px] bg-primary rounded-full h-full wave-bar shadow-[0_0_5px_rgba(56,189,248,0.5)]"></div>
+                                <div class="w-[3px] bg-primary rounded-full h-1/2 wave-bar shadow-[0_0_5px_rgba(56,189,248,0.5)]"></div>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 text-xs font-normal truncate">M83 • Now Playing</p>
+                    </div>
+                    <div class="flex items-center gap-1 pr-1">
+                        <button class="size-10 flex items-center justify-center text-white hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined" style="font-size: 28px;">skip_next</span>
+                        </button>
+                        <button class="size-10 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition-all shadow-lg hover:shadow-white/20">
+                            <span class="material-symbols-outlined filled" style="font-size: 24px; font-variation-settings: 'FILL' 1;">pause</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/features-api.js"></script>
+    <script>
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            window.location.href = '/login.html';
+        }
+
+        async function loadPlaylists() {
+            try {
+                const { playlists } = await getUserPlaylists();
+                console.log('Loaded playlists:', playlists);
+                // Playlists are loaded - you can update the UI here if needed
+            } catch (error) {
+                console.error('Failed to load playlists:', error);
+            }
+        }
+
+        loadPlaylists();
+    </script>
+    
+    <!-- Bottom Navigation (Desktop Sidebar Style) -->
+    <nav class="hidden lg:block fixed bottom-6 left-6 z-50">
+        <div class="p-2 bg-[#0b1418] border border-slate-800/40 rounded-xl shadow-2xl">
+            <div class="flex items-center gap-1 rounded-xl bg-background-dark p-1">
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/chat.html">
+                    <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+                    <span class="text-[10px] font-medium mt-1">Chats</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/ai-chat.html">
+                    <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+                    <span class="text-[10px] font-medium mt-1">AI</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/feed.html">
+                    <span class="material-symbols-outlined text-[24px]">newspaper</span>
+                    <span class="text-[10px] font-medium mt-1">Feed</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-primary bg-primary/10 transition-colors" href="/music.html">
+                    <span class="material-symbols-outlined text-[24px]">music_note</span>
+                    <span class="text-[10px] font-medium mt-1">Music</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/profile.html">
+                    <span class="material-symbols-outlined text-[24px]">person</span>
+                    <span class="text-[10px] font-medium mt-1">Profile</span>
+                </a>
+                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors" href="/settings.html">
+                    <span class="material-symbols-outlined text-[24px]">settings</span>
+                    <span class="text-[10px] font-medium mt-1">Settings</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface-dark/95 backdrop-blur-lg border-t border-slate-800">
+        <div class="flex justify-between items-center h-20 px-6 pb-2">
+            <a href="/chat.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">chat_bubble</span>
+                <span class="text-[10px] font-medium">Chats</span>
+            </a>
+            
+            <a href="/music.html" class="flex flex-col items-center gap-1 w-12 text-primary transition-colors">
+                <div class="w-10 h-8 flex items-center justify-center bg-primary/10 rounded-full">
+                    <span class="material-symbols-outlined fill-current" style="font-size: 24px;">music_note</span>
+                </div>
+                <span class="text-[10px] font-semibold">Music</span>
+            </a>
+            
+            <a href="/feed.html" class="flex flex-col items-center justify-center -mt-6">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-blue-400 shadow-[0_8px_16px_rgba(43,140,238,0.3)] flex items-center justify-center text-white transform active:scale-95 transition-transform">
+                    <span class="material-symbols-outlined" style="font-size: 28px;">newspaper</span>
+                </div>
+            </a>
+            
+            <a href="/ai-chat.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">smart_toy</span>
+                <span class="text-[10px] font-medium">AI</span>
+            </a>
+            
+            <a href="/profile.html" class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <div class="w-6 h-6 rounded-full overflow-hidden bg-slate-700 ring-2 ring-transparent hover:ring-primary transition-all">
+                    <span class="material-symbols-outlined text-slate-400 text-[20px]">person</span>
+                </div>
+                <span class="text-[10px] font-medium">Profile</span>
+            </a>
+        </div>
+    </nav>
+</body>
+</html>
