@@ -1,7 +1,9 @@
 // Admin Panel JavaScript
 
-// API base URL - always use production
-const API_BASE = 'https://api.metrocraft.eu';
+// API base URL - detect environment
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname.startsWith('192.168') 
+    ? `http://${window.location.hostname}:3001`
+    : 'https://api.metrocraft.eu';
 
 let currentPage = 1;
 let totalPages = 1;

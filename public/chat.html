@@ -61,6 +61,50 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
         
+        /* Tabs */
+        .tab-active {
+            background: linear-gradient(135deg, #0db9f2 0%, #0a8fc4 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(13, 185, 242, 0.3);
+        }
+        
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: #1d2f36;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            min-width: 180px;
+            padding: 4px;
+            display: none;
+        }
+        .context-menu.show { display: block; }
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.15s;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        .context-menu-item:hover {
+            background: #0db9f2;
+            color: white;
+        }
+        .context-menu-item.danger:hover {
+            background: #ef4444;
+        }
+        .context-menu-divider {
+            height: 1px;
+            background: #334155;
+            margin: 4px 0;
+        }
+        
         /* Hide elements */
         .login-screen { display: flex; position: fixed; inset: 0; z-index: 100; }
         .login-screen.hidden { display: none !important; }
@@ -134,24 +178,28 @@
                 </div>
             </div>
             
+            <!-- Tabs -->
+            <div class="px-4 mb-2 shrink-0">
+                <div class="flex gap-2 bg-background-dark rounded-lg p-1">
+                    <button id="tabDMs" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all tab-active">
+                        Direct Messages
+                    </button>
+                    <button id="tabRooms" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white">
+                        Rooms
+                    </button>
+                </div>
+            </div>
+            
             <!-- Lists Container -->
-            <div class="flex-1 overflow-y-auto custom-scrollbar px-4 py-2 space-y-6">
-                <!-- Section: DMs -->
-                <div>
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 pl-3">Direct Messages</h3>
-                    <div id="dmsList" class="flex flex-col gap-1">
-                        <!-- DMs will be added here dynamically -->
-                    </div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar px-4 py-2">
+                <!-- DMs List -->
+                <div id="dmsListContainer" class="flex flex-col gap-1">
+                    <!-- DMs will be added here dynamically -->
                 </div>
                 
-                <!-- Section: Rooms -->
-                <div>
-                    <div class="flex justify-between items-center px-3 mb-2">
-                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Rooms</h3>
-                    </div>
-                    <div id="roomsList" class="flex flex-col gap-1">
-                        <!-- Rooms will be added here dynamically -->
-                    </div>
+                <!-- Rooms List -->
+                <div id="roomsListContainer" class="flex flex-col gap-1 hidden">
+                    <!-- Rooms will be added here dynamically -->
                 </div>
             </div>
             
@@ -597,6 +645,157 @@
     <script src="/js/ui.js"></script>
     <script src="/js/app.js"></script>
     
+    <!-- Tab Switching & Context Menu -->
+    <script>
+        // Tab Switching
+        document.getElementById('tabDMs').addEventListener('click', function() {
+            document.getElementById('tabDMs').classList.add('tab-active');
+            document.getElementById('tabDMs').classList.remove('text-slate-400', 'hover:text-white');
+            document.getElementById('tabRooms').classList.remove('tab-active');
+            document.getElementById('tabRooms').classList.add('text-slate-400', 'hover:text-white');
+            
+            document.getElementById('dmsListContainer').classList.remove('hidden');
+            document.getElementById('roomsListContainer').classList.add('hidden');
+        });
+        
+        document.getElementById('tabRooms').addEventListener('click', function() {
+            document.getElementById('tabRooms').classList.add('tab-active');
+            document.getElementById('tabRooms').classList.remove('text-slate-400', 'hover:text-white');
+            document.getElementById('tabDMs').classList.remove('tab-active');
+            document.getElementById('tabDMs').classList.add('text-slate-400', 'hover:text-white');
+            
+            document.getElementById('roomsListContainer').classList.remove('hidden');
+            document.getElementById('dmsListContainer').classList.add('hidden');
+        });
+        
+        // Context Menu
+        let contextMenuTarget = null;
+        const contextMenu = document.getElementById('messageContextMenu');
+        
+        // Show context menu on right-click
+        document.addEventListener('contextmenu', function(e) {
+            const messageEl = e.target.closest('[data-message-id]');
+            if (messageEl) {
+                e.preventDefault();
+                contextMenuTarget = messageEl;
+                
+                // Position menu
+                contextMenu.style.left = e.pageX + 'px';
+                contextMenu.style.top = e.pageY + 'px';
+                contextMenu.classList.add('show');
+                
+                // Check if user owns the message to show/hide edit/delete
+                const messageId = messageEl.dataset.messageId;
+                const userId = localStorage.getItem('userId');
+                const senderId = messageEl.dataset.senderId;
+                
+                const editBtn = contextMenu.querySelector('[data-action="edit"]');
+                const deleteBtn = contextMenu.querySelector('[data-action="delete"]');
+                
+                if (senderId === userId) {
+                    editBtn.style.display = 'flex';
+                    deleteBtn.style.display = 'flex';
+                } else {
+                    editBtn.style.display = 'none';
+                    deleteBtn.style.display = 'none';
+                }
+            }
+        });
+        
+        // Long press for mobile
+        let longPressTimer;
+        document.addEventListener('touchstart', function(e) {
+            const messageEl = e.target.closest('[data-message-id]');
+            if (messageEl) {
+                longPressTimer = setTimeout(function() {
+                    contextMenuTarget = messageEl;
+                    const touch = e.touches[0];
+                    contextMenu.style.left = touch.pageX + 'px';
+                    contextMenu.style.top = touch.pageY + 'px';
+                    contextMenu.classList.add('show');
+                    
+                    // Vibrate on mobile
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                }, 500);
+            }
+        });
+        
+        document.addEventListener('touchend', function() {
+            clearTimeout(longPressTimer);
+        });
+        
+        document.addEventListener('touchmove', function() {
+            clearTimeout(longPressTimer);
+        });
+        
+        // Hide context menu on click outside
+        document.addEventListener('click', function(e) {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.classList.remove('show');
+            }
+        });
+        
+        // Handle context menu actions
+        contextMenu.addEventListener('click', function(e) {
+            const action = e.target.closest('[data-action]')?.dataset.action;
+            if (!action || !contextMenuTarget) return;
+            
+            const messageId = contextMenuTarget.dataset.messageId;
+            const messageText = contextMenuTarget.querySelector('.message-text')?.textContent || '';
+            
+            switch(action) {
+                case 'reply':
+                    // Set reply mode
+                    console.log('Reply to message:', messageId);
+                    // TODO: Implement reply functionality
+                    alert('Reply feature coming soon!');
+                    break;
+                    
+                case 'forward':
+                    console.log('Forward message:', messageId);
+                    // TODO: Implement forward functionality
+                    alert('Forward feature coming soon!');
+                    break;
+                    
+                case 'copy':
+                    navigator.clipboard.writeText(messageText).then(() => {
+                        console.log('Message copied to clipboard');
+                        // Show toast notification
+                        const toast = document.createElement('div');
+                        toast.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                        toast.textContent = 'Message copied!';
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 2000);
+                    });
+                    break;
+                    
+                case 'ask-ai':
+                    console.log('Ask AI about message:', messageText);
+                    // TODO: Implement AI query
+                    alert('Ask AI feature coming soon!');
+                    break;
+                    
+                case 'edit':
+                    console.log('Edit message:', messageId);
+                    // TODO: Implement edit functionality
+                    alert('Edit feature coming soon!');
+                    break;
+                    
+                case 'delete':
+                    if (confirm('Delete this message?')) {
+                        console.log('Delete message:', messageId);
+                        // TODO: Implement delete functionality
+                        alert('Delete feature coming soon!');
+                    }
+                    break;
+            }
+            
+            contextMenu.classList.remove('show');
+        });
+    </script>
+    
     <!-- Mobile back button handler -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -611,5 +810,34 @@
             }
         });
     </script>
+
+    <!-- Context Menu -->
+    <div id="messageContextMenu" class="context-menu">
+        <div class="context-menu-item" data-action="reply">
+            <span class="material-symbols-outlined text-[20px]">reply</span>
+            <span>Reply</span>
+        </div>
+        <div class="context-menu-item" data-action="forward">
+            <span class="material-symbols-outlined text-[20px]">forward</span>
+            <span>Forward</span>
+        </div>
+        <div class="context-menu-item" data-action="copy">
+            <span class="material-symbols-outlined text-[20px]">content_copy</span>
+            <span>Copy</span>
+        </div>
+        <div class="context-menu-item" data-action="ask-ai">
+            <span class="material-symbols-outlined text-[20px]">psychology</span>
+            <span>Ask AI</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" data-action="edit">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+            <span>Edit</span>
+        </div>
+        <div class="context-menu-item danger" data-action="delete">
+            <span class="material-symbols-outlined text-[20px]">delete</span>
+            <span>Delete</span>
+        </div>
+    </div>
 </body>
 </html>

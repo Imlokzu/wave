@@ -178,7 +178,8 @@ class UIManager {
     this.elements.userNickname = document.getElementById('userNickname');
     this.elements.roomName = document.getElementById('roomName');
     this.elements.roomNameRight = document.getElementById('roomNameRight');
-    this.elements.roomsList = document.getElementById('roomsList');
+    this.elements.roomsList = document.getElementById('roomsListContainer');
+    this.elements.dmsList = document.getElementById('dmsListContainer');
 
     this.messageContainer = this.elements.messagesContainer;
   }

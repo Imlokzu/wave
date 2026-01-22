@@ -1434,7 +1434,7 @@ class App {
       ui.showEmptyState(tabName);
       
       // Clear rooms list for other tabs
-      const roomsList = document.getElementById('roomsList');
+      const roomsList = document.getElementById('roomsListContainer');
       if (roomsList) {
         roomsList.innerHTML = `
           <div class="p-4 text-center text-slate-400 text-sm">
