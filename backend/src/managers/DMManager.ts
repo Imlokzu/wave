@@ -22,7 +22,12 @@ export class DMManager implements IDMManager {
     fromUserId: string,
     fromUsername: string,
     toUserId: string,
-    content: string
+    content: string,
+    messageType: 'text' | 'image' | 'file' | 'voice' = 'text',
+    fileUrl?: string,
+    fileName?: string,
+    fileSize?: number,
+    imageUrl?: string
   ): Promise<Message> {
     const conversationId = this.getConversationId(fromUserId, toUserId);
 
@@ -32,9 +37,13 @@ export class DMManager implements IDMManager {
       senderId: fromUserId,
       senderNickname: fromUsername,
       content,
-      type: 'normal',
+      type: messageType === 'text' ? 'normal' : messageType,
       timestamp: new Date(),
       expiresAt: null, // DMs don't expire
+      fileUrl,
+      fileName,
+      fileSize,
+      imageUrl,
     };
 
     if (!this.conversations.has(conversationId)) {
@@ -67,6 +76,39 @@ export class DMManager implements IDMManager {
     }
 
     return conversations;
+  }
+
+  /**
+   * Edit a DM (with 48-hour time limit)
+   */
+  async editDM(
+    messageId: string,
+    userId: string,
+    newContent: string
+  ): Promise<Message | null> {
+    for (const messages of this.conversations.values()) {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        // Check ownership
+        if (message.senderId !== userId) {
+          return null;
+        }
+
+        // Check 48-hour time limit
+        const hoursSinceCreation = (Date.now() - message.timestamp.getTime()) / (1000 * 60 * 60);
+        if (hoursSinceCreation > 48) {
+          return null;
+        }
+
+        // Update message
+        message.content = newContent;
+        message.isEdited = true;
+        message.editedAt = new Date();
+
+        return message;
+      }
+    }
+    return null;
   }
 
   /**

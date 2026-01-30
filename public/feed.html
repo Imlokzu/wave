@@ -6,6 +6,7 @@
         <title>WaveFeed - Channels</title>
         <script src="/js/theme-init.js"></script>
         <link href="/css/theme.css" rel="stylesheet" />
+        <link href="/css/theme-config.css" rel="stylesheet" />
         <link
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
             rel="stylesheet"
@@ -98,9 +99,32 @@
             .video-js video {
                 object-fit: contain;
             }
+            
+            /* Transparency Mode Styles */
+            body.transparency-mode .bg-background-dark,
+            body.transparency-mode .bg-card-dark {
+                background: rgba(16, 30, 34, 0.4) !important;
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            body.transparency-mode header {
+                background: rgba(11, 17, 22, 0.6) !important;
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+            }
+            
+            body.transparency-mode .bg-primary-soft {
+                background: rgba(22, 38, 44, 0.5) !important;
+            }
         </style>
     </head>
-    <body class="bg-background-dark font-display text-white antialiased pb-24">
+    <body class="bg-background-dark font-display text-white antialiased pb-24 relative">
+        <!-- Custom Background Image -->
+        <div id="customBackground" class="fixed inset-0 z-0 pointer-events-none hidden"></div>
+        
+        <div class="relative z-20">
         <header
             class="sticky top-0 z-50 bg-[#0B1116]/90 backdrop-blur-md border-b border-border-dark"
         >
@@ -1099,5 +1123,96 @@
                 </a>
             </div>
         </nav>
+        </div> <!-- Close content wrapper -->
+        
+        <!-- Background Image Script -->
+        <script>
+            // Load theme colors from localStorage
+            (function() {
+                const primary = localStorage.getItem('themeColorPrimary');
+                const secondary = localStorage.getItem('themeColorSecondary');
+                const tertiary = localStorage.getItem('themeColorTertiary');
+                const background = localStorage.getItem('themeColorBackground');
+                const surface = localStorage.getItem('themeColorSurface');
+                const highlight = localStorage.getItem('themeColorHighlight');
+                
+                if (primary) document.documentElement.style.setProperty('--color-primary', primary);
+                if (secondary) document.documentElement.style.setProperty('--color-secondary', secondary);
+                if (tertiary) document.documentElement.style.setProperty('--color-tertiary', tertiary);
+                if (background) {
+                    document.documentElement.style.setProperty('--bg-page', background);
+                    document.body.style.backgroundColor = background;
+                    setTimeout(() => {
+                        const mainAreas = document.querySelectorAll('main');
+                        mainAreas.forEach(el => el.style.backgroundColor = background);
+                    }, 100);
+                }
+                if (surface) {
+                    document.documentElement.style.setProperty('--bg-surface', surface);
+                    setTimeout(() => {
+                        const surfaceElements = document.querySelectorAll('.bg-surface-dark, .bg-\\[\\#16262c\\], .bg-\\[\\#1e2433\\]');
+                        surfaceElements.forEach(el => el.style.backgroundColor = surface);
+                    }, 100);
+                }
+                if (highlight) {
+                    document.documentElement.style.setProperty('--surface-hover', highlight);
+                    document.documentElement.style.setProperty('--bg-surface-lighter', highlight);
+                }
+            })();
+            
+            // Load transparency mode from localStorage
+            (function() {
+                const isTransparent = localStorage.getItem('transparencyMode') === 'true';
+                if (isTransparent) {
+                    document.body.classList.add('transparency-mode');
+                }
+            })();
+            
+            // Load custom background from localStorage
+            (function() {
+                const bgDiv = document.getElementById('customBackground');
+                if (!bgDiv) return;
+                
+                const chatBackground = localStorage.getItem('chatBackground');
+                const customBgUrl = localStorage.getItem('customBackgroundUrl');
+                const bgOpacity = localStorage.getItem('bgOpacity') || 10;
+                const bgBlur = localStorage.getItem('bgBlur') || 4;
+                
+                let backgroundUrl = '';
+                
+                if (chatBackground && chatBackground !== 'none') {
+                    if (chatBackground === 'custom' && customBgUrl) {
+                        backgroundUrl = customBgUrl;
+                    } else if (chatBackground.startsWith('bg')) {
+                        const bgMap = {
+                            'bg1': '1769528516',
+                            'bg2': '1769528550',
+                            'bg3': '1769528632',
+                            'bg4': '1769528667',
+                            'bg5': '1769528899',
+                            'bg6': '1769529072'
+                        };
+                        const bgNum = bgMap[chatBackground];
+                        if (bgNum) {
+                            backgroundUrl = `/backgrounds/${bgNum}.png`;
+                        }
+                    }
+                }
+                
+                if (backgroundUrl) {
+                    bgDiv.classList.remove('hidden');
+                    bgDiv.style.cssText = `
+                        background-image: url('${backgroundUrl}');
+                        background-size: cover;
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        opacity: ${bgOpacity / 100};
+                        filter: blur(${bgBlur}px);
+                    `;
+                } else {
+                    bgDiv.classList.add('hidden');
+                }
+            })();
+        </script>
     </body>
 </html>

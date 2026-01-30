@@ -1,0 +1,173 @@
+/* ========================================
+ * WAVE MESSENGER - THEME CONFIGURATION
+ * ========================================
+ * 
+ * 🎨 QUICK THEME CUSTOMIZATION
+ * Change these colors to instantly theme your entire app!
+ * 
+ * HOW TO USE:
+ * 1. Change the hex color values below
+ * 2. Save the file (Ctrl+S / Cmd+S)
+ * 3. Refresh your browser (Ctrl+R / Cmd+R)
+ * 4. Done! All UI elements update automatically ✨
+ * 
+ * 💡 TIP: Try the preset themes below or create your own!
+ * 
+ * ======================================== */
+
+:root.dark {
+    /* ========================================
+     * 🎨 MAIN THEME COLORS - EDIT THESE!
+     * ======================================== */
+    
+    /* 🔵 PRIMARY COLOR - Main brand color
+     * Used for: Buttons, links, active states, highlights
+     * Current: #00d9ff (Cyan Blue)
+     */
+    --color-primary: #00d9ff;
+    
+    /* 🔷 SECONDARY COLOR - Supporting UI elements  
+     * Used for: Inactive text, borders, secondary buttons
+     * Current: #90bccb (Muted Cyan)
+     */
+    --color-secondary: #90bccb;
+    
+    /* ✨ TERTIARY COLOR - Accent highlights
+     * Used for: Hover states, badges, notifications
+     * Current: #34caff (Bright Cyan)
+     */
+    --color-tertiary: #34caff;
+    
+    /* ========================================
+     * 🎨 BACKGROUND COLORS - CUSTOMIZE YOUR UI
+     * ======================================== */
+    
+    /* Main page background */
+    --bg-page: #0f1419;
+    
+    /* Secondary background (sidebars, panels) */
+    --bg-secondary: #1a1f2e;
+    
+    /* Surface color (cards, modals) */
+    --bg-surface: #1e2433;
+    
+    /* Dark surface (inputs, darker areas) */
+    --bg-surface-dark: #101e23;
+    
+    /* Lighter surface (hover states) */
+    --bg-surface-lighter: #252d3d;
+    
+    /* Navigation/sidebar background */
+    --bg-nav: #0b1418;
+    
+    /* ========================================
+     * 🎨 TEXT COLORS
+     * ======================================== */
+    
+    /* Primary text (main content) */
+    --text-primary: #e4e6eb;
+    
+    /* Secondary text (labels, descriptions) */
+    --text-secondary: #90bccb;
+    
+    /* Muted text (placeholders, disabled) */
+    --text-muted: #5a7d8a;
+    
+    /* ========================================
+     * 🎨 BORDER COLORS
+     * ======================================== */
+    
+    /* Main border color */
+    --border-main: #2d3748;
+    
+    /* Dark border (inputs) */
+    --border-dark: #223f49;
+    
+    /* Subtle border */
+    --border-subtle: #1e2433;
+    
+    /* Border with opacity */
+    --border-alpha: rgba(45, 55, 72, 0.4);
+    
+    
+    /* ========================================
+     * 🎨 PRESET THEMES - UNCOMMENT TO USE
+     * ======================================== */
+    
+    /* PURPLE DREAM */
+    /* --color-primary: #a855f7; */
+    /* --color-secondary: #c4b5fd; */
+    /* --color-tertiary: #d946ef; */
+    
+    /* EMERALD FOREST */
+    /* --color-primary: #10b981; */
+    /* --color-secondary: #6ee7b7; */
+    /* --color-tertiary: #34d399; */
+    
+    /* HOT PINK */
+    /* --color-primary: #ff006e; */
+    /* --color-secondary: #ff6ba9; */
+    /* --color-tertiary: #ff1493; */
+    
+    /* OCEAN BLUE */
+    /* --color-primary: #0ea5e9; */
+    /* --color-secondary: #7dd3fc; */
+    /* --color-tertiary: #38bdf8; */
+    
+    /* SUNSET ORANGE */
+    /* --color-primary: #f97316; */
+    /* --color-secondary: #fdba74; */
+    /* --color-tertiary: #fb923c; */
+    
+    /* ROYAL GOLD */
+    /* --color-primary: #fbbf24; */
+    /* --color-secondary: #fcd34d; */
+    /* --color-tertiary: #fde047; */
+    
+    
+    /* ========================================
+     * 🔧 ADVANCED - Alpha Variations
+     * ======================================== */
+    
+    /* Computed alpha variations (auto-generated from primary) */
+    --primary-rgb: 0, 217, 255;
+    --primary-10: rgba(0, 217, 255, 0.1);
+    --primary-20: rgba(0, 217, 255, 0.2);
+    --primary-30: rgba(0, 217, 255, 0.3);
+    --primary-50: rgba(0, 217, 255, 0.5);
+    
+    /* Update these if you change --color-primary */
+    /* Example for purple (#a855f7):
+    --primary-rgb: 168, 85, 247;
+    --primary-10: rgba(168, 85, 247, 0.1);
+    --primary-20: rgba(168, 85, 247, 0.2);
+    --primary-30: rgba(168, 85, 247, 0.3);
+    --primary-50: rgba(168, 85, 247, 0.5);
+    */
+}
+
+/* ========================================
+ * 📱 LIGHT MODE THEME (Optional)
+ * ======================================== */
+
+:root {
+    --color-primary: #3b82f6;
+    --color-secondary: #8b92a8;
+    --color-tertiary: #2563eb;
+    
+    --bg-page: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --bg-surface: #ffffff;
+    --bg-surface-dark: #f8f9fb;
+    --bg-surface-lighter: #ffffff;
+    --bg-nav: #ffffff;
+    
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    
+    --border-main: #d1d5db;
+    --border-dark: #e5e7eb;
+    --border-subtle: #f3f4f6;
+    --border-alpha: rgba(209, 213, 219, 0.4);
+}

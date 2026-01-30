@@ -3,7 +3,7 @@ import { getAIService } from '../services/AIService';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { AuthService } from '../services/AuthService';
 import { IUserManager } from '../managers/IUserManager';
-import { DeepSeekAIService } from '../services/DeepSeekAIService';
+import { getUnifiedAIService } from '../services/UnifiedAIService';
 
 export function createAIRouter(userManager: IUserManager): Router {
   const router = Router();
@@ -16,7 +16,7 @@ export function createAIRouter(userManager: IUserManager): Router {
    */
   router.post('/message', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { content } = req.body;
+      const { content, model } = req.body;
       const userId = req.user?.id;
       const userApiKey = req.headers['x-api-key'] as string | undefined;
       
@@ -37,18 +37,18 @@ export function createAIRouter(userManager: IUserManager): Router {
         });
       }
 
-      // Create a DeepSeek instance with the appropriate API key
-      const deepSeekService = new DeepSeekAIService(apiKey);
+      // Use unified AI service with model selection
+      const aiService = getUnifiedAIService();
       
-      // Simple chat without tools for now
-      const response = await deepSeekService.chat([
+      // Simple chat with model selection
+      const response = await aiService.chat([
         { role: 'user', content: content }
-      ]);
+      ], true, model);
 
       return res.json({
         success: true,
         content: response,
-        metadata: { model: 'deepseek' }
+        metadata: { model: model || 'auto' }
       });
     } catch (error: any) {
       console.error('AI message error:', error);
@@ -107,7 +107,7 @@ export function createAIRouter(userManager: IUserManager): Router {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
       }
 
-      const { posts } = req.body;
+      const { posts, model } = req.body;
       if (!posts || !Array.isArray(posts) || posts.length === 0) {
         return res.status(400).json({ 
           success: false, 
@@ -125,20 +125,20 @@ export function createAIRouter(userManager: IUserManager): Router {
         });
       }
 
-      // Create AI service instance
-      const aiService = new DeepSeekAIService(apiKey);
+      // Use unified AI service
+      const aiService = getUnifiedAIService();
 
       // Create summarization prompt
       const postsText = posts.join('\n\n');
       const prompt = `Please provide a concise summary of these feed posts. Focus on the main topics, key information, and any important trends or themes:\n\n${postsText}\n\nProvide a clear, organized summary in 3-5 paragraphs.`;
 
-      // Get summary from AI
+      // Get summary from AI with model selection
       const summary = await aiService.chat([
         {
           role: 'user',
           content: prompt
         }
-      ], false); // Disable search for summarization
+      ], false, model); // Disable search for summarization
 
       res.json({
         success: true,

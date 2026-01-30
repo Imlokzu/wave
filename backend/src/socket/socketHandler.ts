@@ -253,7 +253,17 @@ export function setupSocketIO(
           console.log('🤖 [Socket] AI mention detected, processing...');
           
           const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
-          const userQuery = data.content.replace('@ai', '').trim();
+          
+          // Extract model selection if provided (format: @ai [model:wave-r1] query)
+          let modelId: string | undefined;
+          let userQuery = data.content.replace('@ai', '').trim();
+          
+          const modelMatch = userQuery.match(/\[model:([^\]]+)\]/);
+          if (modelMatch) {
+            modelId = modelMatch[1];
+            userQuery = userQuery.replace(modelMatch[0], '').trim();
+            console.log(`[Socket] Model specified: ${modelId}`);
+          }
           
           // Smart detection: Check if query likely needs web search
           const searchKeywords = [
@@ -311,13 +321,13 @@ export function setupSocketIO(
               await messageManager.deleteMessage(thinkingMessage.id, AI_BOT_ID, true);
               io.to(roomId).emit('message:deleted', { messageId: thinkingMessage.id });
               
-              // Now call DeepSeek with search results
-              const { getDeepSeekService } = await import('../services/DeepSeekAIService');
-              const deepSeekService = getDeepSeekService();
+              // Use Unified AI Service with model selection
+              const { getUnifiedAIService } = await import('../services/UnifiedAIService');
+              const aiService = getUnifiedAIService();
               
               // Set user region for future searches
               if (region) {
-                deepSeekService.setUserRegion(region);
+                aiService.setUserRegion(region);
               }
               
               // Get recent messages for context
@@ -346,8 +356,8 @@ ${formattedResults}`
                 }
               ];
               
-              // Call AI without tool calling (just use search results)
-              const aiResponse = await deepSeekService.chat(messages, false);
+              // Call AI with model selection
+              const aiResponse = await aiService.chat(messages, false, modelId);
               
               // Send AI response
               const aiMessage = await messageManager.createMessage(
@@ -357,7 +367,7 @@ ${formattedResults}`
                 aiResponse
               );
               io.to(roomId).emit('message:new', aiMessage);
-              console.log(`✅ [Socket] AI response sent with web search results`);
+              console.log(`✅ [Socket] AI response sent with web search results (model: ${modelId || 'auto'})`);
               
             } catch (searchError: any) {
               console.error('❌ [Socket] Search error:', searchError);
@@ -376,9 +386,9 @@ ${formattedResults}`
               io.to(roomId).emit('message:new', errorMessage);
             }
           } else {
-            // No search needed, use DeepSeek directly
-            const { getDeepSeekService } = await import('../services/DeepSeekAIService');
-            const deepSeekService = getDeepSeekService();
+            // No search needed, use Unified AI Service with model selection
+            const { getUnifiedAIService } = await import('../services/UnifiedAIService');
+            const aiService = getUnifiedAIService();
             
             const recentMessages = await messageManager.getRecentMessages(roomId, 10);
             const conversationContext = recentMessages
@@ -403,7 +413,7 @@ ${conversationContext}`
             ];
             
             try {
-              const aiResponse = await deepSeekService.chat(messages, false);
+              const aiResponse = await aiService.chat(messages, false, modelId);
               
               const aiMessage = await messageManager.createMessage(
                 roomId,
@@ -412,7 +422,7 @@ ${conversationContext}`
                 aiResponse
               );
               io.to(roomId).emit('message:new', aiMessage);
-              console.log(`✅ [Socket] AI response sent (no search needed)`);
+              console.log(`✅ [Socket] AI response sent (no search needed, model: ${modelId || 'auto'})`);
             } catch (aiError: any) {
               console.error('❌ [Socket] AI error:', aiError);
               const errorMessage = await messageManager.createMessage(
@@ -709,36 +719,68 @@ ${conversationContext}`
     });
 
     /**
-     * edit:message - Edit a message
+     * edit:message - Edit a message (works for both rooms and DMs)
      */
     socket.on('edit:message', async (data: { messageId: string; content: string }) => {
       try {
         const socketData = socketToUser.get(socket.id);
-        if (!socketData || !socketData.roomId) {
+        
+        // Check if user is in a room or DM
+        const isInRoom = socketData && socketData.roomId;
+        const isRegistered = socketData && socketData.userId;
+        
+        if (!isInRoom && !isRegistered) {
           socket.emit('error', {
-            code: 'NOT_IN_ROOM',
-            message: 'You must join a room first',
+            code: 'NOT_AUTHORIZED',
+            message: 'You must join a room or be registered first',
           });
           return;
         }
 
-        const { roomId, userId } = socketData;
+        const { userId } = socketData!;
 
-        // Edit message
-        const editedMessage = await messageManager.editMessage(data.messageId, data.content, userId!);
-
-        if (!editedMessage) {
+        if (!userId) {
           socket.emit('error', {
-            code: 'EDIT_FAILED',
-            message: 'Failed to edit message. You may not have permission or the time limit has passed.',
+            code: 'NOT_AUTHORIZED',
+            message: 'User ID not found',
           });
           return;
         }
 
-        // Broadcast to all in room
-        io.to(roomId).emit('message:edited', editedMessage);
+        let editedMessage;
 
-        console.log(`Message ${data.messageId} edited in room ${roomId}`);
+        // If in a room, use room message editing
+        if (isInRoom && socketData.roomId) {
+          editedMessage = await messageManager.editMessage(data.messageId, data.content, userId);
+
+          if (!editedMessage) {
+            socket.emit('error', {
+              code: 'EDIT_FAILED',
+              message: 'Failed to edit message. You may not have permission or the time limit has passed.',
+            });
+            return;
+          }
+
+          // Broadcast to all in room
+          io.to(socketData.roomId).emit('message:edited', editedMessage);
+          console.log(`Message ${data.messageId} edited in room ${socketData.roomId}`);
+        } 
+        // If DM, use DM editing
+        else {
+          editedMessage = await dmManager.editDM(data.messageId, userId, data.content);
+
+          if (!editedMessage) {
+            socket.emit('error', {
+              code: 'EDIT_FAILED',
+              message: 'Failed to edit message. You may not have permission or the time limit has passed.',
+            });
+            return;
+          }
+
+          // Emit to sender
+          socket.emit('message:edited', editedMessage);
+          console.log(`✅ DM message ${data.messageId} edited successfully`);
+        }
       } catch (error: any) {
         console.error('Error editing message:', error);
         socket.emit('error', {

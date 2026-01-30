@@ -1,351 +1,186 @@
-# 🌊 Wave Messenger
+# 🌊 WaveChat
 
-> A modern, secure messaging platform with AI capabilities, music streaming, and social feeds. Built for real-time communication with privacy in mind.
+A modern, real-time chat application with AI assistance, Telegram feed integration, and beautiful UI.
 
-![Version](https://img.shields.io/badge/version-4.2.0-blue)
-![Status](https://img.shields.io/badge/status-active-success)
-
----
+![WaveChat](public/wavechat.png)
 
 ## ✨ Features
 
-### 💬 Core Messaging
-- **Real-time chat** - Instant WebSocket communication
-- **Direct messages** - Private 1-on-1 conversations
-- **Group rooms** - Create and join chat rooms
-- **Message reactions** - React to messages with emojis
-- **Pin messages** - Keep important messages at the top
-- **Edit & delete** - Modify or remove your messages
-- **Typing indicators** - See when others are typing
-- **Read receipts** - Know when messages are read
-- **Search** - Find messages and conversations quickly
-
-### 🤖 AI Assistant
-- **AI chat** - Powered by DeepSeek AI
-- **Smart commands** - Use `/` commands for quick actions
-- **Web search** - AI can search the web for information
-- **Weather updates** - Get weather forecasts
-- **Location services** - Location-aware features
-- **Conversation history** - Persistent AI chat history
-
-### 🎵 Music Streaming
-- **Upload tracks** - Share your music (Pro feature)
-- **Create playlists** - Organize your music
-- **Stream audio** - Listen to music in-app
-- **Download tracks** - Save music offline (Pro feature)
-- **Public/private tracks** - Control who can listen
-- **Metadata extraction** - Automatic track info
-
-### 📰 Social Feed
-- **Telegram integration** - Follow Telegram channels
-- **Feed aggregation** - All your channels in one place
-- **Real-time updates** - Stay up to date
-- **Channel management** - Add/remove channels easily
-
-### 👤 User Profiles
-- **Custom avatars** - Upload profile pictures
-- **Bio & status** - Share about yourself
-- **Profile visibility** - Control who sees your profile
-- **Online status** - Show when you're active
-
-### �* Authentication & Security
-- **Secure signup/login** - Email and password authentication
-- **JWT tokens** - Secure session management
-- **Password hashing** - bcrypt encryption
-- **Invite system** - Controlled user registration
-- **Session management** - Active device tracking
-
-### 💎 Wave Pro
-- **Unlimited AI** - No limits on AI conversations
-- **Music uploads** - Upload and share your tracks
-- **Music downloads** - Download tracks for offline listening
-- **Priority support** - Get help faster
-- **Exclusive features** - Early access to new features
-- **Gift Pro** - Share Pro with friends
-
-### 🎨 Customization
-- **Dark/Light themes** - Choose your style
-- **Responsive design** - Works on all devices
-- **Mobile optimized** - Full mobile experience
-- **Accessibility** - WCAG compliant
-- **Notification controls** - Customize alerts
-
----
+- 💬 **Real-time Chat** - Socket.io powered instant messaging
+- 🤖 **AI Assistant** - 20+ AI models including DeepSeek R1, Gemini, Llama
+- 🔍 **Web Search** - AI can search the web for current information
+- 🌤️ **Weather Integration** - Real-time weather data
+- 📱 **Telegram Feed** - Scrape and display Telegram channel content
+- 🎨 **Customizable Themes** - Dark mode with custom backgrounds
+- 🎵 **Music Player** - Built-in music streaming
+- 👥 **User Profiles** - Avatars, bios, and customization
+- 🔒 **Secure Authentication** - JWT-based auth with Supabase
+- 📊 **Admin Panel** - User management and moderation
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
-- Supabase account (for database & storage)
-- DeepSeek API key (for AI features)
+- Node.js 18+
+- PostgreSQL or Supabase account
+- OpenRouter API key (for AI features)
 
 ### Installation
 
+1. **Clone the repository:**
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/wave-messenger.git
-cd wave-messenger
+git clone https://github.com/YOUR_USERNAME/wavechat.git
+cd wavechat
+```
 
-# Install dependencies
+2. **Install backend dependencies:**
+```bash
+cd backend
 npm install
+```
 
-# Set up environment variables
+3. **Configure environment:**
+```bash
 cp .env.example .env
-# Edit .env with your credentials
+# Edit .env with your configuration
+```
 
-# Build the project
+4. **Build and run:**
+```bash
 npm run build
-
-# Start the server
 npm start
 ```
 
-### Development
-
-```bash
-# Run in development mode
-npm run dev
-
-# Run tests
-npm test
-
-# Watch tests
-npm run test:watch
+5. **Access the app:**
+```
+http://localhost:3001
 ```
 
----
+## 📖 Documentation
 
-## 📦 Tech Stack
+- [Deployment Guide](DEPLOYMENT.md) - Deploy to VPS, Android tablet, or cloud
+- [API Documentation](backend/README.md) - Backend API reference
+- [Theme Guide](public/css/THEME_GUIDE.md) - Customize the UI
 
-### Frontend
-- **HTML5/CSS3** - Modern web standards
-- **Tailwind CSS** - Utility-first styling
-- **Vanilla JavaScript** - No framework overhead
-- **Socket.IO Client** - Real-time communication
-- **Material Symbols** - Icon library
+## 🛠️ Tech Stack
 
 ### Backend
-- **Node.js** - JavaScript runtime
-- **Express** - Web framework
-- **TypeScript** - Type safety
-- **Socket.IO** - WebSocket server
-- **Supabase** - Database & storage
-- **JWT** - Authentication tokens
-- **bcrypt** - Password hashing
+- **Node.js** + **TypeScript**
+- **Express.js** - Web framework
+- **Socket.io** - Real-time communication
+- **Supabase** - Database and authentication
+- **OpenRouter** - AI model access
 
-### AI & Services
-- **DeepSeek AI** - AI assistant
-- **Axios** - HTTP client
-- **Cheerio** - Web scraping
-- **OpenAI SDK** - AI integration
+### Frontend
+- **Vanilla JavaScript** - No framework overhead
+- **Tailwind CSS** - Utility-first styling
+- **Socket.io Client** - Real-time updates
+- **Material Icons** - Beautiful icons
 
-### Infrastructure
-- **Supabase** - PostgreSQL database
-- **Supabase Storage** - File storage
-- **WebSocket** - Real-time connections
+### Additional Services
+- **Python** - Telegram scraper bot
+- **Telethon** - Telegram API client
 
----
+## 📁 Project Structure
 
-## 🔧 Configuration
-
-### Environment Variables
-
-```env
-# Server
-PORT=3001
-NODE_ENV=production
-
-# Supabase
-SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_KEY=your-anon-key
-SUPABASE_SERVICE_KEY=your-service-key
-
-# AI Services
-DEEPSEEK_API_KEY=your-deepseek-key
-
-# JWT
-JWT_SECRET=your-secret-key
-
-# Optional
-IMGBB_API_KEY=your-imgbb-key
+```
+wavechat/
+├── backend/              # Node.js backend
+│   ├── src/
+│   │   ├── routes/      # API endpoints
+│   │   ├── services/    # Business logic
+│   │   ├── managers/    # Data management
+│   │   ├── socket/      # Socket.io handlers
+│   │   └── server.ts    # Main server file
+│   ├── migrations/      # Database migrations
+│   └── package.json
+├── public/              # Frontend static files
+│   ├── js/             # JavaScript modules
+│   ├── css/            # Stylesheets
+│   ├── mobile/         # Mobile-optimized pages
+│   └── *.html          # HTML pages
+├── feed-bot/           # Telegram scraper
+│   ├── telegram-scraper.py
+│   └── requirements.txt
+├── migrations/         # SQL migrations
+└── README.md
 ```
 
----
+## 🎨 Features in Detail
 
-## � API Documentation
+### AI Chat
+- 20+ AI models to choose from
+- Web search integration
+- Weather queries
+- Code generation
+- Translation
+- Summarization
 
-### Authentication
-- `POST /api/auth/signup` - Create new account
-- `POST /api/auth/login` - Login to account
-- `POST /api/auth/logout` - Logout
-- `GET /api/auth/me` - Get current user
-
-### Messaging
-- `GET /api/rooms` - Get user's rooms
-- `POST /api/rooms` - Create new room
-- `GET /api/rooms/:id/messages` - Get messages
-- `POST /api/messages` - Send message
-- `PUT /api/messages/:id` - Edit message
-- `DELETE /api/messages/:id` - Delete message
-
-### Direct Messages
-- `GET /api/dms` - Get DM conversations
-- `POST /api/dms` - Send direct message
-- `GET /api/dms/:userId` - Get DM history
-
-### AI
-- `POST /api/ai/message` - Send AI message
-- `GET /api/ai/status` - Get AI status
-- `GET /api/ai/help` - Get AI help
-
-### Music
-- `GET /api/music/tracks` - Get user tracks
-- `GET /api/music/playlists` - Get playlists
-- `POST /api/music/upload` - Upload track (Pro)
-- `GET /api/music/stream/:id` - Stream track
-- `POST /api/music/download/:id` - Download (Pro)
-
-### Feed
-- `GET /api/feed/channels` - Get channels
-- `POST /api/feed/channels` - Add channel
-- `GET /api/feed/posts` - Get feed posts
-
-### Profile
-- `GET /api/profile/:userId` - Get profile
-- `PUT /api/profile` - Update profile
-- `POST /api/profile/avatar` - Upload avatar
-
-### Settings
-- `GET /api/settings` - Get user settings
-- `PUT /api/settings` - Update settings
-
----
-
-## 🎯 Database Schema
-
-### Users
-- Authentication & profile data
-- Pro status & subscription info
-- Avatar & bio
-
-### Rooms
-- Chat rooms & metadata
-- Member management
-
-### Messages
-- Message content & metadata
-- Timestamps & read status
-
-### Direct Messages
-- Private conversations
+### Real-time Chat
+- Private messages
+- Group rooms
+- File sharing
+- Image uploads
 - Read receipts
+- Typing indicators
 
-### Music
-- Tracks & playlists
-- File storage references
+### Telegram Feed
+- Scrape public channels
+- Display posts in feed
+- Media support
+- Auto-sync
 
-### Feed
-- Telegram channel subscriptions
-- Feed posts
+### Customization
+- Custom themes
+- Background images
+- Transparency mode
+- Color schemes
 
-### AI Conversations
-- Chat history with AI
-- Conversation context
+## 🔐 Security
 
----
+- JWT authentication
+- Password hashing with bcrypt
+- SQL injection protection
+- XSS prevention
+- CORS configuration
+- Rate limiting
 
-## 🛡️ Security Features
+## 🌐 Deployment
 
-- **Password hashing** - bcrypt with salt rounds
-- **JWT authentication** - Secure token-based auth
-- **Input validation** - Sanitized user inputs
-- **SQL injection protection** - Parameterized queries
-- **XSS protection** - Content sanitization
-- **CORS configuration** - Controlled access
-- **Rate limiting** - API protection
-- **Secure file uploads** - File type validation
+### Deploy to Android Tablet (VPS)
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
----
-
-## 📱 Mobile Support
-
-Wave Messenger is fully responsive and optimized for mobile devices:
-- Touch-friendly interface
-- Mobile navigation
-- Optimized layouts
-- Fast loading times
-- PWA-ready architecture
-
----
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-npm test
-
-# Run with coverage
-npm test -- --coverage
-
-# Watch mode
-npm run test:watch
-```
-
-Tests include:
-- Unit tests for managers
-- Integration tests for routes
-- Property-based tests
-- Message expiration tests
-- Authentication tests
-
----
+### Deploy to Cloud
+- **Railway** - One-click deploy
+- **Heroku** - Easy setup
+- **DigitalOcean** - Full control
+- **AWS** - Enterprise scale
 
 ## 🤝 Contributing
 
-This is a private project. Contributions are not currently accepted.
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- OpenRouter for AI model access
+- Supabase for backend infrastructure
+- Tailwind CSS for styling
+- Socket.io for real-time features
+- Material Design for icons
+
+## 📧 Contact
+
+For questions or support, please open an issue on GitHub.
 
 ---
 
-## 📄 License
-
-Proprietary - All rights reserved
-
----
-
-## 🆘 Support
-
-For issues or questions:
-- Check the documentation
-- Review error logs
-- Contact support team
-
----
-
-## 🌟 Why Wave?
-
-### Speed
-- Instant message delivery
-- Optimized WebSocket connections
-- Fast page loads
-
-### Privacy
-- Secure authentication
-- Encrypted passwords
-- Private conversations
-
-### Features
-- AI assistant built-in
-- Music streaming
-- Social feeds
-- Modern UI/UX
-
-### Reliability
-- Robust error handling
-- Comprehensive testing
-- Production-ready code
-
----
-
-**Made with 🌊 by the Wave team**
-
-*Connect, chat, and share - all in one place.* 🚀
+Made with ❤️ by the WaveChat team

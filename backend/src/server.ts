@@ -21,6 +21,7 @@ import { createMusicRouter } from './routes/music';
 import { createAIRouter } from './routes/ai';
 import { setupSocketIO } from './socket/socketHandler';
 import { initializeEnhancedAIService } from './services/EnhancedAIService';
+import { initializeUnifiedAIService } from './services/UnifiedAIService';
 import { initializeProfileManager } from './managers/ProfileManager';
 import { initializeMusicManager } from './managers/MusicManager';
 import { initializeSubscriptionManager } from './managers/SubscriptionManager';
@@ -68,6 +69,19 @@ const fileUploadService = new FileUploadService(
 // Initialize Enhanced AI service with OpenRouter API key
 const aiService = initializeEnhancedAIService(process.env.OPENAI_API_KEY);
 console.log('✅ Enhanced AI Service initialized with multiple models');
+
+// Initialize Unified AI service with OpenRouter API key
+if (process.env.OPENAI_API_KEY) {
+  try {
+    initializeUnifiedAIService(process.env.OPENAI_API_KEY);
+    console.log('✅ Unified AI Service initialized with model selection support');
+    console.log(`   API Key: ${process.env.OPENAI_API_KEY.substring(0, 20)}...`);
+  } catch (error: any) {
+    console.error('❌ Failed to initialize Unified AI Service:', error.message);
+  }
+} else {
+  console.warn('⚠️  OPENAI_API_KEY not found - Unified AI Service will not work');
+}
 
 // Initialize profile manager
 if (config.supabaseUrl && config.supabaseKey) {

@@ -1,46 +1,89 @@
 /* WAVE Messenger - Universal Theme System */
+/* 
+ * GLOBAL COLOR SYSTEM
+ * Change colors in theme-config.css to theme the entire app
+ */
 
 /* Theme CSS Variables */
 :root {
-    /* Light Mode Colors - Clean and Modern */
-    --bg-primary: #f5f7fa;
-    --bg-secondary: #ffffff;
-    --surface: #ffffff;
-    --surface-hover: #f8f9fb;
-    --border: #d1d5db;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
+    /* Main Theme Colors - Defined in theme-config.css */
+    --color-primary: #3b82f6;
+    --color-secondary: #8b92a8;
+    --color-tertiary: #10b981;
+    
+    /* Background Colors - Defined in theme-config.css */
+    --bg-primary: var(--bg-page, #f5f7fa);
+    --bg-secondary: var(--bg-secondary, #ffffff);
+    --surface: var(--bg-surface, #ffffff);
+    --surface-dark: var(--bg-surface-dark, #f8f9fb);
+    --surface-hover: var(--bg-surface-lighter, #ffffff);
+    --surface-dark-hover: #1a2830;
+    
+    /* Text Colors */
+    --text-primary: var(--text-primary, #111827);
+    --text-secondary: var(--text-secondary, #6b7280);
+    --text-muted: var(--text-muted, #9ca3af);
+    
+    /* Border Colors */
+    --border: var(--border-main, #d1d5db);
+    --border-dark: var(--border-dark, #e5e7eb);
+    --border-subtle: var(--border-subtle, #f3f4f6);
+    
+    /* Accent Colors */
+    --accent: var(--color-primary);
+    --accent-hover: var(--color-tertiary);
     --shadow: rgba(0, 0, 0, 0.08);
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
+    
     /* Logo */
     --logo-url: url('/lightwave.png');
 }
 
 .dark {
-    /* Dark Mode Colors - Premium Discord/Telegram Style */
-    --bg-primary: #0f1419;
-    --bg-secondary: #1a1f2e;
-    --surface: #1e2433;
-    --surface-hover: #252d3d;
-    --border: #2d3748;
-    --text-primary: #e4e6eb;
-    --text-secondary: #8b92a8;
+    /* Main Theme Colors - Defined in theme-config.css */
+    --color-primary: #00d9ff;
+    --color-secondary: #90bccb;
+    --color-tertiary: #34caff;
+    
+    /* Background Colors - Use theme-config.css values */
+    --bg-primary: var(--bg-page, #0f1419);
+    --bg-secondary: var(--bg-secondary, #1a1f2e);
+    --surface: var(--bg-surface, #1e2433);
+    --surface-dark: var(--bg-surface-dark, #101e23);
+    --surface-hover: var(--bg-surface-lighter, #252d3d);
+    --surface-dark-hover: #1a2830;
+    
+    /* Text Colors */
+    --text-primary: var(--text-primary, #e4e6eb);
+    --text-secondary: var(--text-secondary, #90bccb);
+    --text-muted: var(--text-muted, #5a7d8a);
+    
+    /* Border Colors */
+    --border: var(--border-main, #2d3748);
+    --border-dark: var(--border-dark, #223f49);
+    --border-subtle: var(--border-subtle, #1e2433);
+    
+    /* Accent Colors */
     --shadow: rgba(0, 0, 0, 0.4);
-    --accent: #5b8def;
-    --accent-hover: #4a7de8;
-    --accent-glow: rgba(91, 141, 239, 0.15);
+    --accent: var(--color-primary);
+    --accent-hover: var(--color-tertiary);
+    --accent-glow: rgba(0, 217, 255, 0.15);
+    
     /* Logo */
     --logo-url: url('/wavechat.png');
     
     /* Additional dark mode variables */
     --surface-elevated: #252d3d;
     --surface-sunken: #161b26;
-    --border-subtle: #1e2433;
-    --text-muted: #6b7280;
     --success: #10b981;
     --warning: #f59e0b;
     --error: #ef4444;
+    
+    /* Computed colors based on primary */
+    --primary-rgb: 0, 217, 255;
+    --primary-10: rgba(0, 217, 255, 0.1);
+    --primary-20: rgba(0, 217, 255, 0.2);
+    --primary-30: rgba(0, 217, 255, 0.3);
+    --primary-50: rgba(0, 217, 255, 0.5);
 }
 
 /* Apply theme colors */
@@ -191,4 +234,182 @@ input:focus, textarea:focus, select:focus {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+}
+
+
+/* ========================================
+ * UTILITY CLASSES - Use CSS Variables
+ * ======================================== */
+
+/* Background Colors */
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-secondary { background-color: var(--color-secondary) !important; }
+.bg-tertiary { background-color: var(--color-tertiary) !important; }
+.bg-surface { background-color: var(--surface) !important; }
+.bg-surface-dark { background-color: var(--surface-dark) !important; }
+.bg-surface-hover { background-color: var(--surface-hover) !important; }
+.bg-surface-dark-hover { background-color: var(--surface-dark-hover) !important; }
+.bg-page { background-color: var(--bg-page) !important; }
+.bg-nav { background-color: var(--bg-nav) !important; }
+
+/* Background with theme variables */
+.bg-background-dark { background-color: var(--bg-surface-dark) !important; }
+.bg-surface-lighter { background-color: var(--surface-hover) !important; }
+
+/* Text Colors */
+.text-primary { color: var(--color-primary) !important; }
+.text-secondary { color: var(--color-secondary) !important; }
+.text-tertiary { color: var(--color-tertiary) !important; }
+.text-muted { color: var(--text-muted) !important; }
+
+/* Border Colors */
+.border-primary { border-color: var(--color-primary) !important; }
+.border-secondary { border-color: var(--color-secondary) !important; }
+.border-dark { border-color: var(--border-dark) !important; }
+.border-main { border-color: var(--border-main) !important; }
+.border-subtle { border-color: var(--border-subtle) !important; }
+
+/* Hover States */
+.hover\:bg-primary:hover { background-color: var(--color-primary) !important; }
+.hover\:bg-tertiary:hover { background-color: var(--color-tertiary) !important; }
+.hover\:bg-surface-hover:hover { background-color: var(--surface-hover) !important; }
+.hover\:bg-surface-dark-hover:hover { background-color: var(--surface-dark-hover) !important; }
+.hover\:bg-surface-lighter:hover { background-color: var(--surface-hover) !important; }
+.hover\:text-primary:hover { color: var(--color-primary) !important; }
+.hover\:text-white:hover { color: white !important; }
+
+/* Focus States */
+.focus\:border-primary:focus { border-color: var(--color-primary) !important; }
+.focus\:ring-primary:focus { 
+    --tw-ring-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
+}
+
+/* Opacity Variants */
+.bg-primary\/10 { background-color: var(--primary-10) !important; }
+.bg-primary\/20 { background-color: var(--primary-20) !important; }
+.bg-primary\/30 { background-color: var(--primary-30) !important; }
+.bg-primary\/50 { background-color: var(--primary-50) !important; }
+
+.border-primary\/50 { border-color: var(--primary-50) !important; }
+
+/* Shadow Variants */
+.shadow-primary\/20 { 
+    box-shadow: 0 10px 15px -3px var(--primary-20), 0 4px 6px -4px var(--primary-10) !important;
+}
+
+/* Placeholder Colors */
+.placeholder-muted::placeholder { color: var(--text-muted) !important; }
+.placeholder-secondary::placeholder { color: var(--color-secondary) !important; }
+
+/* Active States */
+.active\:scale-95:active { transform: scale(0.95) !important; }
+.active\:scale-\[0\.98\]:active { transform: scale(0.98) !important; }
+
+/* Transition Utilities */
+.transition-colors { transition: color 0.2s, background-color 0.2s, border-color 0.2s !important; }
+.transition-all { transition: all 0.2s !important; }
+
+/* ========================================
+ * COMPONENT-SPECIFIC OVERRIDES
+ * ======================================== */
+
+/* Replace hardcoded #90bccb with secondary color */
+.dark [class*="text-[#90bccb]"],
+.dark .text-\[\#90bccb\] {
+    color: var(--color-secondary) !important;
+}
+
+.dark [class*="hover:text-white"]:hover {
+    color: white !important;
+}
+
+/* Replace hardcoded #34caff with tertiary color */
+.dark [class*="bg-[#34caff]"],
+.dark .bg-\[\#34caff\],
+.dark [class*="hover:bg-[#34caff]"]:hover,
+.dark .hover\:bg-\[\#34caff\]:hover {
+    background-color: var(--color-tertiary) !important;
+}
+
+/* Replace hardcoded #101e23 with surface-dark */
+.dark [class*="bg-[#101e23]"],
+.dark .bg-\[\#101e23\] {
+    background-color: var(--surface-dark) !important;
+}
+
+/* Replace hardcoded #223f49 with border-dark */
+.dark [class*="border-[#223f49]"],
+.dark .border-\[\#223f49\] {
+    border-color: var(--border-dark) !important;
+}
+
+/* Replace hardcoded #5a7d8a with text-muted */
+.dark [class*="placeholder-[#5a7d8a]"]::placeholder,
+.dark .placeholder-\[\#5a7d8a\]::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* Replace hardcoded #144535 with darker surface */
+.dark [class*="focus:bg-[#144535]"]:focus,
+.dark .focus\:bg-\[\#144535\]:focus {
+    background-color: var(--surface-dark) !important;
+}
+
+/* Replace hardcoded #2563eb with accent-hover */
+.dark [class*="hover:bg-[#2563eb]"]:hover,
+.dark .hover\:bg-\[\#2563eb\]:hover {
+    background-color: var(--accent-hover) !important;
+}
+
+/* ========================================
+ * BUTTON COMPONENTS
+ * ======================================== */
+
+/* Primary Button */
+.btn-primary,
+button.bg-primary,
+a.bg-primary {
+    background-color: var(--color-primary) !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+    transition: all 0.2s !important;
+}
+
+.btn-primary:hover,
+button.bg-primary:hover,
+a.bg-primary:hover {
+    background-color: var(--color-tertiary) !important;
+    transform: translateY(-1px);
+}
+
+.dark .btn-primary:hover,
+.dark button.bg-primary:hover,
+.dark a.bg-primary:hover {
+    box-shadow: 0 4px 16px var(--accent-glow) !important;
+}
+
+/* ========================================
+ * INPUT COMPONENTS
+ * ======================================== */
+
+.dark input,
+.dark textarea,
+.dark select {
+    background-color: var(--surface-dark) !important;
+    border-color: var(--border-dark) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+    border-color: var(--color-primary) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
 }

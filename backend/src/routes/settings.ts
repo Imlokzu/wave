@@ -4,6 +4,29 @@ import { AuthService } from '../services/AuthService';
 import { IUserManager } from '../managers/IUserManager';
 import { getSubscriptionManager } from '../managers/SubscriptionManager';
 import { getAvailableModels, AI_MODELS } from '../services/AIModelConfig';
+import multer from 'multer';
+import path from 'path';
+import { createClient } from '@supabase/supabase-js';
+import { config } from '../config';
+
+// Initialize Supabase client
+const supabase = createClient(config.supabaseUrl, config.supabaseKey);
+
+// Configure multer for background uploads (memory storage)
+const backgroundUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit for backgrounds
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, WEBP, and GIF are allowed.'));
+    }
+  },
+});
 
 export function createSettingsRouter(userManager: IUserManager): Router {
   const router = Router();
@@ -259,6 +282,97 @@ export function createSettingsRouter(userManager: IUserManager): Router {
       });
     } catch (error: any) {
       console.error('Error calculating storage:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
+  /**
+   * POST /api/settings/background
+   * Upload custom chat background
+   */
+  router.post('/background', authMiddleware, backgroundUpload.single('background'), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No background file provided',
+        });
+      }
+
+      // Generate unique filename
+      const ext = path.extname(req.file.originalname);
+      const filename = `backgrounds/${userId}_${Date.now()}${ext}`;
+
+      console.log(`[Settings] Uploading background for user ${userId}: ${filename}`);
+
+      // Get old background to delete later (if exists)
+      const user = await userManager.getUser(userId);
+      const oldBackgroundUrl = (user as any)?.customBackground || null;
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(config.supabaseBucket)
+        .upload(filename, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('[Settings] Supabase upload error:', uploadError);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to upload background to storage',
+        });
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from(config.supabaseBucket)
+        .getPublicUrl(filename);
+
+      const backgroundUrl = urlData.publicUrl;
+
+      console.log(`[Settings] Background uploaded successfully: ${backgroundUrl}`);
+
+      // Delete old background if it exists
+      if (oldBackgroundUrl && oldBackgroundUrl.includes(config.supabaseBucket)) {
+        try {
+          const oldFilename = oldBackgroundUrl.split('/').pop();
+          if (oldFilename && oldFilename.startsWith('backgrounds/')) {
+            await supabase.storage
+              .from(config.supabaseBucket)
+              .remove([oldFilename]);
+            console.log(`[Settings] Deleted old background: ${oldFilename}`);
+          }
+        } catch (error) {
+          console.error('[Settings] Error deleting old background:', error);
+        }
+      }
+
+      // TODO: Save backgroundUrl to user settings in database
+      // For now, just return the URL
+      
+      res.json({
+        success: true,
+        data: {
+          backgroundUrl,
+          message: 'Background uploaded successfully'
+        }
+      });
+    } catch (error: any) {
+      console.error('[Settings] Error uploading background:', error);
       res.status(500).json({
         success: false,
         error: error.message

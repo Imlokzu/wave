@@ -272,7 +272,18 @@ function selectAIModel(modelId) {
   
   // Show feedback
   const toast = document.createElement('div');
-  toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-full shadow-lg z-50 animate-pulse';
+  toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 text-white px-6 py-3 rounded-full z-50';
+  toast.style.cssText = `
+    background: linear-gradient(135deg, rgba(13, 185, 242, 0.5) 0%, rgba(13, 185, 242, 0.7) 100%);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 
+      0 8px 24px rgba(13, 185, 242, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  `;
   toast.textContent = modelId === 'auto' ? 'Auto-select enabled' : `Model changed to ${modelId}`;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);
@@ -367,10 +378,25 @@ function logout() {
 // Show toast notification
 function showToast(message) {
   const toast = document.createElement('div');
-  toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-full shadow-lg z-50 animate-pulse';
+  toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 text-white px-6 py-3 rounded-full z-50';
+  toast.style.cssText = `
+    background: linear-gradient(135deg, rgba(13, 185, 242, 0.5) 0%, rgba(13, 185, 242, 0.7) 100%);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 
+      0 8px 24px rgba(13, 185, 242, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.3s ease-out;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  `;
   toast.textContent = message;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2000);
+  setTimeout(() => {
+    toast.style.animation = 'slideUp 0.3s ease-in';
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
 }
 
 // Theme switcher
@@ -965,4 +991,139 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(`Time format: ${e.target.value === '12' ? '12-hour' : '24-hour'}`);
     });
   }
+  
+  // Background theme selector
+  initBackgroundSelector();
 });
+
+// Background theme selector functions
+function initBackgroundSelector() {
+  // Load saved background settings
+  const savedBackground = localStorage.getItem('chatBackground') || 'none';
+  const savedOpacity = localStorage.getItem('bgOpacity') || '10';
+  const savedBlur = localStorage.getItem('bgBlur') || '4';
+  
+  // Update UI to reflect saved settings
+  updateBackgroundSelection(savedBackground);
+  
+  const bgOpacitySlider = document.getElementById('bgOpacitySlider');
+  const bgOpacityValue = document.getElementById('bgOpacityValue');
+  const bgBlurSlider = document.getElementById('bgBlurSlider');
+  const bgBlurValue = document.getElementById('bgBlurValue');
+  
+  if (bgOpacitySlider && bgOpacityValue) {
+    bgOpacitySlider.value = savedOpacity;
+    bgOpacityValue.textContent = `${savedOpacity}%`;
+    
+    bgOpacitySlider.addEventListener('input', (e) => {
+      const value = e.target.value;
+      bgOpacityValue.textContent = `${value}%`;
+      localStorage.setItem('bgOpacity', value);
+      applyBackgroundToChat();
+    });
+  }
+  
+  if (bgBlurSlider && bgBlurValue) {
+    bgBlurSlider.value = savedBlur;
+    bgBlurValue.textContent = `${savedBlur}px`;
+    
+    bgBlurSlider.addEventListener('input', (e) => {
+      const value = e.target.value;
+      bgBlurValue.textContent = `${value}px`;
+      localStorage.setItem('bgBlur', value);
+      applyBackgroundToChat();
+    });
+  }
+  
+  // Background option buttons
+  const backgroundOptions = document.querySelectorAll('.background-option');
+  backgroundOptions.forEach(option => {
+    option.addEventListener('click', (e) => {
+      const background = option.dataset.background;
+      if (background) {
+        selectBackground(background);
+      }
+    });
+  });
+  
+  // Custom background upload
+  const customBackgroundInput = document.getElementById('customBackgroundInput');
+  if (customBackgroundInput) {
+    customBackgroundInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // Show loading toast
+        showToast('Uploading background...');
+        
+        try {
+          // Upload to Supabase via backend
+          const formData = new FormData();
+          formData.append('background', file);
+          
+          const authToken = localStorage.getItem('authToken');
+          const response = await fetch('/api/settings/background', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+          });
+          
+          if (!response.ok) {
+            throw new Error('Upload failed');
+          }
+          
+          const data = await response.json();
+          
+          if (data.success && data.data.backgroundUrl) {
+            // Store the Supabase URL instead of base64
+            localStorage.setItem('customBackgroundUrl', data.data.backgroundUrl);
+            selectBackground('custom');
+            showToast('Background uploaded successfully!');
+          } else {
+            throw new Error(data.error || 'Upload failed');
+          }
+        } catch (error) {
+          console.error('[Background] Upload error:', error);
+          showToast('Failed to upload background');
+        }
+      }
+    });
+  }
+}
+
+function selectBackground(backgroundType) {
+  localStorage.setItem('chatBackground', backgroundType);
+  updateBackgroundSelection(backgroundType);
+  applyBackgroundToChat();
+  showToast(`Background: ${backgroundType}`);
+}
+
+function updateBackgroundSelection(activeBackground) {
+  const backgroundOptions = document.querySelectorAll('.background-option');
+  backgroundOptions.forEach(option => {
+    const background = option.dataset.background;
+    const checkIcon = option.querySelector('.material-symbols-outlined:last-child');
+    
+    if (background === activeBackground) {
+      option.classList.add('border-primary', 'bg-surface-dark-hover');
+      option.classList.remove('border-[#223f49]');
+      if (checkIcon && !checkIcon.classList.contains('text-primary')) {
+        checkIcon.classList.remove('hidden');
+      }
+    } else {
+      option.classList.remove('border-primary', 'bg-surface-dark-hover');
+      option.classList.add('border-[#223f49]');
+      if (checkIcon && checkIcon.classList.contains('text-primary')) {
+        checkIcon.classList.add('hidden');
+      }
+    }
+  });
+}
+
+function applyBackgroundToChat() {
+  // This function will be called to apply the background to chat.html
+  // The actual application happens in chat.html on page load
+  // We just save the settings here
+  console.log('[Background] Settings saved, will apply on next chat page load');
+}

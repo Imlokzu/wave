@@ -825,8 +825,13 @@ class UIManager {
     const avatar = document.createElement('div');
     avatar.className = 'w-10 h-10 rounded-full bg-surface-lighter shrink-0 mt-1 flex items-center justify-center overflow-hidden';
     
-    // Check if user has avatar
-    if (message.senderAvatar || message.avatar) {
+    // Check if it's an AI message
+    if (message.type === 'ai' || message.isAI) {
+      // AI avatar with special styling
+      avatar.className = 'w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent-cyan shrink-0 mt-1 flex items-center justify-center';
+      avatar.innerHTML = '<span class="material-symbols-outlined text-white text-[20px]">psychology</span>';
+    } else if (message.senderAvatar || message.avatar) {
+      // Check if user has avatar
       const avatarImg = document.createElement('img');
       avatarImg.src = message.senderAvatar || message.avatar;
       avatarImg.alt = message.senderNickname || 'User';
@@ -848,8 +853,15 @@ class UIManager {
     const nameDiv = document.createElement('div');
     nameDiv.className = 'flex items-baseline gap-2';
     const nameSpan = document.createElement('span');
-    nameSpan.className = 'text-sm font-bold text-white';
-    nameSpan.textContent = message.senderNickname || 'Unknown';
+    
+    // Special styling for AI messages
+    if (message.type === 'ai' || message.isAI) {
+      nameSpan.className = 'text-sm font-bold bg-gradient-to-r from-primary to-accent-cyan bg-clip-text text-transparent';
+      nameSpan.textContent = message.senderNickname || 'AI Assistant';
+    } else {
+      nameSpan.className = 'text-sm font-bold text-white';
+      nameSpan.textContent = message.senderNickname || 'Unknown';
+    }
     nameDiv.appendChild(nameSpan);
 
     // Edited indicator
@@ -862,7 +874,13 @@ class UIManager {
 
     // Bubble
     const bubbleEl = document.createElement('div');
-    bubbleEl.className = 'bg-surface-dark p-4 rounded-2xl rounded-tl-none shadow-sm text-slate-200 text-sm leading-relaxed border border-slate-800';
+    
+    // Special styling for AI messages
+    if (message.type === 'ai' || message.isAI) {
+      bubbleEl.className = 'bg-gradient-to-br from-primary/10 to-accent-cyan/10 border border-primary/30 p-4 rounded-2xl rounded-tl-none shadow-lg text-slate-200 text-sm leading-relaxed';
+    } else {
+      bubbleEl.className = 'bg-surface-dark p-4 rounded-2xl rounded-tl-none shadow-sm text-slate-200 text-sm leading-relaxed border border-slate-800';
+    }
     
     // Handle different message types
     if (message.type === 'image' && message.imageUrl) {
@@ -1157,75 +1175,10 @@ class UIManager {
    */
   createMessageActions(messageId, content, messageType = 'text') {
     const actionsDiv = document.createElement('div');
-    // Position buttons to the left, hidden by default, visible on hover
+    // Empty div - no hover buttons, only right-click menu
     actionsDiv.className = 'absolute -left-14 top-1 opacity-0 group-hover/msg:opacity-100 transition-opacity flex gap-1';
-
-    // Check if this is the current user's message
-    const currentUserId = state?.get('user.id');
-    const currentUsername = state?.get('user.username');
-    const currentNickname = state?.get('user.nickname');
     
-    // Get message details from state to check ownership
-    const messages = state?.get('messages') || [];
-    const message = messages.find(m => m.id === messageId);
-    
-    // Check if user owns this message by comparing username or nickname
-    const isOwnMessage = message && (
-      message.senderId === currentUserId ||
-      message.senderNickname === currentNickname ||
-      message.senderNickname === currentUsername
-    );
-
-    // Only show edit/delete buttons for own messages
-    if (!isOwnMessage) {
-      // For other users' messages, show report button
-      const reportBtn = document.createElement('button');
-      reportBtn.className = 'w-7 h-7 rounded-lg bg-surface-dark hover:bg-red-600 text-slate-400 hover:text-white transition-colors flex items-center justify-center shadow-lg border border-slate-700';
-      reportBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">flag</span>';
-      reportBtn.title = 'Report message';
-      reportBtn.onclick = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        console.log('[UI] Report clicked for message:', messageId);
-        if (this.onReportClick) {
-          this.onReportClick(messageId, message);
-        }
-      };
-      actionsDiv.appendChild(reportBtn);
-      return actionsDiv;
-    }
-
-    // Edit button - only for text messages
-    if (messageType === 'text' || messageType === 'normal' || !messageType) {
-      const editBtn = document.createElement('button');
-      editBtn.className = 'w-7 h-7 rounded-lg bg-surface-dark hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors flex items-center justify-center shadow-lg border border-slate-700';
-      editBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">edit</span>';
-      editBtn.onclick = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        console.log('[UI] ✅ Edit clicked for message:', messageId);
-        if (this.onEditClick) {
-          this.onEditClick(messageId, content);
-        }
-      };
-      actionsDiv.appendChild(editBtn);
-    }
-
-    // Delete button - for all message types (but only own messages)
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'w-7 h-7 rounded-lg bg-surface-dark hover:bg-red-600 text-slate-400 hover:text-white transition-colors flex items-center justify-center shadow-lg border border-slate-700';
-    deleteBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">delete</span>';
-    deleteBtn.onclick = (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      console.log('[UI] ✅ Delete clicked for message:', messageId, 'type:', messageType);
-      if (this.onDeleteClick) {
-        this.onDeleteClick(messageId);
-      }
-    };
-    actionsDiv.appendChild(deleteBtn);
-
-    console.log('[UI] Created action buttons for message:', messageId, 'type:', messageType, 'isOwn:', isOwnMessage);
+    // No buttons - all actions moved to right-click context menu
     return actionsDiv;
   }
 

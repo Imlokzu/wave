@@ -1,16 +1,37 @@
 import { Router, Request, Response } from 'express';
-import { getDeepSeekService } from '../services/DeepSeekAIService';
+import { getUnifiedAIService } from '../services/UnifiedAIService';
 
 export function createAIChatRouter(): Router {
   const router = Router();
 
   /**
+   * GET /api/ai-chat/test
+   * Test endpoint to verify service is initialized
+   */
+  router.get('/test', async (req: Request, res: Response) => {
+    try {
+      const aiService = getUnifiedAIService();
+      res.json({
+        success: true,
+        message: 'UnifiedAIService is initialized and ready',
+        serviceAvailable: true
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+        serviceAvailable: false
+      });
+    }
+  });
+
+  /**
    * POST /api/ai-chat
-   * Chat with DeepSeek-R1 AI with optional web search
+   * Chat with AI with optional web search and model selection
    */
   router.post('/', async (req: Request, res: Response) => {
     try {
-      const { messages, enableSearch = true } = req.body;
+      const { messages, enableSearch = true, model } = req.body;
 
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({
@@ -18,15 +39,15 @@ export function createAIChatRouter(): Router {
         });
       }
 
-      console.log(`[AI Chat API] Received chat request (${messages.length} messages, search: ${enableSearch})`);
+      console.log(`[AI Chat API] Received chat request (${messages.length} messages, search: ${enableSearch}, model: ${model || 'auto'})`);
 
-      const deepSeekService = getDeepSeekService();
-      const response = await deepSeekService.chat(messages, enableSearch);
+      const aiService = getUnifiedAIService();
+      const response = await aiService.chat(messages, enableSearch, model);
 
       res.json({
         success: true,
         response,
-        model: 'deepseek-r1',
+        model: model || 'auto',
         searchEnabled: enableSearch
       });
     } catch (error: any) {
@@ -45,13 +66,15 @@ export function createAIChatRouter(): Router {
    */
   router.post('/simple', async (req: Request, res: Response) => {
     try {
-      const { message, enableSearch = true } = req.body;
+      const { message, enableSearch = true, model } = req.body;
 
       if (!message || typeof message !== 'string') {
         return res.status(400).json({
           error: 'Message is required and must be a string'
         });
       }
+
+      console.log(`[AI Chat API] Simple request - message: "${message.substring(0, 50)}...", model: ${model || 'auto'}, search: ${enableSearch}`);
 
       const messages = [
         {
@@ -60,21 +83,26 @@ export function createAIChatRouter(): Router {
         }
       ];
 
-      const deepSeekService = getDeepSeekService();
-      const response = await deepSeekService.chat(messages, enableSearch);
+      const aiService = getUnifiedAIService();
+      console.log('[AI Chat API] Got UnifiedAIService instance');
+      
+      const response = await aiService.chat(messages, enableSearch, model);
+      console.log('[AI Chat API] Got response from AI');
 
       res.json({
         success: true,
         response,
-        model: 'deepseek-r1',
+        model: model || 'auto',
         searchEnabled: enableSearch
       });
     } catch (error: any) {
       console.error('[AI Chat API] Error:', error);
+      console.error('[AI Chat API] Error stack:', error.stack);
       res.status(500).json({
         success: false,
         error: 'AI chat failed',
-        message: error.message
+        message: error.message,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
   });

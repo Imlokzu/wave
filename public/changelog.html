@@ -33,6 +33,51 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(13, 185, 242, 0.15);
         }
+        .semver-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .semver-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .semver-content {
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #16262c;
+            border-radius: 1rem;
+            border: 1px solid rgba(13, 185, 242, 0.3);
+        }
+        .semver-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .semver-content::-webkit-scrollbar-track {
+            background: #101e23;
+        }
+        .semver-content::-webkit-scrollbar-thumb {
+            background: #0db9f2;
+            border-radius: 4px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .badge-major { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-minor { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-patch { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
     </style>
 </head>
 <body class="bg-background-dark text-slate-100 font-display relative overflow-x-hidden">
@@ -53,23 +98,31 @@
                     <div class="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
                         <span class="material-symbols-outlined text-primary text-3xl">history</span>
                     </div>
-                    <div>
-                        <h1 class="text-5xl font-black text-white mb-2">Changelog</h1>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3">
+                            <h1 class="text-5xl font-black text-white mb-2">Changelog</h1>
+                            <button onclick="toggleSemverModal()" class="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary/30 flex items-center justify-center transition-all cursor-pointer border border-primary/30 hover:border-primary/50" title="About Semantic Versioning">
+                                <span class="material-symbols-outlined text-primary text-xl">help</span>
+                            </button>
+                        </div>
                         <p class="text-slate-400">Track all updates and improvements to Wave Messenger</p>
+                        <p class="text-slate-500 text-sm mt-2">Following <span class="text-primary font-semibold">Semantic Versioning 2.0.0</span></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Version 4.2.0 -->
+        <!-- Version 1.0.0 -->
         <div class="version-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6">
             <div class="flex items-start justify-between mb-6">
                 <div>
                     <div class="flex items-center gap-3 mb-2">
-                        <h2 class="text-3xl font-bold text-white">Version 4.2.0</h2>
+                        <h2 class="text-3xl font-bold text-white">Version 1.0.0</h2>
+                        <span class="badge badge-major">MAJOR</span>
                         <span class="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-bold">Latest</span>
                     </div>
-                    <p class="text-slate-400">December 28, 2025</p>
+                    <p class="text-slate-400">January 22, 2026</p>
+                    <p class="text-slate-500 text-sm mt-1">🎉 Initial stable release - Public API defined</p>
                 </div>
             </div>
 
@@ -216,11 +269,77 @@
             </div>
         </div>
 
-        <!-- Version 4.1.0 -->
-        <div class="version-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6">
+        <!-- Version 0.9.0 -->
+        <div class="version-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6 opacity-75">
             <div class="flex items-start justify-between mb-6">
                 <div>
-                    <h2 class="text-3xl font-bold text-white mb-2">Version 4.1.0</h2>
+                    <div class="flex items-center gap-3 mb-2">
+                        <h2 class="text-3xl font-bold text-white">Version 0.9.0</h2>
+                        <span class="badge badge-minor">MINOR</span>
+                        <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-sm font-bold">Beta</span>
+                    </div>
+                    <p class="text-slate-400">December 28, 2025</p>
+                    <p class="text-slate-500 text-sm mt-1">Pre-release - Final beta before stable</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-400">add_circle</span>
+                        Added
+                    </h3>
+                    <ul class="space-y-2 ml-8">
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Auto-Update System</strong> - Automatic update notifications and changelog display</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>User Profiles</strong> - Custom avatars, bios, and profile pages</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Direct Messages</strong> - Private 1-on-1 conversations with read receipts</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>AI Chat Interface</strong> - DeepSeek AI integration</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Telegram Feed</strong> - Follow and view Telegram channels</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Music Player UI</strong> - Music streaming interface</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Wave Pro System</strong> - Premium subscription framework</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Mobile Layouts</strong> - Dedicated mobile-optimized pages</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Legal Pages</strong> - Terms, Privacy Policy, Help Center</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Version 0.5.0 -->
+        <div class="version-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6 opacity-75">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <h2 class="text-3xl font-bold text-white">Version 0.5.0</h2>
+                        <span class="badge badge-minor">MINOR</span>
+                        <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-sm font-bold">Beta</span>
+                    </div>
                     <p class="text-slate-400">December 15, 2025</p>
                 </div>
             </div>
@@ -254,36 +373,20 @@
                         </li>
                     </ul>
                 </div>
-                
-                <div>
-                    <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-blue-400">upgrade</span>
-                        Enhanced
-                    </h3>
-                    <ul class="space-y-2 ml-8">
-                        <li class="text-slate-300 flex items-start gap-2">
-                            <span class="text-blue-400">•</span>
-                            <span><strong>UI Redesign</strong> - Modern dark theme interface</span>
-                        </li>
-                        <li class="text-slate-300 flex items-start gap-2">
-                            <span class="text-blue-400">•</span>
-                            <span><strong>Performance</strong> - Optimized message loading and rendering</span>
-                        </li>
-                        <li class="text-slate-300 flex items-start gap-2">
-                            <span class="text-blue-400">•</span>
-                            <span><strong>Error Handling</strong> - Better error messages and recovery</span>
-                        </li>
-                    </ul>
-                </div>
             </div>
         </div>
 
-        <!-- Version 4.0.0 -->
-        <div class="version-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6">
+        <!-- Version 0.1.0 -->
+        <div class="version-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6 opacity-75">
             <div class="flex items-start justify-between mb-6">
                 <div>
-                    <h2 class="text-3xl font-bold text-white mb-2">Version 4.0.0</h2>
+                    <div class="flex items-center gap-3 mb-2">
+                        <h2 class="text-3xl font-bold text-white">Version 0.1.0</h2>
+                        <span class="badge badge-minor">MINOR</span>
+                        <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm font-bold">Alpha</span>
+                    </div>
                     <p class="text-slate-400">December 1, 2025</p>
+                    <p class="text-slate-500 text-sm mt-1">Initial development release</p>
                 </div>
             </div>
 
@@ -291,7 +394,7 @@
                 <div>
                     <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
                         <span class="material-symbols-outlined text-green-400">add_circle</span>
-                        Initial Release
+                        Initial Features
                     </h3>
                     <ul class="space-y-2 ml-8">
                         <li class="text-slate-300 flex items-start gap-2">
@@ -315,6 +418,36 @@
             </div>
         </div>
 
+        <!-- Semantic Versioning Info Section -->
+        <div class="mt-12 p-6 bg-surface-dark/30 rounded-xl border border-primary/20">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-2xl">info</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-2">About Version Numbers</h3>
+                    <p class="text-slate-300 mb-3">Wave Messenger follows <strong class="text-primary">Semantic Versioning 2.0.0</strong> (SemVer)</p>
+                    <div class="flex flex-wrap gap-3 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="badge badge-major">MAJOR</span>
+                            <span class="text-slate-400 text-sm">Breaking changes</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="badge badge-minor">MINOR</span>
+                            <span class="text-slate-400 text-sm">New features</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="badge badge-patch">PATCH</span>
+                            <span class="text-slate-400 text-sm">Bug fixes</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleSemverModal()" class="text-primary hover:text-primary/80 text-sm font-semibold transition-colors">
+                        Learn more about Semantic Versioning →
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="mt-12 pt-8 border-t border-slate-700/50 text-center">
             <div class="flex items-center justify-center gap-2 mb-4">
                 <img src="/nobackwave.png" alt="Wave" class="h-8 w-8 object-contain opacity-50" />
@@ -323,5 +456,182 @@
             <p class="text-slate-400 text-sm">© 2025 Wave Messenger. All rights reserved.</p>
         </div>
     </div>
+</body>
+</html>
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <img src="/nobackwave.png" alt="Wave" class="h-8 w-8 object-contain opacity-50" />
+                <span class="text-slate-500 font-semibold">Wave Messenger</span>
+            </div>
+            <p class="text-slate-400 text-sm">© 2026 Wave Messenger. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- Semantic Versioning Modal -->
+    <div id="semverModal" class="semver-modal" onclick="if(event.target === this) toggleSemverModal()">
+        <div class="semver-content p-8">
+            <div class="flex items-start justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-2xl">info</span>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">Semantic Versioning 2.0.0</h2>
+                        <p class="text-slate-400">Understanding version numbers</p>
+                    </div>
+                </div>
+                <button onclick="toggleSemverModal()" class="w-10 h-10 rounded-lg bg-slate-700/50 hover:bg-slate-700 flex items-center justify-center transition-colors">
+                    <span class="material-symbols-outlined text-slate-300">close</span>
+                </button>
+            </div>
+
+            <div class="space-y-6 text-slate-300">
+                <!-- Summary -->
+                <div class="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                    <h3 class="text-xl font-bold text-white mb-3">Summary</h3>
+                    <p class="mb-3">Given a version number <strong class="text-primary">MAJOR.MINOR.PATCH</strong>, increment the:</p>
+                    <ul class="space-y-2 ml-4">
+                        <li class="flex items-start gap-2">
+                            <span class="badge badge-major mt-1">MAJOR</span>
+                            <span>version when you make <strong>incompatible API changes</strong></span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="badge badge-minor mt-1">MINOR</span>
+                            <span>version when you add <strong>functionality in a backward compatible manner</strong></span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="badge badge-patch mt-1">PATCH</span>
+                            <span>version when you make <strong>backward compatible bug fixes</strong></span>
+                        </li>
+                    </ul>
+                    <p class="mt-3 text-sm text-slate-400">Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.</p>
+                </div>
+
+                <!-- Introduction -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3">Introduction</h3>
+                    <p class="mb-3">In the world of software management there exists a dreaded place called "dependency hell." The bigger your system grows and the more packages you integrate into your software, the more likely you are to find yourself, one day, in this pit of despair.</p>
+                    <p class="mb-3">In systems with many dependencies, releasing new package versions can quickly become a nightmare. If the dependency specifications are too tight, you are in danger of version lock (the inability to upgrade a package without having to release new versions of every dependent package). If dependencies are specified too loosely, you will inevitably be bitten by version promiscuity (assuming compatibility with more future versions than is reasonable).</p>
+                    <p>As a solution to this problem, we propose a simple set of rules and requirements that dictate how version numbers are assigned and incremented. We call this system <strong class="text-primary">"Semantic Versioning."</strong></p>
+                </div>
+
+                <!-- Key Rules -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3">Key Rules</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">1. Version Format</p>
+                            <p class="text-sm">A normal version number MUST take the form <code class="px-2 py-1 bg-slate-800 rounded text-primary">X.Y.Z</code> where X, Y, and Z are non-negative integers, and MUST NOT contain leading zeroes.</p>
+                        </div>
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">2. Initial Development</p>
+                            <p class="text-sm">Major version zero <code class="px-2 py-1 bg-slate-800 rounded text-primary">0.y.z</code> is for initial development. Anything MAY change at any time. The public API SHOULD NOT be considered stable.</p>
+                        </div>
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">3. Stable Release</p>
+                            <p class="text-sm">Version <code class="px-2 py-1 bg-slate-800 rounded text-primary">1.0.0</code> defines the public API. The way in which the version number is incremented after this release is dependent on this public API and how it changes.</p>
+                        </div>
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">4. Patch Version</p>
+                            <p class="text-sm">Patch version Z <code class="px-2 py-1 bg-slate-800 rounded text-primary">x.y.Z</code> MUST be incremented if only backward compatible bug fixes are introduced.</p>
+                        </div>
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">5. Minor Version</p>
+                            <p class="text-sm">Minor version Y <code class="px-2 py-1 bg-slate-800 rounded text-primary">x.Y.z</code> MUST be incremented if new, backward compatible functionality is introduced to the public API. Patch version MUST be reset to 0 when minor version is incremented.</p>
+                        </div>
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">6. Major Version</p>
+                            <p class="text-sm">Major version X <code class="px-2 py-1 bg-slate-800 rounded text-primary">X.y.z</code> MUST be incremented if any backward incompatible changes are introduced to the public API. Patch and minor versions MUST be reset to 0 when major version is incremented.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pre-release Versions -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3">Pre-release Versions</h3>
+                    <p class="mb-3">A pre-release version MAY be denoted by appending a hyphen and a series of dot separated identifiers immediately following the patch version.</p>
+                    <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                        <p class="text-sm mb-2">Examples:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <code class="px-2 py-1 bg-slate-800 rounded text-primary text-sm">1.0.0-alpha</code>
+                            <code class="px-2 py-1 bg-slate-800 rounded text-primary text-sm">1.0.0-alpha.1</code>
+                            <code class="px-2 py-1 bg-slate-800 rounded text-primary text-sm">1.0.0-beta</code>
+                            <code class="px-2 py-1 bg-slate-800 rounded text-primary text-sm">1.0.0-rc.1</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Precedence -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3">Version Precedence</h3>
+                    <p class="mb-3">Precedence refers to how versions are compared to each other when ordered.</p>
+                    <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                        <p class="text-sm mb-2">Example ordering:</p>
+                        <code class="px-2 py-1 bg-slate-800 rounded text-primary text-sm">1.0.0-alpha &lt; 1.0.0-alpha.1 &lt; 1.0.0-beta &lt; 1.0.0-rc.1 &lt; 1.0.0 &lt; 1.0.1 &lt; 1.1.0 &lt; 2.0.0</code>
+                    </div>
+                </div>
+
+                <!-- Why Use SemVer -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3">Why Use Semantic Versioning?</h3>
+                    <p class="mb-3">This is not a new or revolutionary idea. In fact, you probably do something close to this already. The problem is that "close" isn't good enough. Without compliance to some sort of formal specification, version numbers are essentially useless for dependency management.</p>
+                    <p>By giving a name and clear definition to the above ideas, it becomes easy to communicate your intentions to the users of your software. Once these intentions are clear, flexible (but not too flexible) dependency specifications can finally be made.</p>
+                </div>
+
+                <!-- FAQ -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3">Frequently Asked Questions</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">How do I know when to release 1.0.0?</p>
+                            <p class="text-sm">If your software is being used in production, it should probably already be 1.0.0. If you have a stable API on which users have come to depend, you should be 1.0.0.</p>
+                        </div>
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">Doesn't this discourage rapid development?</p>
+                            <p class="text-sm">Major version zero is all about rapid development. If you're changing the API every day you should either still be in version 0.y.z or on a separate development branch.</p>
+                        </div>
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">How should I handle deprecating functionality?</p>
+                            <p class="text-sm">When you deprecate part of your public API, you should: (1) update your documentation to let users know about the change, (2) issue a new minor release with the deprecation in place. Before you completely remove the functionality in a new major release there should be at least one minor release that contains the deprecation.</p>
+                        </div>
+                        <div class="p-3 bg-surface-dark rounded-lg border border-slate-700">
+                            <p class="font-semibold text-white mb-1">Is "v1.2.3" a semantic version?</p>
+                            <p class="text-sm">No, "v1.2.3" is not a semantic version. However, prefixing a semantic version with a "v" is a common way (in English) to indicate it is a version number. Example: <code class="px-2 py-1 bg-slate-800 rounded text-primary">git tag v1.2.3</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learn More -->
+                <div class="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                    <p class="text-sm">
+                        <strong class="text-white">Learn more:</strong> Visit 
+                        <a href="https://semver.org/" target="_blank" class="text-primary hover:text-primary/80 font-semibold">semver.org</a> 
+                        for the complete Semantic Versioning 2.0.0 specification.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSemverModal() {
+            const modal = document.getElementById('semverModal');
+            modal.classList.toggle('active');
+            if (modal.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('semverModal');
+                if (modal.classList.contains('active')) {
+                    toggleSemverModal();
+                }
+            }
+        });
+    </script>
 </body>
 </html>

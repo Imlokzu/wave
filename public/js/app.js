@@ -336,6 +336,17 @@ class App {
     ui.onDeleteClick = (messageId) => this.handleDeleteMessage(messageId);
     ui.onReportClick = (messageId, message) => this.handleReportMessage(messageId, message);
 
+    // Listen for custom events from context menu
+    document.addEventListener('message:edit', (e) => {
+      const { messageId, content } = e.detail;
+      this.handleEditMessage(messageId, content);
+    });
+
+    document.addEventListener('message:delete', (e) => {
+      const { messageId } = e.detail;
+      this.handleDeleteMessage(messageId);
+    });
+
     // Setup all other buttons after DOM is ready
     this.setupChatButtons();
 

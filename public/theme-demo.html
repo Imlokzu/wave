@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Theme System Demo - Wave Messenger</title>
+    <link href="/css/theme.css" rel="stylesheet"/>
+    <link href="/css/theme-config.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .demo-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .color-swatch {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-white mb-4">🎨 Wave Theme System</h1>
+            <p class="text-secondary text-lg">Change 3 colors in <code class="bg-surface px-2 py-1 rounded">theme-config.css</code> to theme your entire app!</p>
+        </div>
+
+        <!-- Color Swatches -->
+        <div class="demo-card mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6">Your Theme Colors</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="color-swatch bg-primary mx-auto mb-3">Primary</div>
+                    <p class="text-white font-semibold">Primary Color</p>
+                    <p class="text-secondary text-sm">Buttons, links, highlights</p>
+                </div>
+                <div class="text-center">
+                    <div class="color-swatch bg-secondary mx-auto mb-3">Secondary</div>
+                    <p class="text-white font-semibold">Secondary Color</p>
+                    <p class="text-secondary text-sm">Borders, inactive text</p>
+                </div>
+                <div class="text-center">
+                    <div class="color-swatch bg-tertiary mx-auto mb-3">Tertiary</div>
+                    <p class="text-white font-semibold">Tertiary Color</p>
+                    <p class="text-secondary text-sm">Hover states, accents</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons Demo -->
+        <div class="demo-card">
+            <h2 class="text-xl font-bold text-white mb-4">Buttons</h2>
+            <div class="flex flex-wrap gap-3">
+                <button class="bg-primary hover:bg-tertiary px-6 py-3 rounded-lg font-bold text-black transition-all active:scale-95">
+                    Primary Button
+                </button>
+                <button class="bg-surface-hover hover:bg-surface-dark-hover text-white px-6 py-3 rounded-lg font-semibold transition-all">
+                    Secondary Button
+                </button>
+                <button class="border-2 border-primary text-primary hover:bg-primary/10 px-6 py-3 rounded-lg font-semibold transition-all">
+                    Outline Button
+                </button>
+            </div>
+        </div>
+
+        <!-- Text Demo -->
+        <div class="demo-card">
+            <h2 class="text-xl font-bold text-white mb-4">Text Colors</h2>
+            <p class="text-primary text-lg mb-2">Primary text color - Used for links and highlights</p>
+            <p class="text-secondary text-lg mb-2">Secondary text color - Used for labels and inactive text</p>
+            <p class="text-tertiary text-lg mb-2">Tertiary text color - Used for accents and badges</p>
+            <p class="text-white text-lg mb-2">White text - Used for main content</p>
+            <p class="text-muted text-lg">Muted text - Used for placeholders</p>
+        </div>
+
+        <!-- Inputs Demo -->
+        <div class="demo-card">
+            <h2 class="text-xl font-bold text-white mb-4">Form Inputs</h2>
+            <div class="space-y-4 max-w-md">
+                <input 
+                    type="text" 
+                    placeholder="Type something..." 
+                    class="w-full px-4 py-3 rounded-lg bg-surface-dark border border-border-dark text-white placeholder-muted focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                />
+                <textarea 
+                    placeholder="Enter a message..." 
+                    rows="3"
+                    class="w-full px-4 py-3 rounded-lg bg-surface-dark border border-border-dark text-white placeholder-muted focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                ></textarea>
+            </div>
+        </div>
+
+        <!-- Cards Demo -->
+        <div class="demo-card">
+            <h2 class="text-xl font-bold text-white mb-4">Cards & Surfaces</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-surface-dark p-4 rounded-lg border border-border-dark">
+                    <h3 class="text-white font-semibold mb-2">Dark Surface</h3>
+                    <p class="text-secondary text-sm">Used for input backgrounds</p>
+                </div>
+                <div class="bg-surface-hover p-4 rounded-lg border border-border">
+                    <h3 class="text-white font-semibold mb-2">Hover Surface</h3>
+                    <p class="text-secondary text-sm">Used for hover states</p>
+                </div>
+                <div class="bg-primary/10 p-4 rounded-lg border border-primary">
+                    <h3 class="text-primary font-semibold mb-2">Primary Surface</h3>
+                    <p class="text-secondary text-sm">Used for highlights</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Badges Demo -->
+        <div class="demo-card">
+            <h2 class="text-xl font-bold text-white mb-4">Badges & Tags</h2>
+            <div class="flex flex-wrap gap-3">
+                <span class="bg-primary text-black px-4 py-2 rounded-full font-semibold text-sm">Primary Badge</span>
+                <span class="bg-tertiary text-black px-4 py-2 rounded-full font-semibold text-sm">Tertiary Badge</span>
+                <span class="bg-primary/20 text-primary px-4 py-2 rounded-full font-semibold text-sm border border-primary">Outlined Badge</span>
+                <span class="bg-surface-hover text-white px-4 py-2 rounded-full font-semibold text-sm">Neutral Badge</span>
+            </div>
+        </div>
+
+        <!-- Links Demo -->
+        <div class="demo-card">
+            <h2 class="text-xl font-bold text-white mb-4">Links</h2>
+            <div class="space-y-2">
+                <p><a href="#" class="text-primary hover:text-tertiary transition-colors font-semibold">Primary link with hover effect</a></p>
+                <p><a href="#" class="text-secondary hover:text-white transition-colors">Secondary link with hover effect</a></p>
+                <p><a href="#" class="text-white hover:text-primary transition-colors underline">Underlined link</a></p>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="demo-card bg-primary/5 border-primary">
+            <h2 class="text-xl font-bold text-white mb-4">🚀 How to Customize</h2>
+            <ol class="space-y-3 text-white">
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-black w-6 h-6 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
+                    <span>Open <code class="bg-surface px-2 py-1 rounded text-primary">public/css/theme-config.css</code></span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-black w-6 h-6 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
+                    <span>Change the 3 color values: <code class="bg-surface px-2 py-1 rounded text-primary">--color-primary</code>, <code class="bg-surface px-2 py-1 rounded text-primary">--color-secondary</code>, <code class="bg-surface px-2 py-1 rounded text-primary">--color-tertiary</code></span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-black w-6 h-6 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">3</span>
+                    <span>Save the file and refresh this page (Ctrl+R / Cmd+R)</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-black w-6 h-6 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">4</span>
+                    <span>See all elements update automatically! ✨</span>
+                </li>
+            </ol>
+            <div class="mt-6 p-4 bg-surface rounded-lg">
+                <p class="text-secondary text-sm mb-2">💡 <strong class="text-white">Pro Tip:</strong> Try these preset themes in theme-config.css:</p>
+                <ul class="text-secondary text-sm space-y-1 ml-6">
+                    <li>💜 Purple Dream</li>
+                    <li>🌲 Emerald Forest</li>
+                    <li>💗 Hot Pink</li>
+                    <li>🌊 Ocean Blue</li>
+                    <li>🌅 Sunset Orange</li>
+                    <li>👑 Royal Gold</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-12 pb-8">
+            <p class="text-secondary">
+                <a href="/chat.html" class="text-primary hover:text-tertiary transition-colors font-semibold">← Back to Chat</a>
+                <span class="mx-4">|</span>
+                <a href="/settings.html" class="text-primary hover:text-tertiary transition-colors font-semibold">Settings →</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

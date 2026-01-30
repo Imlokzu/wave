@@ -7,6 +7,7 @@
     <!-- Theme Init -->
     <script src="/js/theme-init.js"></script>
     <link href="/css/theme.css" rel="stylesheet"/>
+    <link href="/css/theme-config.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="/js/auth-guard.js"></script>
@@ -53,10 +54,32 @@
         .animate-fade-in {
             animation: fadeIn 0.3s ease-out;
         }
+        
+        /* Transparency Mode Styles */
+        body.transparency-mode .bg-surface-dark,
+        body.transparency-mode .bg-background-dark {
+            background: rgba(16, 30, 34, 0.4) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        body.transparency-mode .bg-background-dark\/80 {
+            background: rgba(16, 30, 34, 0.6) !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        
+        body.transparency-mode .bg-surface-dark-lighter {
+            background: rgba(29, 47, 54, 0.5) !important;
+        }
     </style>
 </head>
-<body class="bg-background-dark font-display text-white antialiased overflow-hidden selection:bg-primary selection:text-white pb-20 lg:pb-0">
-    <div class="relative flex h-screen w-full flex-col max-w-7xl mx-auto">
+<body class="bg-background-dark font-display text-white antialiased overflow-hidden selection:bg-primary selection:text-white pb-20 lg:pb-0 relative">
+    <!-- Custom Background Image -->
+    <div id="customBackground" class="fixed inset-0 z-0 pointer-events-none hidden"></div>
+    
+    <div class="relative flex h-screen w-full flex-col max-w-7xl mx-auto z-20">
         <div class="flex items-center px-6 py-3 justify-between bg-background-dark/80 backdrop-blur-xl sticky top-0 z-30 border-b border-white/5">
             <div class="flex items-center gap-3">
                 <a href="/chat.html" class="flex items-center justify-center size-10 rounded-full hover:bg-white/10 transition-colors active:scale-95">
@@ -355,8 +378,17 @@
             }
         }
 
+        // Track if conversation has been restored to prevent duplicates
+        let conversationRestored = false;
+
         // Restore conversation from localStorage on page load
         function restoreConversation() {
+            // Prevent multiple restorations
+            if (conversationRestored) {
+                console.log('Conversation already restored, skipping...');
+                return;
+            }
+            
             try {
                 const saved = localStorage.getItem('aiCurrentConversation');
                 if (saved) {
@@ -377,6 +409,8 @@
                                 addMessage(msg.parts[0].text, false);
                             }
                         });
+                        
+                        conversationRestored = true;
                     }
                 }
             } catch (e) {
@@ -384,8 +418,10 @@
             }
         }
 
-        // Restore conversation on page load
-        restoreConversation();
+        // Restore conversation on page load (only once)
+        if (!conversationRestored) {
+            restoreConversation();
+        }
 
         // ===== FILE/CODE ATTACHMENT FUNCTIONS =====
         
@@ -718,47 +754,54 @@ Text to translate: ${text}`;
                     role: 'system',
                     content: `You are a helpful AI assistant with web search and weather capabilities.
 
-🚨 CRITICAL RULES:
+🚨 CRITICAL RULES - YOU MUST FOLLOW THESE:
 
-FOR WEATHER QUESTIONS - Use this format:
+1. NEVER EVER say "I cannot answer" or "I don't know"
+2. ALWAYS use search for current information (prices, news, products, events)
+3. ALWAYS use weather for weather questions
+
+HOW TO USE SEARCH:
+When user asks about:
+- Product prices (e.g., "how much is X on AliExpress")
+- Current news or events
+- Information after 2023
+- Anything you're not 100% certain about
+
+YOU MUST respond with ONLY this format:
+[SEARCH: your search query here]
+
+Example:
+User: "How much is OnePlus Pad 2 on AliExpress?"
+You: [SEARCH: OnePlus Pad 2 price AliExpress 2025]
+
+User: "Who is DreamRemake?"
+You: [SEARCH: DreamRemake seller Yupoo]
+
+HOW TO USE WEATHER:
+When user asks about weather, temperature, or climate:
 [WEATHER: city name]
 
-FOR OTHER QUESTIONS - Use this format:
-[SEARCH: your search query]
-
-DO NOT:
-❌ Say "I don't know" or "I don't have information"
-❌ Make up or guess answers
-❌ Give outdated information
-
-DO:
-✅ Use [WEATHER: ...] for weather questions (e.g., "weather in Munich")
-✅ Use [SEARCH: ...] for products, prices, news, events after 2023
-✅ After getting results, answer using that information
-
-EXAMPLES:
+Example:
 User: "Weather in Munich?"
 You: [WEATHER: Munich]
 
 User: "What's the temperature in Tokyo?"
 You: [WEATHER: Tokyo]
 
-User: "How much is OnePlus Pad 2?"
-You: [SEARCH: OnePlus Pad 2 price 2024]
-
-User: "Latest AI news?"
-You: [SEARCH: latest AI news 2025]
-
-ONLY answer directly WITHOUT search/weather for:
-- Math (2+2=4)
-- Code writing
+WHEN TO ANSWER DIRECTLY (without search):
+- Math calculations (2+2=4)
+- Code writing/debugging
 - Translations
-- General knowledge you're certain about
+- Explanations of concepts you're certain about
+- Questions about your own capabilities
 
 📝 FORMATTING:
 Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
 
-⚠️ NEVER add signatures, footers, or "powered by" messages.`
+⚠️ NEVER:
+- Say "I cannot answer" or "I don't know"
+- Add signatures, footers, or "powered by" messages
+- Refuse to search when information is needed`
                 });
                 
                 // Convert conversation history to OpenRouter format
@@ -790,20 +833,16 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
                 messagesContainer.appendChild(streamingDiv);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 
-                // Call OpenRouter API with selected model
+                // Call backend AI chat API with selected model
                 const requestBody = {
-                    model: selectedModel,
                     messages: messages,
-                    stream: true
+                    enableSearch: searchEnabled,
+                    model: preferredModel || 'auto'
                 };
                 
-                // Note: Free models don't support tools/web search
-                // Search and Thinking toggles are just UI elements for now
-                
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                const response = await fetch('/api/ai-chat', {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer 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',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(requestBody)
@@ -815,97 +854,29 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
                     if (response.status === 429) {
                         addMessage('⚠️ Rate limit reached. Please wait a moment and try again.', false);
                     } else {
-                        addMessage(`Error: ${errorData.error?.message || 'Something went wrong'}`, false);
+                        addMessage(`Error: ${errorData.error || errorData.message || 'Something went wrong'}`, false);
                     }
                     return;
                 }
                 
-                // Read streaming response
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let fullResponse = '';
-                const contentDiv = streamingDiv.querySelector('.streaming-content');
+                // Get response from backend
+                const data = await response.json();
                 
-                // Create container for plain text and cursor
+                if (!data.success) {
+                    streamingDiv?.remove();
+                    addMessage(`Error: ${data.message || 'AI request failed'}`, false);
+                    return;
+                }
+                
+                const fullResponse = data.response;
+                
+                // Update streaming message with final response
+                const contentDiv = streamingDiv.querySelector('.streaming-content');
                 contentDiv.innerHTML = '';
                 const textContainer = document.createElement('span');
                 textContainer.className = 'whitespace-pre-wrap';
-                const cursor = document.createElement('span');
-                cursor.className = 'inline-block w-2 h-4 bg-primary animate-pulse ml-1';
-                contentDiv.appendChild(textContainer);
-                contentDiv.appendChild(cursor);
-                
-                // Throttle DOM updates to prevent freezing on large code responses
-                let lastUpdateTime = 0;
-                const UPDATE_INTERVAL = 100; // Update every 100ms instead of every chunk
-                let isInCodeBlock = false; // Track if we're currently in a code block
-                
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    
-                    const chunk = decoder.decode(value, { stream: true });
-                    const lines = chunk.split('\n');
-                    
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const jsonStr = line.slice(6).trim();
-                            if (jsonStr === '[DONE]') continue;
-                            
-                            try {
-                                if (jsonStr) {
-                                    const data = JSON.parse(jsonStr);
-                                    const delta = data.choices?.[0]?.delta?.content;
-                                    if (delta) {
-                                        fullResponse += delta;
-                                        
-                                        // Detect code block start/end
-                                        if (delta.includes('```')) {
-                                            isInCodeBlock = !isInCodeBlock;
-                                        }
-                                        
-                                        // Throttle updates - only update DOM every 100ms
-                                        const now = Date.now();
-                                        if (now - lastUpdateTime > UPDATE_INTERVAL) {
-                                            // If we're in a code block, show placeholder instead of code
-                                            if (isInCodeBlock || fullResponse.includes('```')) {
-                                                // Show a placeholder for code blocks
-                                                const beforeCode = fullResponse.split('```')[0];
-                                                const codeBlockCount = (fullResponse.match(/```/g) || []).length;
-                                                const hasOpenBlock = codeBlockCount % 2 === 1;
-                                                
-                                                textContainer.innerHTML = beforeCode + 
-                                                    (hasOpenBlock ? '<div class="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-lg border border-primary/30 my-2"><span class="material-symbols-outlined text-primary text-[16px] animate-pulse">code</span><span class="text-sm text-slate-300">Writing code...</span></div>' : '');
-                                            } else {
-                                                // Show normal text
-                                                textContainer.textContent = fullResponse;
-                                            }
-                                            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                                            lastUpdateTime = now;
-                                        }
-                                    }
-                                }
-                            } catch (e) {
-                                // Skip invalid JSON chunks
-                            }
-                        }
-                    }
-                }
-                
-                // Final update to ensure we show all text
                 textContainer.textContent = fullResponse;
-                
-                // Check if response is JSON (translation or other structured data)
-                const isJSON = fullResponse.trim().match(/^(?:json\s*)?\{[\s\S]*\}$/);
-                
-                if (isJSON) {
-                    // For JSON responses, remove streaming div and show final card instantly
-                    streamingDiv.remove();
-                    addMessage(fullResponse, false);
-                } else {
-                    // For text responses, finalize the streaming message
-                    cursor.remove();
-                }
+                contentDiv.appendChild(textContainer);
                 
                 // Check if AI requested search
                 const searchMatch = fullResponse.match(/\[SEARCH:\s*(.+?)\]/);
@@ -1039,7 +1010,10 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
                 }
                 
                 // Now format the complete response (only once, after streaming is done)
-                cursor.remove();
+                // Remove the cursor/loading indicator if it exists
+                const cursor = streamingDiv.querySelector('.animate-pulse');
+                if (cursor) cursor.remove();
+                
                 textContainer.innerHTML = formatAIContent(fullResponse);
                 
                 // Add AI response to history
@@ -1148,17 +1122,17 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
                         </div>`;
                     }
                     
-                    // Otherwise, render as code block
-                    const formattedJson = JSON.stringify(parsed, null, 2);
-                    return `<div class="my-3 rounded-lg overflow-hidden border border-slate-700">
-                        <div class="bg-slate-800/80 px-3 py-1.5 flex items-center justify-between border-b border-slate-700">
-                            <span class="text-xs font-semibold text-slate-400 uppercase">json</span>
-                            <button onclick="copyCode(this)" class="text-xs text-slate-400 hover:text-primary transition-colors flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                    // Otherwise, render as code block with compact spacing (left-aligned, max-width)
+                    const formattedJson = JSON.stringify(parsed, null, 1); // Changed from 2 to 1 for tighter spacing
+                    return `<div class="my-3 rounded-xl overflow-hidden border border-slate-700/50 bg-slate-900/30 inline-block max-w-[90%]">
+                        <div class="bg-gradient-to-r from-slate-800 to-slate-800/80 px-4 py-2.5 flex items-center justify-between border-b border-slate-700/50">
+                            <span class="text-xs font-bold text-slate-300 uppercase tracking-wide">json</span>
+                            <button onclick="copyCode(this)" class="px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all flex items-center gap-1.5 font-medium">
+                                <span class="material-symbols-outlined text-[16px]">content_copy</span>
                                 Copy
                             </button>
                         </div>
-                        <pre class="bg-slate-900 p-3 overflow-x-auto"><code class="text-primary font-mono text-sm">${formattedJson}</code></pre>
+                        <pre class="bg-slate-950 p-4 overflow-x-auto max-h-[500px]"><code class="text-emerald-400 font-mono text-sm leading-snug">${formattedJson}</code></pre>
                     </div>`;
                 } catch (e) {
                     console.error('Failed to parse JSON:', e);
@@ -1171,8 +1145,42 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
             let codeBlocks = [];
             let codeBlockCounter = 0;
             
+            // Extract and process tables BEFORE escaping HTML
+            let tables = [];
+            let tableCounter = 0;
+            
+            // Replace tables with placeholders FIRST
+            let contentWithTablePlaceholders = content.replace(/(\|.+\|\n)+/g, function(match) {
+                const placeholder = `___TABLE_${tableCounter}___`;
+                
+                // Remove separator lines
+                const cleanedTable = match.replace(/\|[\s\-:]+\|[\s\-:]*\|?\n/g, '');
+                
+                // Split into rows
+                const rows = cleanedTable.trim().split('\n').filter(r => r.trim());
+                if (rows.length === 0) return match;
+                
+                // Process each row
+                const tableRows = rows.map((row, index) => {
+                    const cells = row.split('|').filter(c => c.trim());
+                    const isHeader = index === 0;
+                    const tag = isHeader ? 'th' : 'td';
+                    const cellClass = isHeader 
+                        ? 'border border-slate-700/50 px-3 py-2 text-sm font-bold text-white bg-slate-800/50 align-top'
+                        : 'border border-slate-700/50 px-3 py-2 text-sm align-top';
+                    
+                    return '<tr>' + cells.map(c => `<${tag} class="${cellClass}">${c.trim()}</${tag}>`).join('') + '</tr>';
+                }).join('');
+                
+                tables[tableCounter] = '<div class="my-3 overflow-x-auto rounded-xl border border-slate-700/50 inline-block max-w-fit">' +
+                                      '<table class="border-collapse text-sm bg-slate-900/30">' + tableRows + '</table></div>';
+                
+                tableCounter++;
+                return placeholder;
+            });
+            
             // Replace code blocks with placeholders
-            let contentWithPlaceholders = content.replace(/```(\w+)?\n([\s\S]+?)```/g, function(match, lang, code) {
+            let contentWithPlaceholders = contentWithTablePlaceholders.replace(/```(\w+)?\n([\s\S]+?)```/g, function(match, lang, code) {
                 const placeholder = `___CODE_BLOCK_${codeBlockCounter}___`;
                 const language = lang || 'code';
                 const uniqueId = `code-block-${Date.now()}-${codeBlockCounter}`;
@@ -1180,11 +1188,11 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
                 // Get the raw code
                 let rawCode = code.trim();
                 
-                // Detect if it's JSON and format it
+                // Detect if it's JSON and format it with compact spacing
                 if (language === 'json' || (language === 'text' && (rawCode.startsWith('{') || rawCode.startsWith('[')))) {
                     try {
                         const parsed = JSON.parse(rawCode);
-                        rawCode = JSON.stringify(parsed, null, 2);
+                        rawCode = JSON.stringify(parsed, null, 1); // Changed from 2 to 1 for tighter spacing
                     } catch (e) {
                         // Not valid JSON, keep as is
                     }
@@ -1201,28 +1209,28 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#039;');
                 
-                const languageLabel = `<span class="text-xs font-semibold text-slate-400 uppercase">${language}</span>`;
+                const languageLabel = `<span class="text-xs font-bold text-slate-300 uppercase tracking-wide">${language}</span>`;
                 
-                // Store the formatted code block
-                codeBlocks[codeBlockCounter] = `<div class="my-3 rounded-xl overflow-hidden border border-slate-700 bg-slate-900/50">
+                // Store the formatted code block with better styling (left-aligned, max-width)
+                codeBlocks[codeBlockCounter] = `<div class="my-3 rounded-xl overflow-hidden border border-slate-700/50 bg-slate-900/30 shadow-lg inline-block max-w-[90%]">
                     <div class="bg-gradient-to-r from-slate-800 to-slate-800/80 px-4 py-2.5 flex items-center justify-between border-b border-slate-700/50">
                         <div class="flex items-center gap-3">
                             ${languageLabel}
                             <span class="text-xs text-slate-500 font-medium">${lineCount} ${lineCount === 1 ? 'line' : 'lines'}</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="copyCodeFromCollapsed('${uniqueId}')" class="px-2.5 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                            <button onclick="copyCodeFromCollapsed('${uniqueId}')" class="px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all flex items-center gap-1.5 font-medium">
+                                <span class="material-symbols-outlined text-[16px]">content_copy</span>
                                 Copy
                             </button>
-                            <button onclick="toggleCodeBlock('${uniqueId}')" class="px-2.5 py-1.5 text-xs text-primary hover:text-white hover:bg-primary/20 rounded-lg transition-all flex items-center gap-1.5 font-medium">
-                                <span class="material-symbols-outlined text-[16px]" id="${uniqueId}-icon">expand_more</span>
+                            <button onclick="toggleCodeBlock('${uniqueId}')" class="px-3 py-1.5 text-xs text-primary hover:text-white hover:bg-primary/20 rounded-lg transition-all flex items-center gap-1.5 font-medium">
+                                <span class="material-symbols-outlined text-[18px]" id="${uniqueId}-icon">expand_more</span>
                                 <span id="${uniqueId}-text">Show</span>
                             </button>
                         </div>
                     </div>
                     <div id="${uniqueId}" class="hidden">
-                        <pre class="bg-slate-950 p-4 overflow-x-auto max-h-[600px] text-sm leading-relaxed"><code class="text-emerald-400 font-mono whitespace-pre">${escapedCode}</code></pre>
+                        <pre class="bg-slate-950 p-4 overflow-x-auto max-h-[600px] text-sm leading-snug"><code class="text-emerald-400 font-mono whitespace-pre">${escapedCode}</code></pre>
                     </div>
                 </div>`;
                 
@@ -1230,10 +1238,15 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
                 return placeholder;
             });
             
-            // Now escape the rest of the HTML (non-code content)
+            // Now escape the rest of the HTML (non-code, non-table content)
             const div = document.createElement('div');
             div.textContent = contentWithPlaceholders;
             let formatted = div.innerHTML;
+            
+            // Restore tables from placeholders FIRST
+            for (let i = 0; i < tables.length; i++) {
+                formatted = formatted.replace(`___TABLE_${i}___`, tables[i]);
+            }
             
             // Restore code blocks from placeholders
             for (let i = 0; i < codeBlocks.length; i++) {
@@ -1279,20 +1292,9 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
             // Format horizontal rules (---)
             formatted = formatted.replace(/^---$/gm, '<hr class="border-slate-700 my-4">');
             
-            // Format checkboxes
-            formatted = formatted.replace(/\[x\]/gi, '<span class="inline-flex items-center justify-center w-4 h-4 rounded bg-green-500/20 text-green-500 text-xs">✓</span>');
-            formatted = formatted.replace(/\[ \]/g, '<span class="inline-flex items-center justify-center w-4 h-4 rounded bg-slate-700 text-slate-500 text-xs">☐</span>');
-            
-            // Format tables (basic support)
-            formatted = formatted.replace(/\|(.+)\|/g, function(match) {
-                const cells = match.split('|').filter(c => c.trim());
-                return '<tr>' + cells.map(c => `<td class="border border-slate-700 px-2 py-1">${c.trim()}</td>`).join('') + '</tr>';
-            });
-            
-            // Wrap table rows
-            formatted = formatted.replace(/(<tr>.*?<\/tr>\n?)+/g, function(match) {
-                return '<table class="my-2 border-collapse w-full text-sm">' + match + '</table>';
-            });
+            // Format checkboxes with Material Icons style
+            formatted = formatted.replace(/\[x\]/gi, '<span class="inline-flex items-center justify-center w-5 h-5 rounded bg-green-500/20 border border-green-500/50"><span class="material-symbols-outlined text-green-500 text-[14px]">check</span></span>');
+            formatted = formatted.replace(/\[ \]/g, '<span class="inline-flex items-center justify-center w-5 h-5 rounded bg-slate-700/30 border border-slate-600"><span class="material-symbols-outlined text-slate-500 text-[14px]">close</span></span>');
             
             // Format line breaks
             formatted = formatted.replace(/\n/g, '<br>');
@@ -1656,5 +1658,97 @@ Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
             </a>
         </div>
     </nav>
+    
+    <!-- Background Image Script -->
+    <script>
+        // Load theme colors from localStorage
+        (function() {
+            const primary = localStorage.getItem('themeColorPrimary');
+            const secondary = localStorage.getItem('themeColorSecondary');
+            const tertiary = localStorage.getItem('themeColorTertiary');
+            const background = localStorage.getItem('themeColorBackground');
+            const surface = localStorage.getItem('themeColorSurface');
+            const highlight = localStorage.getItem('themeColorHighlight');
+            
+            if (primary) document.documentElement.style.setProperty('--color-primary', primary);
+            if (secondary) document.documentElement.style.setProperty('--color-secondary', secondary);
+            if (tertiary) document.documentElement.style.setProperty('--color-tertiary', tertiary);
+            if (background) {
+                document.documentElement.style.setProperty('--bg-page', background);
+                document.body.style.backgroundColor = background;
+                setTimeout(() => {
+                    const mainAreas = document.querySelectorAll('main, .relative.flex.h-screen, #chat-container');
+                    mainAreas.forEach(el => el.style.backgroundColor = background);
+                }, 100);
+            }
+            if (surface) {
+                document.documentElement.style.setProperty('--bg-surface', surface);
+                setTimeout(() => {
+                    const surfaceElements = document.querySelectorAll('.bg-surface-dark, .bg-\\[\\#16262c\\], .bg-\\[\\#1e2433\\]');
+                    surfaceElements.forEach(el => el.style.backgroundColor = surface);
+                }, 100);
+            }
+            if (highlight) {
+                document.documentElement.style.setProperty('--surface-hover', highlight);
+                document.documentElement.style.setProperty('--bg-surface-lighter', highlight);
+            }
+        })();
+        
+        // Load transparency mode from localStorage
+        (function() {
+            const isTransparent = localStorage.getItem('transparencyMode') === 'true';
+            if (isTransparent) {
+                document.body.classList.add('transparency-mode');
+            }
+        })();
+        
+        // Load custom background from localStorage
+        (function() {
+            const bgDiv = document.getElementById('customBackground');
+            if (!bgDiv) return;
+            
+            const chatBackground = localStorage.getItem('chatBackground');
+            const customBgUrl = localStorage.getItem('customBackgroundUrl');
+            const bgOpacity = localStorage.getItem('bgOpacity') || 10;
+            const bgBlur = localStorage.getItem('bgBlur') || 4;
+            
+            let backgroundUrl = '';
+            
+            if (chatBackground && chatBackground !== 'none') {
+                if (chatBackground === 'custom' && customBgUrl) {
+                    backgroundUrl = customBgUrl;
+                } else if (chatBackground.startsWith('bg')) {
+                    const bgMap = {
+                        'bg1': '1769528516',
+                        'bg2': '1769528550',
+                        'bg3': '1769528632',
+                        'bg4': '1769528667',
+                        'bg5': '1769528899',
+                        'bg6': '1769529072'
+                    };
+                    const bgNum = bgMap[chatBackground];
+                    if (bgNum) {
+                        backgroundUrl = `/backgrounds/${bgNum}.png`;
+                    }
+                }
+            }
+            
+            if (backgroundUrl) {
+                bgDiv.classList.remove('hidden');
+                // NEW STYLING: Image in center, solid color on sides
+                bgDiv.style.cssText = `
+                    background-image: url('${backgroundUrl}');
+                    background-size: contain;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-color: #101e22;
+                    opacity: ${bgOpacity / 100};
+                    filter: blur(${bgBlur}px);
+                `;
+            } else {
+                bgDiv.classList.add('hidden');
+            }
+        })();
+    </script>
 </body>
 </html>
