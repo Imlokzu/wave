@@ -54,13 +54,13 @@ export class UnifiedAIService {
     if (!modelId || modelId === 'auto') {
       return this.getDefaultModel();
     }
-    
+
     const model = AI_MODELS.find(m => m.id === modelId);
     if (!model) {
       console.warn(`[UnifiedAI] Model ${modelId} not found, using default`);
       return this.getDefaultModel();
     }
-    
+
     return model;
   }
 
@@ -76,102 +76,184 @@ export class UnifiedAIService {
   }
 
   /**
-   * Define available tools for the AI
+   * Chat with AI using specified model (streaming version)
    */
-  private getTools() {
-    return [
+  async chatStream(
+    messages: AIMessage[],
+    onChunk: (chunk: string) => void,
+    enableSearch: boolean = true,
+    modelId?: string,
+    thinking: boolean = false
+  ): Promise<void> {
+    const model = this.getModel(modelId);
+
+    try {
+      console.log(`[UnifiedAI] Starting streaming chat with model: ${model.name} (${model.openRouterModel})`);
+      console.log(`[UnifiedAI] Search enabled: ${enableSearch}, Thinking enabled: ${thinking}`);
+
+      // Ensure system message exists
+      this.ensureSystemMessage(messages, enableSearch);
+
+      // Call API with streaming
+      await this.callOpenRouterAPIStream(model, messages, enableSearch, thinking, onChunk);
+    } catch (error: any) {
+      console.error(`[UnifiedAI] Streaming error: ${error.message || 'Unknown error'}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Call OpenRouter API with streaming
+   */
+  private async callOpenRouterAPIStream(
+    model: AIModel,
+    messages: AIMessage[],
+    enableSearch: boolean,
+    thinking: boolean = false,
+    onChunk: (chunk: string) => void
+  ): Promise<void> {
+    console.log(`[UnifiedAI] Calling OpenRouter API with streaming...`);
+
+    const response = await axios.post(
+      `${this.baseUrl}/chat/completions`,
       {
-        type: 'function',
-        function: {
-          name: 'ddg_search',
-          description: 'Search the internet for up-to-date information using DuckDuckGo. Use this when you need current information, facts, news, or research.',
-          parameters: {
-            type: 'object',
-            properties: {
-              query: {
-                type: 'string',
-                description: 'The search query to look up on the internet'
+        model: model.openRouterModel,
+        messages,
+        stream: true,
+        extra_body: {
+          plugins: enableSearch ? ["pdf"] : [],
+          response_healing: true,
+          include_reasoning: thinking
+        }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://wave-messenger.com',
+          'X-Title': 'Wave Messenger'
+        },
+        responseType: 'stream'
+      }
+    );
+
+    return new Promise((resolve, reject) => {
+      let buffer = '';
+      let reasoningContent = '';
+      let inReasoning = false;
+
+      response.data.on('data', (chunk: Buffer) => {
+        buffer += chunk.toString();
+
+        // Process complete lines
+        while (true) {
+          const lineEnd = buffer.indexOf('\n');
+          if (lineEnd === -1) break;
+
+          const line = buffer.slice(0, lineEnd).trim();
+          buffer = buffer.slice(lineEnd + 1);
+
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') {
+              // If we collected reasoning, send it wrapped
+              if (reasoningContent) {
+                onChunk(`<thinking>\n${reasoningContent}\n</thinking>\n\n`);
               }
-            },
-            required: ['query']
+              resolve();
+              return;
+            }
+
+            try {
+              const parsed = JSON.parse(data);
+              
+              // Check for errors
+              if (parsed.error) {
+                reject(new Error(parsed.error.message || 'Stream error'));
+                return;
+              }
+
+              const delta = parsed.choices?.[0]?.delta;
+              
+              // Handle reasoning (thinking)
+              if (delta?.reasoning) {
+                reasoningContent += delta.reasoning;
+                inReasoning = true;
+              }
+              
+              // Handle content
+              if (delta?.content) {
+                onChunk(delta.content);
+              }
+            } catch (e) {
+              // Ignore JSON parse errors for comments
+            }
           }
         }
-      }
-    ];
-  }
+      });
 
-  /**
-   * Execute a tool call
-   */
-  private async executeTool(toolCall: AIToolCall): Promise<string> {
-    const { name, arguments: argumentsJson } = toolCall.function;
-    
-    console.log(`[UnifiedAI] Executing tool: ${name}`);
-    console.log(`[UnifiedAI] Arguments: ${argumentsJson}`);
+      response.data.on('end', () => {
+        if (reasoningContent) {
+          onChunk(`<thinking>\n${reasoningContent}\n</thinking>\n\n`);
+        }
+        resolve();
+      });
 
-    if (name === 'ddg_search') {
-      return this.executeSearchTool(argumentsJson);
-    }
-
-    return 'Unknown tool';
-  }
-
-  /**
-   * Execute DuckDuckGo search tool
-   */
-  private async executeSearchTool(argumentsJson: string): Promise<string> {
-    try {
-      const args = JSON.parse(argumentsJson);
-      const query = args.query;
-      
-      console.log(`[UnifiedAI] Searching for: "${query}"${this.userRegion ? ` (region: ${this.userRegion})` : ''}`);
-      
-      const results = await this.searchService.searchDuckDuckGo(
-        query,
-        DEFAULT_SEARCH_RESULTS_LIMIT,
-        this.userRegion
-      );
-      const formattedResults = this.searchService.formatResultsForAI(results);
-      
-      console.log(`[UnifiedAI] Search completed, found ${results.length} results`);
-      
-      return formattedResults;
-    } catch (error) {
-      console.error('[UnifiedAI] Tool execution error:', error);
-      return 'Search failed. Please try rephrasing your query.';
-    }
+      response.data.on('error', (error: Error) => {
+        reject(error);
+      });
+    });
   }
 
   /**
    * Chat with AI using specified model
    */
   async chat(
-    messages: AIMessage[], 
+    messages: AIMessage[],
     enableSearch: boolean = true,
-    modelId?: string
+    modelId?: string,
+    fallbackDepth: number = 0,
+    thinking: boolean = false
   ): Promise<string> {
+    const model = this.getModel(modelId);
+
     try {
-      const model = this.getModel(modelId);
-      
-      console.log(`[UnifiedAI] Starting chat with model: ${model.name} (${model.openRouterModel})`);
-      console.log(`[UnifiedAI] Search enabled: ${enableSearch}`);
-      console.log(`[UnifiedAI] User message: ${messages[messages.length - 1]?.content?.substring(0, 100)}...`);
-      
+      if (fallbackDepth === 0) {
+        console.log(`[UnifiedAI] Starting chat with model: ${model.name} (${model.openRouterModel})`);
+      } else {
+        console.warn(`[UnifiedAI] Fallback retry #${fallbackDepth} using model: ${model.name}`);
+      }
+
+      console.log(`[UnifiedAI] Search enabled: ${enableSearch}, Thinking enabled: ${thinking}`);
+
       // Ensure system message exists
       this.ensureSystemMessage(messages, enableSearch);
 
-      // First API call
-      const assistantMessage = await this.callOpenRouterAPI(model, messages, enableSearch);
-      
-      // Check if AI wants to use tools
-      if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
-        return await this.handleToolCalls(model, messages, assistantMessage);
+      // Call API
+      const responseMessage = await this.callOpenRouterAPI(model, messages, enableSearch, thinking);
+
+      let response = responseMessage.content;
+
+      // If this was a fallback, prepend a message for the user
+      if (fallbackDepth > 0) {
+        return `> ⚠️ **Notice:** The requested model was temporarily unavailable. I switched to **${model.name}** to complete your request.\n\n` + response;
       }
-      
-      // No tool calls, return direct response
-      console.log('[UnifiedAI] ⚠️ AI did NOT use tools, responding directly');
-      return assistantMessage.content;
-    } catch (error) {
+
+      return response;
+    } catch (error: any) {
+      // Check if we have a fallback model and haven't exceeded retry limit (max 2 retries)
+      if (model.fallbackId && fallbackDepth < 2) {
+        console.error(`[UnifiedAI] Model ${model.id} failed: ${error.message || 'Unknown error'}`);
+        console.warn(`[UnifiedAI] Attempting fallback to ${model.fallbackId}...`);
+
+        // Remove the system message before retrying to avoid duplicates (ensureSystemMessage will add it back)
+        if (messages.length > 0 && messages[0].role === 'system') {
+          messages.shift();
+        }
+
+        return this.chat(messages, enableSearch, model.fallbackId, fallbackDepth + 1, thinking);
+      }
+
       return this.handleChatError(error);
     }
   }
@@ -183,8 +265,8 @@ export class UnifiedAIService {
     if (messages.length === 0 || messages[0].role !== 'system') {
       messages.unshift({
         role: 'system',
-        content: enableSearch 
-          ? 'You are a helpful AI assistant. You can use the ddg_search tool to find up-to-date information from the internet when needed.'
+        content: enableSearch
+          ? 'You are a helpful AI assistant with web search and weather capabilities. Use [SEARCH: query] for searches and [WEATHER: city] for weather.'
           : 'You are a helpful AI assistant.'
       });
     }
@@ -196,17 +278,21 @@ export class UnifiedAIService {
   private async callOpenRouterAPI(
     model: AIModel,
     messages: AIMessage[],
-    enableSearch: boolean
+    enableSearch: boolean,
+    thinking: boolean = false
   ): Promise<AIMessage> {
-    console.log(`[UnifiedAI] Calling OpenRouter API with ${enableSearch ? 'tools enabled' : 'no tools'}...`);
-    
+    console.log(`[UnifiedAI] Calling OpenRouter API with ${enableSearch ? 'tools enabled' : 'no tools'} (thinking: ${thinking})...`);
+
     const response = await axios.post(
       `${this.baseUrl}/chat/completions`,
       {
         model: model.openRouterModel,
         messages,
-        tools: enableSearch ? this.getTools() : undefined,
-        tool_choice: enableSearch ? 'auto' : undefined
+        extra_body: {
+          plugins: enableSearch ? ["pdf"] : [],
+          response_healing: true,
+          include_reasoning: thinking
+        }
       },
       {
         headers: {
@@ -218,39 +304,15 @@ export class UnifiedAIService {
       }
     );
 
-    return response.data.choices[0].message;
-  }
+    const message = response.data.choices[0].message;
 
-  /**
-   * Handle tool calls from AI
-   */
-  private async handleToolCalls(
-    model: AIModel,
-    messages: AIMessage[],
-    assistantMessage: AIMessage
-  ): Promise<string> {
-    console.log(`[UnifiedAI] ✅ AI requested ${assistantMessage.tool_calls!.length} tool call(s)!`);
-    
-    // Add assistant message with tool calls
-    messages.push(assistantMessage);
-    
-    // Execute each tool call
-    for (const toolCall of assistantMessage.tool_calls!) {
-      const toolResult = await this.executeTool(toolCall);
-      
-      // Add tool response
-      messages.push({
-        role: 'tool',
-        tool_call_id: toolCall.id,
-        content: toolResult
-      });
+    // If reasoning is included, prepend it to content wrapped in a tag for the frontend to handle
+    if (message.reasoning) {
+      console.log('[UnifiedAI] Reasoning detected in response');
+      message.content = `<thinking>\n${message.reasoning}\n</thinking>\n\n${message.content || ''}`;
     }
-    
-    // Make second API call with tool results
-    console.log('[UnifiedAI] Sending tool results back to AI');
-    
-    const finalResponse = await this.callOpenRouterAPI(model, messages, false);
-    return finalResponse.content;
+
+    return message;
   }
 
   /**
@@ -259,7 +321,7 @@ export class UnifiedAIService {
   private handleChatError(error: unknown): never {
     const axiosError = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
     const errorMessage = axiosError.response?.data?.error?.message || axiosError.message || 'Unknown error';
-    
+
     console.error('[UnifiedAI] Chat error:', axiosError.response?.data || errorMessage);
     throw new Error(`AI chat failed: ${errorMessage}`);
   }

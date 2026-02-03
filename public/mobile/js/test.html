@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile JS Modules Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+        }
+        .success {
+            color: #4caf50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .test-box {
+            width: 100%;
+            height: 100px;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            user-select: none;
+        }
+        .button {
+            padding: 12px 24px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:active {
+            background: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mobile JS Modules Test</h1>
+    <p>This page tests the mobile JavaScript modules.</p>
+
+    <div class="test-section">
+        <h3>Module Loading Test</h3>
+        <div id="module-test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>MobileUIComponent Test</h3>
+        <div id="ui-component-test"></div>
+        <button class="button" onclick="testUIComponent()">Test UI Component</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Touch Handler Test</h3>
+        <div class="test-box" id="touch-test-box">
+            Touch, long-press, or swipe here
+        </div>
+        <div id="touch-test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Utility Functions Test</h3>
+        <button class="button" onclick="testUtils()">Test Utils</button>
+        <div id="utils-test-results"></div>
+    </div>
+
+    <!-- Load modules -->
+    <script src="/mobile/js/mobile-ui.js"></script>
+    <script src="/mobile/js/touch-handlers.js"></script>
+    <script src="/mobile/js/index.js"></script>
+
+    <script>
+        // Test module loading
+        function testModuleLoading() {
+            const results = document.getElementById('module-test-results');
+            const tests = [
+                { name: 'MobileUIComponent', exists: typeof MobileUIComponent !== 'undefined' },
+                { name: 'MobileUIUtils', exists: typeof MobileUIUtils !== 'undefined' },
+                { name: 'TouchHandler', exists: typeof TouchHandler !== 'undefined' },
+                { name: 'LongPressDetector', exists: typeof LongPressDetector !== 'undefined' },
+                { name: 'SwipeDetector', exists: typeof SwipeDetector !== 'undefined' },
+                { name: 'PullToRefresh', exists: typeof PullToRefresh !== 'undefined' }
+            ];
+
+            let html = '<ul>';
+            tests.forEach(test => {
+                const status = test.exists ? '✓' : '✗';
+                const className = test.exists ? 'success' : 'error';
+                html += `<li class="${className}">${status} ${test.name}</li>`;
+            });
+            html += '</ul>';
+            results.innerHTML = html;
+        }
+
+        // Test UI Component
+        class TestComponent extends MobileUIComponent {
+            constructor(containerId) {
+                super(containerId);
+                this.state = { count: 0 };
+            }
+
+            render() {
+                const button = this.createElement('button', {
+                    className: 'button',
+                    onClick: () => this.increment()
+                }, `Count: ${this.state.count}`);
+
+                this.container.innerHTML = '';
+                this.container.appendChild(button);
+            }
+
+            increment() {
+                this.setState({ count: this.state.count + 1 });
+            }
+        }
+
+        function testUIComponent() {
+            const component = new TestComponent('ui-component-test');
+            component.render();
+        }
+
+        // Test Touch Handler
+        function setupTouchTest() {
+            const box = document.getElementById('touch-test-box');
+            const results = document.getElementById('touch-test-results');
+            
+            const touchHandler = new TouchHandler(box);
+            
+            function logEvent(type, data) {
+                const time = new Date().toLocaleTimeString();
+                results.innerHTML = `<div class="success">[${time}] ${type}: ${JSON.stringify(data)}</div>` + results.innerHTML;
+            }
+
+            touchHandler
+                .on('tap', (e) => logEvent('Tap', { x: Math.round(e.x), y: Math.round(e.y) }))
+                .on('doubleTap', (e) => logEvent('Double Tap', { x: Math.round(e.x), y: Math.round(e.y) }))
+                .on('longPress', (e) => logEvent('Long Press', { x: Math.round(e.x), y: Math.round(e.y) }))
+                .on('swipeLeft', (e) => logEvent('Swipe Left', { distance: Math.round(e.distance) }))
+                .on('swipeRight', (e) => logEvent('Swipe Right', { distance: Math.round(e.distance) }))
+                .on('swipeUp', (e) => logEvent('Swipe Up', { distance: Math.round(e.distance) }))
+                .on('swipeDown', (e) => logEvent('Swipe Down', { distance: Math.round(e.distance) }));
+        }
+
+        // Test utility functions
+        function testUtils() {
+            const results = document.getElementById('utils-test-results');
+            const tests = [];
+
+            // Test screen size detection
+            tests.push(`Screen size: ${MobileUIUtils.getScreenSize()}`);
+            tests.push(`Orientation: ${MobileUIUtils.getOrientation()}`);
+            tests.push(`Touch device: ${MobileUIUtils.isTouchDevice()}`);
+
+            // Test time formatting
+            const now = new Date();
+            const oneHourAgo = new Date(now - 3600000);
+            tests.push(`Time format (1h ago): ${new MobileUIComponent('utils-test-results').formatTime(oneHourAgo)}`);
+
+            // Test toast
+            MobileUIUtils.showToast('Test toast notification!');
+            tests.push('Toast notification shown');
+
+            // Test clipboard (if supported)
+            MobileUIUtils.copyToClipboard('Test clipboard text').then(success => {
+                if (success) {
+                    tests.push('Clipboard copy: Success');
+                } else {
+                    tests.push('Clipboard copy: Failed or not supported');
+                }
+                displayResults();
+            });
+
+            function displayResults() {
+                results.innerHTML = '<ul>' + tests.map(t => `<li>${t}</li>`).join('') + '</ul>';
+            }
+
+            displayResults();
+        }
+
+        // Run tests on load
+        window.addEventListener('DOMContentLoaded', () => {
+            testModuleLoading();
+            setupTouchTest();
+        });
+    </script>
+</body>
+</html>

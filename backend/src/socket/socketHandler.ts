@@ -148,6 +148,7 @@ export function setupSocketIO(
         socket.emit('room:joined', {
           roomId: room.id,
           roomCode: room.code,
+          roomName: room.name,
           participantId: socket.id,
           userId: stableUserId,
           nickname: participant.nickname,

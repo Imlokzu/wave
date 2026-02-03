@@ -1,13 +1,17 @@
 <!doctype html>
 <html class="dark" lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Wave - Login</title>
     <script src="/js/theme-init.js"></script>
     <link href="/css/theme.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
     <script src="/js/mobile-detector.js"></script>
     <script src="/js/update-checker.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -47,40 +51,66 @@
         };
     </script>
     <style>
+        body {
+            zoom: 0.8;
+        }
+        
         .material-symbols-outlined {
             font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
         }
-        .wave-bg-dark {
-            background: radial-gradient(circle at 50% -20%, #1e293b 0%, #0b1116 60%);
+
+        .premium-bg {
+            background: radial-gradient(circle at 50% -20%, #1e293b 0%, #0b1116 80%);
+            background-attachment: fixed;
         }
+
         .glass-panel {
-            background: rgba(22, 38, 44, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(13, 185, 242, 0.1);
+            background: rgba(22, 38, 44, 0.4);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(13, 185, 242, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .font-outfit {
+            font-family: 'Outfit', 'Inter', sans-serif;
         }
     </style>
 </head>
-<body class="bg-background-dark font-display text-white antialiased min-h-screen flex items-center justify-center relative overflow-hidden">
-    <!-- Ambient Background -->
-    <div class="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px] pointer-events-none"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px] pointer-events-none"></div>
-    
+
+<body
+    class="premium-bg font-display text-white antialiased min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Ambient Background Lighting -->
+    <div
+        class="fixed top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/20 blur-[150px] pointer-events-none opacity-50">
+    </div>
+    <div
+        class="fixed bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[150px] pointer-events-none opacity-30">
+    </div>
+    <div
+        class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[#0b1116]/40 pointer-events-none">
+    </div>
+
     <!-- Login Card -->
-    <div class="glass-panel w-full max-w-md mx-4 rounded-3xl p-8 shadow-2xl relative z-10 hover:shadow-glow transition-all duration-500">
+    <div
+        class="glass-panel w-full max-w-md mx-4 rounded-3xl p-8 shadow-2xl relative z-10 hover:shadow-glow transition-all duration-500">
         <!-- Logo & Title -->
-        <div class="flex flex-col items-center gap-3 mb-8">
-            <img src="/nobackwave.png" alt="Wave" class="h-20 w-20 object-contain" />
-            <h1 class="text-4xl font-black text-white tracking-tight">Wave</h1>
-            <p class="text-gray-400 text-sm">Welcome back to the wave</p>
+        <div class="flex flex-col items-center gap-3 mb-10">
+            <div class="relative">
+                <div class="absolute inset-0 bg-primary/30 blur-2xl rounded-full"></div>
+                <img src="/nobackwave.png" alt="Wave" class="h-24 w-24 object-contain relative z-10 drop-shadow-2xl" />
+            </div>
+            <h1 class="text-5xl font-black text-white tracking-tighter font-outfit">WAVE</h1>
+            <p class="text-slate-400 text-sm font-medium tracking-wide uppercase">Experience the next generation</p>
         </div>
-        
+
         <!-- Error Message -->
-        <div id="error-message" class="hidden mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-2">
+        <div id="error-message"
+            class="hidden mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-2">
             <span class="material-symbols-outlined text-[18px]">error</span>
             <span id="error-text"></span>
         </div>
-        
+
         <!-- Login Form -->
         <form id="login-form" class="flex flex-col gap-4">
             <!-- Username -->
@@ -88,18 +118,13 @@
                 <label class="flex flex-col w-full">
                     <span class="text-gray-400 text-sm font-medium mb-2 ml-1">Username</span>
                     <div class="relative flex items-center">
-                        <div class="absolute left-4 flex items-center justify-center text-gray-500 group-focus-within/input:text-primary transition-colors">
+                        <div
+                            class="absolute left-4 flex items-center justify-center text-gray-500 group-focus-within/input:text-primary transition-colors">
                             <span class="material-symbols-outlined text-[20px]">person</span>
                         </div>
-                        <input 
-                            id="username" 
-                            name="username"
-                            class="form-input flex w-full h-14 rounded-xl bg-card-dark text-white placeholder:text-gray-500 pl-12 pr-4 text-base font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-primary-soft transition-all duration-200 outline-none" 
-                            placeholder="Enter your username" 
-                            type="text" 
-                            required
-                            autocomplete="username"
-                        />
+                        <input id="username" name="username"
+                            class="form-input flex w-full h-14 rounded-xl bg-card-dark text-white placeholder:text-gray-500 pl-12 pr-4 text-base font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-primary-soft transition-all duration-200 outline-none"
+                            placeholder="Enter your username" type="text" required autocomplete="username" />
                     </div>
                 </label>
             </div>
@@ -109,34 +134,29 @@
                 <label class="flex flex-col w-full">
                     <span class="text-gray-400 text-sm font-medium mb-2 ml-1">Password</span>
                     <div class="relative flex items-center">
-                        <div class="absolute left-4 flex items-center justify-center text-gray-500 group-focus-within/input:text-primary transition-colors">
+                        <div
+                            class="absolute left-4 flex items-center justify-center text-gray-500 group-focus-within/input:text-primary transition-colors">
                             <span class="material-symbols-outlined text-[20px]">lock</span>
                         </div>
-                        <input 
-                            id="password" 
-                            name="password"
-                            class="form-input flex w-full h-14 rounded-xl bg-card-dark text-white placeholder:text-gray-500 pl-12 pr-4 text-base font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-primary-soft transition-all duration-200 outline-none" 
-                            placeholder="Enter your password" 
-                            type="password" 
-                            required
-                            autocomplete="current-password"
-                        />
+                        <input id="password" name="password"
+                            class="form-input flex w-full h-14 rounded-xl bg-card-dark text-white placeholder:text-gray-500 pl-12 pr-4 text-base font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-primary-soft transition-all duration-200 outline-none"
+                            placeholder="Enter your password" type="password" required
+                            autocomplete="current-password" />
                     </div>
                 </label>
             </div>
 
             <!-- Login Button -->
-            <button 
-                type="submit" 
-                id="login-btn"
-                class="mt-4 flex items-center justify-center gap-2 h-14 w-full rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
+            <button type="submit" id="login-btn"
+                class="mt-4 flex items-center justify-center gap-2 h-14 w-full rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
                 <span id="login-text">Sign In</span>
                 <span id="login-spinner" class="hidden">
-                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <div class="loader loader-xs">
+                        <div class="circle"></div>
+                        <div class="circle"></div>
+                        <div class="circle"></div>
+                        <div class="circle"></div>
+                    </div>
                 </span>
             </button>
         </form>
@@ -151,8 +171,9 @@
         <!-- Sign Up Link -->
         <div class="text-center">
             <p class="text-gray-400 text-sm">
-                Don't have an account? 
-                <a href="/signup.html" class="text-primary hover:text-blue-400 font-semibold transition-colors">Sign up</a>
+                Don't have an account?
+                <a href="/signup.html" class="text-primary hover:text-blue-400 font-semibold transition-colors">Sign
+                    up</a>
             </p>
         </div>
     </div>
@@ -213,10 +234,10 @@
                     localStorage.setItem('userId', data.user.id);
                     localStorage.setItem('username', data.user.username);
                     localStorage.setItem('nickname', data.user.nickname || data.user.username);
-                    
+
                     // Clear any cached session data
                     sessionStorage.removeItem('auth_session_valid');
-                    
+
                     // Redirect to chat
                     window.location.href = '/chat.html';
                 } else {
@@ -231,7 +252,7 @@
         });
 
         // Check if already logged in
-        (async function() {
+        (async function () {
             const authToken = localStorage.getItem('authToken');
             if (authToken) {
                 try {
@@ -240,7 +261,7 @@
                             'Authorization': `Bearer ${authToken}`
                         }
                     });
-                    
+
                     if (response.ok) {
                         // Already logged in, redirect to chat
                         window.location.href = '/chat.html';
@@ -252,4 +273,5 @@
         })();
     </script>
 </body>
+
 </html>

@@ -12,4 +12,7 @@ pyasn1==0.6.1
 qrcode==8.0
 rsa==4.9.1
 Telethon==1.40.0
-yarl==1.20.1
+yarl>=1.22.0
+supabase>=2.27.0
+openai>=1.0.0
+

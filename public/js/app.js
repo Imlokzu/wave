@@ -131,6 +131,11 @@ class App {
           username: data.user.username,
           nickname: data.user.nickname
         });
+
+        // Update localStorage with correct values from server
+        localStorage.setItem('userId', data.user.id);
+        localStorage.setItem('username', data.user.username);
+        localStorage.setItem('nickname', data.user.nickname);
         
         return true;
       } else {
@@ -184,8 +189,8 @@ class App {
         setTimeout(() => {
           this.openDM(currentDM);
         }, 500);
-        // Clear the flag so it doesn't reopen on refresh
-        localStorage.removeItem('currentDM');
+        // DON'T clear the flag - keep it so chat persists on refresh
+        // localStorage.removeItem('currentDM');
         return;
       }
       
@@ -198,8 +203,8 @@ class App {
             socketManager.joinRoom(currentRoomCode, nickname);
           }
         }, 500);
-        // Clear the flag
-        localStorage.removeItem('currentRoomCode');
+        // DON'T clear the flag - keep it so chat persists on refresh
+        // localStorage.removeItem('currentRoomCode');
         return;
       }
       
@@ -391,6 +396,10 @@ class App {
     const closeBtn = document.getElementById('closeCreateJoinModal');
     const submitBtn = document.getElementById('submitRoomBtn');
     const input = document.getElementById('roomCodeInput');
+    const creationOptions = document.getElementById('roomCreationOptions');
+    const tempRoomBtn = document.getElementById('tempRoomBtn');
+    const foreverRoomBtn = document.getElementById('foreverRoomBtn');
+    const tempRoomOptions = document.getElementById('tempRoomOptions');
     
     if (!modal || !closeBtn || !submitBtn || !input) return;
     
@@ -410,6 +419,11 @@ class App {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
         input.value = '';
+        // Reset form
+        if (creationOptions) creationOptions.classList.add('hidden');
+        if (tempRoomBtn) tempRoomBtn.classList.add('active');
+        if (foreverRoomBtn) foreverRoomBtn.classList.remove('active');
+        if (tempRoomOptions) tempRoomOptions.classList.remove('hidden');
         isClosing = false;
       }, 300);
     };
@@ -422,6 +436,33 @@ class App {
         closeModal();
       }
     });
+    
+    // Show/hide creation options based on room code input
+    input.addEventListener('input', () => {
+      const hasCode = input.value.trim().length > 0;
+      if (creationOptions) {
+        if (hasCode) {
+          creationOptions.classList.add('hidden');
+        } else {
+          creationOptions.classList.remove('hidden');
+        }
+      }
+    });
+    
+    // Room type selection
+    if (tempRoomBtn && foreverRoomBtn) {
+      tempRoomBtn.addEventListener('click', () => {
+        tempRoomBtn.classList.add('active');
+        foreverRoomBtn.classList.remove('active');
+        if (tempRoomOptions) tempRoomOptions.classList.remove('hidden');
+      });
+      
+      foreverRoomBtn.addEventListener('click', () => {
+        foreverRoomBtn.classList.add('active');
+        tempRoomBtn.classList.remove('active');
+        if (tempRoomOptions) tempRoomOptions.classList.add('hidden');
+      });
+    }
     
     // Submit handler
     submitBtn.addEventListener('click', () => {
@@ -437,8 +478,8 @@ class App {
         // Join existing room
         socketManager.joinRoom(roomCode, nickname);
       } else {
-        // Create new room
-        this.handleCreateNewRoom();
+        // Create new room with options
+        this.handleCreateNewRoomWithOptions();
       }
       
       closeModal();
@@ -818,10 +859,18 @@ class App {
    */
   addDMToList(username) {
     const cleanUsername = username.replace('@', '');
+    console.log('[App] addDMToList called with:', cleanUsername);
+    console.log('[App] Current DM conversations:', Array.from(this.dmConversations));
+    console.log('[App] Already has this DM?', this.dmConversations.has(cleanUsername));
+    
     if (!this.dmConversations.has(cleanUsername)) {
       this.dmConversations.add(cleanUsername);
+      console.log('[App] Added DM to list. New list:', Array.from(this.dmConversations));
       this.renderDMList();
       this.saveSession();
+    } else {
+      console.log('[App] DM already in list, just re-rendering');
+      this.renderDMList();
     }
   }
 
@@ -886,10 +935,16 @@ class App {
       let fileName = null;
       let content = message.content;
       
-      // Check if it's an image message
+      // Check if it's an image message - handle multiple formats
       if (content && content.startsWith('[Image:') && content.endsWith(']')) {
         messageType = 'image';
         imageUrl = content.substring(8, content.length - 1).trim();
+        content = '';
+      }
+      // Also handle [IMAGE]URL format
+      else if (content && content.startsWith('[IMAGE]')) {
+        messageType = 'image';
+        imageUrl = content.substring(7).trim();
         content = '';
       }
       // Check if it's a file message
@@ -897,7 +952,15 @@ class App {
         messageType = 'file';
         const fileInfo = content.substring(7, content.length - 1).trim();
         fileName = fileInfo;
-        fileUrl = fileInfo; // Assuming the file name is the URL
+        fileUrl = fileInfo;
+        content = '';
+      }
+      // Also handle [FILE]URL format
+      else if (content && content.startsWith('[FILE]')) {
+        messageType = 'file';
+        const fileInfo = content.substring(6).trim();
+        fileName = fileInfo;
+        fileUrl = fileInfo;
         content = '';
       }
       
@@ -2118,7 +2181,15 @@ class App {
 
       const roomCode = response.data.code;
       const roomId = response.data.id;
-      console.log('[App] Room code:', roomCode);
+      const createdName = response.data.name || null;
+      console.log('[App] Room code:', roomCode, 'name:', createdName);
+
+      // Immediately update UI with name returned from API to avoid waiting for socket
+      if (createdName) {
+        ui.updateRoomName(createdName);
+      } else {
+        ui.updateRoomName(`Room ${roomCode}`);
+      }
 
       // Ensure socket is connected before joining
       if (!socketManager.socket || !socketManager.socket.connected) {
@@ -2167,6 +2238,205 @@ class App {
           ? 'Cannot connect to server. Make sure the server is running.'
           : error.message || 'Failed to create room';
       alert('Error: ' + errorMsg);
+    }
+  }
+
+  /**
+   * Validate if a string is a valid UUID
+   */
+  isValidUUID(uuid) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  }
+
+  async handleCreateNewRoomWithOptions() {
+    try {
+      console.log('[App] Creating new room with options...');
+
+      // Show loading state
+      const submitBtn = document.getElementById('submitRoomBtn');
+      const originalHTML = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">hourglass_empty</span> Creating...';
+      }
+
+      // Leave current room if in one
+      const currentRoom = state.get('room');
+      if (currentRoom && currentRoom.id) {
+        console.log('[App] Leaving current room before creating new one');
+        socketManager.leaveRoom();
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+
+      // Collect form data
+      const roomName = document.getElementById('roomNameInput')?.value.trim() || null;
+      const isPersistent = window.getSelectedRoomType ? window.getSelectedRoomType() === 'forever' : false;
+      const duration = isPersistent ? null : parseInt(document.getElementById('roomDurationSelect')?.value || '60');
+      
+      // Collect settings
+      const settings = {
+        allowPolls: document.getElementById('allowPolls')?.checked ?? true,
+        allowVoice: document.getElementById('allowVoice')?.checked ?? true,
+        allowFiles: document.getElementById('allowFiles')?.checked ?? true,
+        allowImages: document.getElementById('allowImages')?.checked ?? true,
+        allowStickers: document.getElementById('allowStickers')?.checked ?? true,
+        slowMode: parseInt(document.getElementById('slowMode')?.value || '0'),
+        maxMessageLength: parseInt(document.getElementById('maxMessageLength')?.value || '2000')
+      };
+
+      // Create room via API
+      let userId = state.get('user.id') || localStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('User ID not found. Please login again.');
+      }
+
+      // Extract UUID if it has username appended (format: uuid_username)
+      if (userId.includes('_')) {
+        userId = userId.split('_')[0];
+      }
+
+      // Validate userId is a proper UUID
+      if (!this.isValidUUID(userId)) {
+        console.warn('[App] Invalid userId format detected:', userId, '— attempting to refresh session from server');
+        const authToken = localStorage.getItem('authToken');
+        let refreshed = false;
+
+        if (authToken) {
+          try {
+            const resp = await fetch('/api/auth/session', {
+              headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+
+            if (resp.ok) {
+              const data = await resp.json();
+
+              // Update localStorage and state with server values
+              localStorage.setItem('userId', data.user.id);
+              localStorage.setItem('username', data.user.username);
+              localStorage.setItem('nickname', data.user.nickname || data.user.username);
+              state.setUser({ id: data.user.id, username: data.user.username, nickname: data.user.nickname });
+
+              refreshed = true;
+              console.log('[App] Session refreshed successfully, continuing room creation');
+            } else {
+              console.warn('[App] Session refresh failed with status:', resp.status);
+            }
+          } catch (err) {
+            console.error('[App] Error refreshing session:', err);
+          }
+        }
+
+        if (!refreshed) {
+          console.error('[App] Could not refresh session - clearing corrupted data and redirecting to login');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('username');
+          localStorage.removeItem('nickname');
+          state.clearUser();
+          alert('Your session data is corrupted. Please login again.');
+          window.location.href = '/login.html';
+          return;
+        }
+      }
+
+      const options = {
+        name: roomName,
+        isPersistent,
+        duration,
+        settings,
+        createdBy: userId
+      };
+
+      // Attempt create, but if server returns INVALID_USER_ID, try refreshing session once and retry
+      let response;
+      try {
+        response = await api.createRoom(50, options); // Default 50 users
+      } catch (error) {
+        console.warn('[App] Create room failed, checking error code...', error);
+        if (error && error.code === 'INVALID_USER_ID') {
+          console.log('[App] Server reports invalid user id, attempting session refresh and retry');
+          const authToken = localStorage.getItem('authToken');
+          if (authToken) {
+            try {
+              const resp = await fetch('/api/auth/session', { headers: { 'Authorization': `Bearer ${authToken}` } });
+              if (resp.ok) {
+                const data = await resp.json();
+                localStorage.setItem('userId', data.user.id);
+                localStorage.setItem('username', data.user.username);
+                localStorage.setItem('nickname', data.user.nickname || data.user.username);
+                state.setUser({ id: data.user.id, username: data.user.username, nickname: data.user.nickname });
+
+                // Retry create
+                response = await api.createRoom(50, { ...options, createdBy: data.user.id });
+              } else {
+                throw error; // rethrow original
+              }
+            } catch (refreshErr) {
+              console.error('[App] Session refresh retry failed:', refreshErr);
+              throw error; // bubble original API error
+            }
+          } else {
+            throw error; // no auth token to refresh
+          }
+        } else {
+          throw error; // different API error
+        }
+      }
+
+      console.log('[App] Room created:', response);
+
+      const roomCode = response.data.code;
+      const roomId = response.data.id;
+      const createdName = response.data.name || null;
+      console.log('[App] Room code:', roomCode, 'name:', createdName);
+
+      // Immediately update UI with name returned from API to avoid waiting for socket
+      if (createdName) {
+        ui.updateRoomName(createdName);
+      } else {
+        ui.updateRoomName(`Room ${roomCode}`);
+      }
+
+      // Ensure socket is connected before joining
+      if (!socketManager.socket || !socketManager.socket.connected) {
+        console.log('[App] Socket not connected, connecting...');
+        socketManager.connect();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      // Join room via socket
+      const nickname = state.get('user.nickname');
+      console.log('[App] Joining room:', roomCode);
+      socketManager.joinRoom(roomCode, nickname);
+
+      // Show success message
+      const roomType = isPersistent ? 'permanent' : `temporary (${duration} minutes)`;
+      const message = `Room created!\n\nRoom Code: ${roomCode}\nType: ${roomType}\n\nShare this code with others to invite them.`;
+      
+      // Try to copy to clipboard
+      try {
+        await navigator.clipboard.writeText(roomCode);
+        alert(message + '\n\n✓ Code copied to clipboard!');
+      } catch (e) {
+        alert(message);
+      }
+
+      // Restore button state
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+      }
+    } catch (error) {
+      console.error('[App] Error creating room:', error);
+      alert('Failed to create room. Please try again.');
+      
+      // Restore button state
+      const submitBtn = document.getElementById('submitRoomBtn');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Continue';
+      }
     }
   }
 
@@ -2355,7 +2625,51 @@ class App {
       // Only add room messages when in a regular room (not DM)
       const currentRoom = state.get('room');
       if (currentRoom && !currentRoom.isDM) {
-        state.addMessage(message);
+        // Parse content for image/file markers
+        let messageType = message.type || 'text';
+        let imageUrl = message.imageUrl || null;
+        let fileUrl = message.fileUrl || null;
+        let fileName = message.fileName || null;
+        let content = message.content;
+        
+        // Check if it's an image message - handle multiple formats
+        if (content && content.startsWith('[Image:') && content.endsWith(']')) {
+          messageType = 'image';
+          imageUrl = content.substring(8, content.length - 1).trim();
+          content = '';
+        }
+        // Also handle [IMAGE]URL format
+        else if (content && content.startsWith('[IMAGE]')) {
+          messageType = 'image';
+          imageUrl = content.substring(7).trim();
+          content = '';
+        }
+        // Check if it's a file message
+        else if (content && content.startsWith('[File:') && content.endsWith(']')) {
+          messageType = 'file';
+          const fileInfo = content.substring(7, content.length - 1).trim();
+          fileName = fileInfo;
+          fileUrl = fileInfo;
+          content = '';
+        }
+        // Also handle [FILE]URL format
+        else if (content && content.startsWith('[FILE]')) {
+          messageType = 'file';
+          const fileInfo = content.substring(6).trim();
+          fileName = fileInfo;
+          fileUrl = fileInfo;
+          content = '';
+        }
+        
+        // Add parsed message to state
+        state.addMessage({
+          ...message,
+          type: messageType,
+          content: content,
+          imageUrl: imageUrl,
+          fileUrl: fileUrl,
+          fileName: fileName
+        });
         
         // Auto-mark as read immediately if message is from someone else
         // This simulates "message loaded in browser = message read"
@@ -2526,16 +2840,30 @@ class App {
           let fileName = null;
           let content = msg.content;
           
-          // Check if it's an image message
+          // Check if it's an image message - handle multiple formats
           if (content && content.startsWith('[Image:') && content.endsWith(']')) {
             messageType = 'image';
             imageUrl = content.substring(8, content.length - 1).trim();
+            content = '';
+          }
+          // Also handle [IMAGE]URL format
+          else if (content && content.startsWith('[IMAGE]')) {
+            messageType = 'image';
+            imageUrl = content.substring(7).trim();
             content = '';
           }
           // Check if it's a file message
           else if (content && content.startsWith('[File:') && content.endsWith(']')) {
             messageType = 'file';
             const fileInfo = content.substring(7, content.length - 1).trim();
+            fileName = fileInfo;
+            fileUrl = fileInfo;
+            content = '';
+          }
+          // Also handle [FILE]URL format
+          else if (content && content.startsWith('[FILE]')) {
+            messageType = 'file';
+            const fileInfo = content.substring(6).trim();
             fileName = fileInfo;
             fileUrl = fileInfo;
             content = '';
@@ -2795,7 +3123,7 @@ class App {
     const room = {
       id: data.roomId,
       code: roomCode,
-      name: `Room ${roomCode}`,
+      name: data.roomName || `Room ${roomCode}`,
       isDM: false
     };
     state.setRoom(room);
@@ -2891,11 +3219,56 @@ class App {
       return;
     }
     
-    // Validate each message object
+    // Validate and parse each message object
     const validMessages = messagesArray.filter(msg => {
       if (!msg || typeof msg !== 'object') return false;
       if (!msg.id || !msg.content) return false;
       return true;
+    }).map(msg => {
+      // Parse content for image/file markers
+      let messageType = msg.type || 'text';
+      let imageUrl = msg.imageUrl || null;
+      let fileUrl = msg.fileUrl || null;
+      let fileName = msg.fileName || null;
+      let content = msg.content;
+      
+      // Check if it's an image message - handle multiple formats
+      if (content && content.startsWith('[Image:') && content.endsWith(']')) {
+        messageType = 'image';
+        imageUrl = content.substring(8, content.length - 1).trim();
+        content = '';
+      }
+      // Also handle [IMAGE]URL format
+      else if (content && content.startsWith('[IMAGE]')) {
+        messageType = 'image';
+        imageUrl = content.substring(7).trim();
+        content = '';
+      }
+      // Check if it's a file message
+      else if (content && content.startsWith('[File:') && content.endsWith(']')) {
+        messageType = 'file';
+        const fileInfo = content.substring(7, content.length - 1).trim();
+        fileName = fileInfo;
+        fileUrl = fileInfo;
+        content = '';
+      }
+      // Also handle [FILE]URL format
+      else if (content && content.startsWith('[FILE]')) {
+        messageType = 'file';
+        const fileInfo = content.substring(6).trim();
+        fileName = fileInfo;
+        fileUrl = fileInfo;
+        content = '';
+      }
+      
+      return {
+        ...msg,
+        type: messageType,
+        content: content,
+        imageUrl: imageUrl,
+        fileUrl: fileUrl,
+        fileName: fileName
+      };
     });
     
     console.log('[App] Received message history:', validMessages.length);
@@ -3578,68 +3951,88 @@ class App {
    * Render combined chats list (DMs + Rooms together)
    */
   renderDMList() {
-    const chatsList = document.getElementById('chatsList');
-    if (!chatsList) return;
+    const chatsList = document.getElementById('dmsListContainer');
+    if (!chatsList) {
+      console.error('[App] dmsListContainer not found!');
+      return;
+    }
+    
+    console.log('[App] renderDMList - Rendering', this.dmConversations.size, 'DMs and', this.rooms.size, 'rooms');
     
     chatsList.innerHTML = '';
     
     const currentRoom = state.get('room');
     
     // Render DMs first
-    for (const username of this.dmConversations) {
-      const cleanUsername = username.replace('@', '');
-      const isActive = currentRoom && currentRoom.isDM && 
-        currentRoom.name.replace('@', '').toLowerCase() === cleanUsername.toLowerCase();
-      
-      const unreadCount = this.unreadCounts.get(cleanUsername) || 0;
-      
-      const dmEl = document.createElement('button');
-      dmEl.className = `w-full flex items-center gap-3 p-2 rounded-lg transition-colors relative ${
-        isActive ? 'bg-primary/20 text-white' : 'text-slate-400 hover:bg-surface-lighter hover:text-white'
-      }`;
-      
-      dmEl.innerHTML = `
-        <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary text-[16px]">person</span>
-        </div>
-        <span class="text-sm truncate flex-1">${cleanUsername}</span>
-        ${unreadCount > 0 ? `
-          <span class="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-            ${unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        ` : ''}
-      `;
-      
-      dmEl.addEventListener('click', () => this.handleStartChat(null, username));
-      
-      chatsList.appendChild(dmEl);
+    if (this.dmConversations.size > 0) {
+      for (const username of this.dmConversations) {
+        const cleanUsername = username.replace('@', '');
+        console.log('[App] Rendering DM for:', cleanUsername);
+        const isActive = currentRoom && currentRoom.isDM && 
+          currentRoom.name.replace('@', '').toLowerCase() === cleanUsername.toLowerCase();
+        
+        const unreadCount = this.unreadCounts.get(cleanUsername) || 0;
+        
+        const dmEl = document.createElement('button');
+        dmEl.className = `w-full flex items-center gap-3 p-3 rounded-lg transition-colors relative ${
+          isActive ? 'bg-primary/20 text-white' : 'text-slate-400 hover:bg-surface-lighter hover:text-white'
+        }`;
+        
+        dmEl.innerHTML = `
+          <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-[20px]">person</span>
+          </div>
+          <div class="flex-1 flex items-center justify-between min-w-0">
+            <span class="text-base truncate font-medium">${cleanUsername}</span>
+            ${unreadCount > 0 ? `
+              <span class="bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0 ml-2">
+                ${unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            ` : ''}
+          </div>
+        `;
+        
+        dmEl.addEventListener('click', () => this.handleStartChat(null, username));
+        
+        chatsList.appendChild(dmEl);
+      }
+    }
+    
+    // Add separator if we have both DMs and rooms
+    if (this.dmConversations.size > 0 && this.rooms.size > 0) {
+      const separator = document.createElement('div');
+      separator.className = 'my-2 px-2';
+      separator.innerHTML = '<div class="h-px bg-slate-700/50"></div>';
+      chatsList.appendChild(separator);
     }
     
     // Render rooms
-    for (const [roomCode, room] of this.rooms) {
-      const isActive = currentRoom && !currentRoom.isDM && 
-        currentRoom.code === roomCode;
-      
-      const roomEl = document.createElement('button');
-      roomEl.className = `w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
-        isActive ? 'bg-primary/20 text-white' : 'text-slate-400 hover:bg-surface-lighter hover:text-white'
-      }`;
-      
-      roomEl.innerHTML = `
-        <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary text-[16px]">group</span>
-        </div>
-        <span class="text-sm truncate">${room.name}</span>
-      `;
-      
-      roomEl.addEventListener('click', () => {
-        const nickname = state.get('user.nickname');
-        if (nickname) {
-          socketManager.joinRoom(roomCode, nickname);
-        }
-      });
-      
-      chatsList.appendChild(roomEl);
+    if (this.rooms.size > 0) {
+      for (const [roomCode, room] of this.rooms) {
+        const isActive = currentRoom && !currentRoom.isDM && 
+          currentRoom.code === roomCode;
+        
+        const roomEl = document.createElement('button');
+        roomEl.className = `w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
+          isActive ? 'bg-primary/20 text-white' : 'text-slate-400 hover:bg-surface-lighter hover:text-white'
+        }`;
+        
+        roomEl.innerHTML = `
+          <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-[20px]">group</span>
+          </div>
+          <span class="text-base truncate font-medium">${room.name}</span>
+        `;
+        
+        roomEl.addEventListener('click', () => {
+          const nickname = state.get('user.nickname');
+          if (nickname) {
+            socketManager.joinRoom(roomCode, nickname);
+          }
+        });
+        
+        chatsList.appendChild(roomEl);
+      }
     }
     
     // Update right panel based on if in DM or room

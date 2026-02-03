@@ -112,14 +112,124 @@
             </div>
         </div>
 
-        <!-- Version 1.0.0 -->
+        <!-- Version 1.1.0 -->
         <div class="version-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <h2 class="text-3xl font-bold text-white">Version 1.1.0</h2>
+                        <span class="badge badge-minor">MINOR</span>
+                        <span class="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-bold">Latest</span>
+                    </div>
+                    <p class="text-slate-400">February 1, 2026</p>
+                    <p class="text-slate-500 text-sm mt-1">🎨 Major UI/UX improvements and new AI features</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Added -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-400">add_circle</span>
+                        Added
+                    </h3>
+                    <ul class="space-y-2 ml-8">
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>AI Model Selection</strong> - Wave Flash, Wave, Wave O (reasoning), and Wave Coder models</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>AI Streaming</strong> - Real-time token streaming with batched UI updates (80ms intervals)</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Transparency Mode</strong> - Customizable UI transparency with blur effects</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Custom Backgrounds</strong> - Upload and set custom chat backgrounds</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Advanced Theme System</strong> - Dark/Light themes with custom color schemes</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-green-400">•</span>
+                            <span><strong>Model-Specific AI Prompts</strong> - Each AI model has unique personality and Wave knowledge</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Enhanced -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-400">upgrade</span>
+                        Enhanced
+                    </h3>
+                    <ul class="space-y-2 ml-8">
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-blue-400">•</span>
+                            <span><strong>Mobile UI</strong> - Improved swipeable sidebars, touch controls, and responsive layouts</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-blue-400">•</span>
+                            <span><strong>AI Chat Interface</strong> - Compact translation cards, thinking indicators, and smooth streaming</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-blue-400">•</span>
+                            <span><strong>Translation UI</strong> - Compact, mobile-friendly translation cards with original text display</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-blue-400">•</span>
+                            <span><strong>Theme Customization</strong> - Advanced controls with transparency and custom backgrounds</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-blue-400">•</span>
+                            <span><strong>Performance</strong> - Batched UI updates prevent lag during AI streaming</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Fixed -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-yellow-400">build</span>
+                        Fixed
+                    </h3>
+                    <ul class="space-y-2 ml-8">
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-yellow-400">•</span>
+                            <span><strong>AI Thinking Filter</strong> - Ultra-aggressive filter removes all internal AI reasoning</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-yellow-400">•</span>
+                            <span><strong>Thinking Tags</strong> - Properly hide &lt;thinking&gt; tags instead of showing as text</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-yellow-400">•</span>
+                            <span><strong>Translation Placeholders</strong> - Detect and show error for template placeholders</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-yellow-400">•</span>
+                            <span><strong>UI Jumping</strong> - Pre-created message bubbles prevent layout shifts during streaming</span>
+                        </li>
+                        <li class="text-slate-300 flex items-start gap-2">
+                            <span class="text-yellow-400">•</span>
+                            <span><strong>Sidebar Gestures</strong> - Improved swipe detection and smooth animations</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Version 1.0.0 -->
+        <div class="version-card bg-surface-dark/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6 opacity-75">
             <div class="flex items-start justify-between mb-6">
                 <div>
                     <div class="flex items-center gap-3 mb-2">
                         <h2 class="text-3xl font-bold text-white">Version 1.0.0</h2>
                         <span class="badge badge-major">MAJOR</span>
-                        <span class="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-bold">Latest</span>
                     </div>
                     <p class="text-slate-400">January 22, 2026</p>
                     <p class="text-slate-500 text-sm mt-1">🎉 Initial stable release - Public API defined</p>
@@ -148,7 +258,7 @@
                         </li>
                         <li class="text-slate-300 flex items-start gap-2">
                             <span class="text-green-400">•</span>
-                            <span><strong>AI Chat Interface</strong> - DeepSeek AI integration with chat UI (requires API key)</span>
+                            <span><strong>AI Chat Interface</strong> - Multiple AI models with web search integration</span>
                         </li>
                         <li class="text-slate-300 flex items-start gap-2">
                             <span class="text-green-400">•</span>

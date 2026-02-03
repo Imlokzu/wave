@@ -1,10 +1,11 @@
 import { Room, Message } from '../models';
+import { IRoomStorage } from './SupabaseRoomManager';
 
 /**
  * In-memory storage for rooms and messages
  * No persistence - all data is ephemeral
  */
-export class InMemoryStorage {
+export class InMemoryStorage implements IRoomStorage {
   private rooms: Map<string, Room>;
   private messages: Map<string, Message[]>; // roomId -> messages
   private roomCodeIndex: Map<string, string>; // code -> roomId
@@ -45,6 +46,10 @@ export class InMemoryStorage {
       this.rooms.delete(roomId);
       this.messages.delete(roomId);
     }
+  }
+
+  async getAllRooms(): Promise<Room[]> {
+    return Array.from(this.rooms.values());
   }
 
   // Message operations
@@ -97,11 +102,6 @@ export class InMemoryStorage {
     } else {
       this.messages.delete(roomId);
     }
-  }
-
-  // Utility methods
-  getAllRooms(): Room[] {
-    return Array.from(this.rooms.values());
   }
 
   getRoomCount(): number {

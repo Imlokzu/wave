@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { RoomManager } from '../managers';
-import { validateNickname, validateRoomCode } from '../utils';
+import { validateNickname, validateRoomCode, validateUUID } from '../utils';
 import { Participant } from '../models';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,24 +12,77 @@ export function createRoomRouter(roomManager: RoomManager) {
    */
   router.post('/', async (req: Request, res: Response) => {
     try {
-      const { maxUsers = 50 } = req.body;
+      const { 
+        maxUsers = 50, 
+        isPersistent = false, 
+        createdBy,
+        name,
+        duration, // in minutes
+        settings
+      } = req.body;
 
-      const room = await roomManager.createRoom(maxUsers);
+      // Validate createdBy if provided
+      if (createdBy && !validateUUID(createdBy)) {
+        console.warn('rooms.ts: invalid createdBy received:', createdBy);
+        return res.status(400).json({
+          error: {
+            code: 'INVALID_USER_ID',
+            message: 'Invalid user id format. Please login again.'
+          }
+        });
+      }
+
+      const room = await roomManager.createRoom(maxUsers, isPersistent, createdBy, name, duration, settings);
 
       res.status(201).json({
         success: true,
         data: {
           id: room.id,
           code: room.code,
+          name: room.name,
           inviteLink: `${req.protocol}://${req.get('host')}/join/${room.code}`,
           maxUsers: room.maxUsers,
           createdAt: room.createdAt,
+          isPersistent: room.isPersistent,
+          expiresAt: room.expiresAt,
+          settings: room.settings,
         },
       });
     } catch (error: any) {
       res.status(500).json({
         error: {
           code: 'ROOM_CREATION_FAILED',
+          message: error.message,
+        },
+      });
+    }
+  });
+
+  /**
+   * GET /api/rooms - Get all persistent rooms
+   */
+  router.get('/', async (req: Request, res: Response) => {
+    try {
+      const rooms = await roomManager.getAllRooms();
+      const persistentRooms = rooms.filter(room => room.isPersistent);
+
+      res.json({
+        success: true,
+        data: persistentRooms.map(room => ({
+          id: room.id,
+          code: room.code,
+          name: room.name || null,
+          maxUsers: room.maxUsers,
+          participantCount: room.participants.size,
+          isLocked: room.isLocked,
+          createdAt: room.createdAt,
+          createdBy: room.createdBy,
+        })),
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        error: {
+          code: 'SERVER_ERROR',
           message: error.message,
         },
       });

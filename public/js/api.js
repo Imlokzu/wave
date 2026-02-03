@@ -61,7 +61,7 @@ class APIClient {
         
         throw new APIError(
           data.error?.message || data.error || 'Request failed',
-          data.code || 'UNKNOWN_ERROR',
+          data.error?.code || data.code || 'UNKNOWN_ERROR',
           response.status
         );
       }
@@ -81,10 +81,14 @@ class APIClient {
   }
 
   // Room API
-  async createRoom(maxUsers = 10) {
+  async createRoom(maxUsers = 10, options = {}) {
+    const body = {
+      maxUsers,
+      ...options
+    };
     return this.request('/api/rooms', {
       method: 'POST',
-      body: JSON.stringify({ maxUsers })
+      body: JSON.stringify(body)
     });
   }
 

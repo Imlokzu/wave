@@ -15,15 +15,13 @@
     
     function getMobileVersion(currentPath) {
         // Map desktop pages to mobile versions
+        // NOTE: chat.html and ai-chat.html are intentionally excluded - mobile users get desktop version (responsive)
         const pageMap = {
-            '/chat.html': '/mobile/chat.html',
-            '/ai-chat.html': '/mobile/aichat.html',
             '/profile.html': '/mobile/bio.html',
             '/feed.html': '/mobile/feed.html',
             '/music.html': '/mobile/playlist.html',
-            '/settings.html': '/mobile/settings.html',
-            '/': '/mobile/chat.html',
-            '/index.html': '/mobile/chat.html'
+            '/': '/chat.html',
+            '/index.html': '/chat.html'
         };
         
         return pageMap[currentPath] || null;
@@ -34,12 +32,8 @@
         const currentPath = window.location.pathname;
         const isAlreadyMobile = currentPath.includes('/mobile/');
         
-        // Don't redirect chat.html if user is opening a specific chat/DM
-        const hasChatContext = localStorage.getItem('currentDM') || localStorage.getItem('currentRoomCode');
-        const isChatPage = currentPath === '/chat.html';
-        
-        // Only redirect if not already on mobile version and not opening a specific chat
-        if (!isAlreadyMobile && !(isChatPage && hasChatContext)) {
+        // Only redirect if not already on mobile version
+        if (!isAlreadyMobile) {
             const mobilePath = getMobileVersion(currentPath);
             if (mobilePath) {
                 // Preserve query parameters

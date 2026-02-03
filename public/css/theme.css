@@ -413,3 +413,170 @@ a.bg-primary:hover {
     outline: none !important;
     box-shadow: 0 0 0 3px var(--accent-glow) !important;
 }
+
+/* Room Creation Modal Styles */
+.room-type-btn.active {
+    background-color: rgba(13, 185, 242, 0.1);
+    border-color: #0db9f2;
+    color: #0db9f2;
+}
+
+/* ========================================
+ * ANIMATED HAMBURGER MENU
+ * ======================================== */
+
+.hamburger-menu {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu span {
+    width: 100%;
+    height: 2px;
+    background-color: currentColor;
+    border-radius: 1px;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.hamburger-menu span:nth-child(1) {
+    transform: translateY(-6px);
+}
+
+.hamburger-menu span:nth-child(2) {
+    opacity: 1;
+}
+
+.hamburger-menu span:nth-child(3) {
+    transform: translateY(6px);
+}
+
+/* Checkbox controlled animation */
+.hamburger-checkbox {
+    display: none;
+}
+
+.hamburger-checkbox:checked + .hamburger-menu span:nth-child(1) {
+    transform: rotate(45deg) translateY(0px);
+}
+
+.hamburger-checkbox:checked + .hamburger-menu span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-checkbox:checked + .hamburger-menu span:nth-child(3) {
+    transform: rotate(-45deg) translateY(0px);
+}
+
+/* Alternative: Button controlled animation */
+.hamburger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translateY(0px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translateY(0px);
+}
+
+/* ========================================
+ * LOADING ANIMATIONS
+ * ======================================== */
+
+/* From Uiverse.io by AbanoubMagdy1 */
+.loader {
+  --dim: 3rem;
+  width: var(--dim);
+  height: var(--dim);
+  position: relative;
+  animation: spin988 2s linear infinite;
+}
+
+.loader .circle {
+  --color: #333;
+  --dim: 1.2rem;
+  width: var(--dim);
+  height: var(--dim);
+  background-color: var(--color);
+  border-radius: 50%;
+  position: absolute;
+}
+
+.loader .circle:nth-child(1) {
+  top: 0;
+  left: 0;
+}
+
+.loader .circle:nth-child(2) {
+  top: 0;
+  right: 0;
+}
+
+.loader .circle:nth-child(3) {
+  bottom: 0;
+  left: 0;
+}
+
+.loader .circle:nth-child(4) {
+  bottom: 0;
+  right: 0;
+}
+
+@keyframes spin988 {
+  0% {
+    transform: scale(1) rotate(0);
+  }
+
+  20%, 25% {
+    transform: scale(1.3) rotate(90deg);
+  }
+
+  45%, 50% {
+    transform: scale(1) rotate(180deg);
+  }
+
+  70%, 75% {
+    transform: scale(1.3) rotate(270deg);
+  }
+
+  95%, 100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+/* Theme-aware loader colors */
+.dark .loader .circle {
+  --color: var(--color-primary);
+}
+
+.light .loader .circle {
+  --color: var(--color-secondary);
+}
+
+/* Smaller loader variant for inline use */
+.loader-sm {
+  --dim: 1.5rem;
+}
+
+.loader-sm .circle {
+  --dim: 0.6rem;
+}
+
+/* Extra small loader for buttons */
+.loader-xs {
+  --dim: 1rem;
+}
+
+.loader-xs .circle {
+  --dim: 0.4rem;
+}

@@ -28,10 +28,12 @@ export function createAIChatRouter(): Router {
   /**
    * POST /api/ai-chat
    * Chat with AI with optional web search and model selection
+   * Supports streaming via ?stream=true query parameter
    */
   router.post('/', async (req: Request, res: Response) => {
     try {
-      const { messages, enableSearch = true, model } = req.body;
+      const { messages, enableSearch = true, thinking = false, model } = req.body;
+      const stream = req.query.stream === 'true';
 
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({
@@ -39,10 +41,31 @@ export function createAIChatRouter(): Router {
         });
       }
 
-      console.log(`[AI Chat API] Received chat request (${messages.length} messages, search: ${enableSearch}, model: ${model || 'auto'})`);
+      console.log(`[AI Chat API] Received chat request (${messages.length} messages, search: ${enableSearch}, thinking: ${thinking}, model: ${model || 'auto'}, stream: ${stream})`);
 
       const aiService = getUnifiedAIService();
-      const response = await aiService.chat(messages, enableSearch, model);
+
+      // Handle streaming
+      if (stream) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+
+        try {
+          await aiService.chatStream(messages, (chunk: string) => {
+            res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
+          }, enableSearch, model, thinking);
+          res.write('data: [DONE]\n\n');
+          res.end();
+        } catch (error: any) {
+          res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+          res.end();
+        }
+        return;
+      }
+
+      // Non-streaming response
+      const response = await aiService.chat(messages, enableSearch, model, 0, thinking);
 
       res.json({
         success: true,
@@ -66,7 +89,7 @@ export function createAIChatRouter(): Router {
    */
   router.post('/simple', async (req: Request, res: Response) => {
     try {
-      const { message, enableSearch = true, model } = req.body;
+      const { message, enableSearch = true, thinking = false, model } = req.body;
 
       if (!message || typeof message !== 'string') {
         return res.status(400).json({
@@ -74,7 +97,7 @@ export function createAIChatRouter(): Router {
         });
       }
 
-      console.log(`[AI Chat API] Simple request - message: "${message.substring(0, 50)}...", model: ${model || 'auto'}, search: ${enableSearch}`);
+      console.log(`[AI Chat API] Simple request - message: "${message.substring(0, 50)}...", model: ${model || 'auto'}, search: ${enableSearch}, thinking: ${thinking}`);
 
       const messages = [
         {
@@ -85,8 +108,8 @@ export function createAIChatRouter(): Router {
 
       const aiService = getUnifiedAIService();
       console.log('[AI Chat API] Got UnifiedAIService instance');
-      
-      const response = await aiService.chat(messages, enableSearch, model);
+
+      const response = await aiService.chat(messages, enableSearch, model, 0, thinking);
       console.log('[AI Chat API] Got response from AI');
 
       res.json({

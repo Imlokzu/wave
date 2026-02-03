@@ -101,11 +101,7 @@
                         opacity 0.2s ease;
             opacity: 0; /* Start hidden, will be shown by JS */
         }
-        
-        /* Tab buttons */
-        #tabDMs, #tabRooms {
-            transition: color 0.2s ease, font-weight 0.2s ease;
-        }
+
         
         /* Attachment Menu Animations - Real Glass */
         #attachmentMenu {
@@ -268,35 +264,16 @@
                 </div>
             </div>
             
-            <!-- Tabs -->
-            <div class="px-4 mb-2 shrink-0">
-                <div class="flex gap-2 bg-background-dark rounded-lg p-1 relative">
-                    <!-- Sliding highlight background -->
-                    <div id="tabHighlight" class="absolute top-1 left-1 h-[calc(100%-8px)] bg-primary rounded-md transition-all duration-300 ease-out" style="width: calc(50% - 6px);"></div>
-                    
-                    <button id="tabDMs" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all relative z-10 text-black font-semibold">
-                        Direct Messages
-                    </button>
-                    <button id="tabRooms" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all relative z-10 text-slate-400 hover:text-white">
-                        Rooms
-                    </button>
-                </div>
-            </div>
             
-            <!-- Lists Container -->
+            <!-- Combined Chats List -->
             <div class="flex-1 overflow-y-auto custom-scrollbar px-4 py-2">
-                <!-- DMs List -->
+                <!-- All chats (DMs and Rooms) will be added here dynamically -->
                 <div id="dmsListContainer" class="flex flex-col gap-1">
-                    <!-- DMs will be added here dynamically -->
-                </div>
-                
-                <!-- Rooms List -->
-                <div id="roomsListContainer" class="flex flex-col gap-1 hidden">
-                    <!-- Rooms will be added here dynamically -->
+                    <!-- Chats will be added here dynamically -->
                 </div>
             </div>
             
-            <!-- Combined chats list (for backward compatibility) -->
+            <div id="roomsListContainer" class="hidden"></div>
             <div id="chatsList" class="hidden"></div>
             
             <!-- Bottom Navigation Bar (Sidebar Footer) -->
@@ -438,9 +415,7 @@
         <!-- RIGHT PANEL (320px, XL only) - Room Info -->
         <aside id="roomInfoPanel" class="w-80 bg-surface-dark border-l border-slate-800 shrink-0 hidden xl:flex flex-col overflow-y-auto">
             <div class="p-6 flex flex-col items-center border-b border-slate-800">
-                <div class="w-24 h-24 rounded-full bg-surface-lighter shadow-lg ring-4 ring-background-dark mb-4 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-primary text-5xl">waves</span>
-                </div>
+                <img src="/wavechat.png" alt="Room" class="w-24 h-24 rounded-full shadow-lg ring-4 ring-background-dark mb-4 object-cover" />
                 <h2 class="text-xl font-bold text-white mb-1" id="roomNameRight">Room</h2>
                 <p class="text-sm text-slate-400 text-center mb-4">WaveChat room</p>
                 <div class="flex gap-4 w-full">
@@ -630,19 +605,85 @@
     <div id="createJoinRoomModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
         <div class="bg-surface-dark border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-white">Create or Join Room</h3>
+                <h3 class="text-lg font-bold text-white">Room</h3>
                 <button id="closeCreateJoinModal" class="text-slate-400 hover:text-white">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <div class="space-y-4">
+            
+            <!-- Tabs -->
+            <div class="flex gap-2 bg-background-dark rounded-lg p-1 mb-4">
+                <button id="createRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all bg-primary text-white">
+                    Create Room
+                </button>
+                <button id="joinRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    Join Room
+                </button>
+            </div>
+            
+            <!-- Create Room Content -->
+            <div id="createRoomContent" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Name (Optional)</label>
+                    <input id="roomNameInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="My Awesome Room" type="text"/>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Type</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="tempRoomBtn" class="p-3 rounded-lg border-2 border-primary bg-primary/10 text-white transition-all">
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="material-symbols-outlined text-2xl">schedule</span>
+                                <span class="text-sm font-medium">Temporary</span>
+                                <span class="text-xs text-slate-400">Expires when empty</span>
+                            </div>
+                        </button>
+                        <button id="foreverRoomBtn" class="p-3 rounded-lg border-2 border-slate-700 bg-surface-lighter text-slate-400 hover:text-white hover:border-slate-600 transition-all">
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="material-symbols-outlined text-2xl">all_inclusive</span>
+                                <span class="text-sm font-medium">Forever</span>
+                                <span class="text-xs text-slate-400">Permanent room</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Settings -->
+                <div class="border-t border-slate-700 pt-3">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Settings</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center justify-between text-sm text-slate-300">
+                            <span>Allow Polls</span>
+                            <input type="checkbox" id="allowPolls" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
+                        </label>
+                        <label class="flex items-center justify-between text-sm text-slate-300">
+                            <span>Allow Voice Messages</span>
+                            <input type="checkbox" id="allowVoice" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
+                        </label>
+                        <label class="flex items-center justify-between text-sm text-slate-300">
+                            <span>Allow Files</span>
+                            <input type="checkbox" id="allowFiles" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
+                        </label>
+                        <label class="flex items-center justify-between text-sm text-slate-300">
+                            <span>Allow Images</span>
+                            <input type="checkbox" id="allowImages" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
+                        </label>
+                    </div>
+                </div>
+                
+                <button id="createRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors">
+                    Create Room
+                </button>
+            </div>
+            
+            <!-- Join Room Content -->
+            <div id="joinRoomContent" class="space-y-4 hidden">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">Room Code</label>
-                    <input id="roomCodeInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="Enter room code to join..." type="text"/>
-                    <p class="text-xs text-slate-400 mt-1">Leave empty to create a new room</p>
+                    <input id="roomCodeInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="Enter 6-character room code..." type="text" maxlength="6"/>
                 </div>
-                <button id="submitRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors">
-                    Continue
+                <button id="joinRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors">
+                    Join Room
                 </button>
             </div>
         </div>
@@ -738,87 +779,8 @@
     <script src="/js/ui.js"></script>
     <script src="/js/app.js"></script>
     
-    <!-- Tab Switching & Context Menu -->
+    <!-- Context Menu -->
     <script>
-        // Tab Switching with Sliding Animation
-        const tabHighlight = document.getElementById('tabHighlight');
-        const tabDMs = document.getElementById('tabDMs');
-        const tabRooms = document.getElementById('tabRooms');
-        const tabContainer = tabDMs.parentElement;
-        
-        // Function to update highlight position
-        function updateHighlight(activeTab) {
-            const containerRect = tabContainer.getBoundingClientRect();
-            const tabRect = activeTab.getBoundingClientRect();
-            const offsetLeft = tabRect.left - containerRect.left - 4; // 4px for padding
-            const width = tabRect.width;
-            
-            tabHighlight.style.transform = `translateX(${offsetLeft}px)`;
-            tabHighlight.style.width = `${width}px`;
-            tabHighlight.style.opacity = '1'; // Make visible
-        }
-        
-        // Initialize highlight position on DMs tab (multiple attempts for reliability)
-        function initializeHighlight() {
-            // Make sure the active tab has correct styling
-            tabDMs.classList.add('text-black', 'font-semibold');
-            tabDMs.classList.remove('text-slate-400', 'hover:text-white');
-            
-            updateHighlight(tabDMs);
-        }
-        
-        // Try initialization multiple times to ensure it works
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeHighlight);
-        } else {
-            initializeHighlight();
-        }
-        
-        // Backup initialization after a short delay
-        setTimeout(initializeHighlight, 50);
-        setTimeout(initializeHighlight, 200);
-        
-        // Also initialize when window loads
-        window.addEventListener('load', initializeHighlight);
-        
-        // DMs tab click
-        tabDMs.addEventListener('click', function() {
-            // Update highlight
-            updateHighlight(tabDMs);
-            
-            // Update button styles
-            tabDMs.classList.add('text-black', 'font-semibold');
-            tabDMs.classList.remove('text-slate-400', 'hover:text-white');
-            tabRooms.classList.remove('text-black', 'font-semibold');
-            tabRooms.classList.add('text-slate-400', 'hover:text-white');
-            
-            // Show/hide lists
-            document.getElementById('dmsListContainer').classList.remove('hidden');
-            document.getElementById('roomsListContainer').classList.add('hidden');
-        });
-        
-        // Rooms tab click
-        tabRooms.addEventListener('click', function() {
-            // Update highlight
-            updateHighlight(tabRooms);
-            
-            // Update button styles
-            tabRooms.classList.add('text-black', 'font-semibold');
-            tabRooms.classList.remove('text-slate-400', 'hover:text-white');
-            tabDMs.classList.remove('text-black', 'font-semibold');
-            tabDMs.classList.add('text-slate-400', 'hover:text-white');
-            
-            // Show/hide lists
-            document.getElementById('roomsListContainer').classList.remove('hidden');
-            document.getElementById('dmsListContainer').classList.add('hidden');
-        });
-        
-        // Update highlight on window resize
-        window.addEventListener('resize', () => {
-            const activeTab = tabDMs.classList.contains('text-black') ? tabDMs : tabRooms;
-            updateHighlight(activeTab);
-        });
-        
         // Context Menu - Wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', function() {
             let contextMenuTarget = null;
@@ -1397,5 +1359,105 @@
             }
         })();
     </script>
+    
+    <!-- Room Modal UI -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('createJoinRoomModal');
+            const closeBtn = document.getElementById('closeCreateJoinModal');
+            const createRoomTab = document.getElementById('createRoomTab');
+            const joinRoomTab = document.getElementById('joinRoomTab');
+            const createRoomContent = document.getElementById('createRoomContent');
+            const joinRoomContent = document.getElementById('joinRoomContent');
+            const tempRoomBtn = document.getElementById('tempRoomBtn');
+            const foreverRoomBtn = document.getElementById('foreverRoomBtn');
+            const createRoomBtn = document.getElementById('createRoomBtn');
+            const joinRoomBtn = document.getElementById('joinRoomBtn');
+            const roomCodeInput = document.getElementById('roomCodeInput');
+            
+            let selectedRoomType = 'temp'; // default
+            
+            // Close button
+            closeBtn?.addEventListener('click', () => {
+                modal?.classList.add('hidden');
+                modal?.classList.remove('flex');
+            });
+            
+            // Click outside to close
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+            
+            // Tab switching
+            createRoomTab?.addEventListener('click', () => {
+                createRoomTab.classList.add('bg-primary', 'text-white');
+                createRoomTab.classList.remove('text-slate-400');
+                joinRoomTab.classList.remove('bg-primary', 'text-white');
+                joinRoomTab.classList.add('text-slate-400');
+                createRoomContent.classList.remove('hidden');
+                joinRoomContent.classList.add('hidden');
+            });
+            
+            joinRoomTab?.addEventListener('click', () => {
+                joinRoomTab.classList.add('bg-primary', 'text-white');
+                joinRoomTab.classList.remove('text-slate-400');
+                createRoomTab.classList.remove('bg-primary', 'text-white');
+                createRoomTab.classList.add('text-slate-400');
+                joinRoomContent.classList.remove('hidden');
+                createRoomContent.classList.add('hidden');
+            });
+            
+            // Room type selection
+            tempRoomBtn?.addEventListener('click', () => {
+                selectedRoomType = 'temp';
+                tempRoomBtn.classList.add('border-primary', 'bg-primary/10', 'text-white');
+                tempRoomBtn.classList.remove('border-slate-700', 'bg-surface-lighter', 'text-slate-400');
+                foreverRoomBtn.classList.remove('border-primary', 'bg-primary/10', 'text-white');
+                foreverRoomBtn.classList.add('border-slate-700', 'bg-surface-lighter', 'text-slate-400');
+            });
+            
+            foreverRoomBtn?.addEventListener('click', () => {
+                selectedRoomType = 'forever';
+                foreverRoomBtn.classList.add('border-primary', 'bg-primary/10', 'text-white');
+                foreverRoomBtn.classList.remove('border-slate-700', 'bg-surface-lighter', 'text-slate-400');
+                tempRoomBtn.classList.remove('border-primary', 'bg-primary/10', 'text-white');
+                tempRoomBtn.classList.add('border-slate-700', 'bg-surface-lighter', 'text-slate-400');
+            });
+            
+            // Create room button
+            createRoomBtn?.addEventListener('click', () => {
+                if (window.app && window.app.handleCreateNewRoomWithOptions) {
+                    window.app.handleCreateNewRoomWithOptions();
+                    modal?.classList.add('hidden');
+                    modal?.classList.remove('flex');
+                }
+            });
+            
+            // Join room button
+            joinRoomBtn?.addEventListener('click', () => {
+                const roomCode = roomCodeInput?.value.trim();
+                if (roomCode && window.socketManager) {
+                    const nickname = window.state?.get('user.nickname');
+                    if (nickname) {
+                        window.socketManager.joinRoom(roomCode, nickname);
+                        modal?.classList.add('hidden');
+                        modal?.classList.remove('flex');
+                        roomCodeInput.value = '';
+                    } else {
+                        alert('Please login first');
+                    }
+                } else {
+                    alert('Please enter a room code');
+                }
+            });
+            
+            // Store selected type for app.js to access
+            window.getSelectedRoomType = () => selectedRoomType;
+        });
+    </script>
 </body>
 </html>
+

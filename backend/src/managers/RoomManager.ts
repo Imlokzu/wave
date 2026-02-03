@@ -1,15 +1,16 @@
-import { Room, Participant } from '../models';
+import { Room, Participant, RoomSettings } from '../models';
 import { InMemoryStorage } from './InMemoryStorage';
+import { IRoomStorage } from './SupabaseRoomManager';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
  * RoomManager handles room lifecycle and participant management
  */
 export class RoomManager {
-  private storage: InMemoryStorage;
+  private storage: IRoomStorage;
   private typingIndicators: Map<string, Map<string, NodeJS.Timeout>>; // roomId -> userId -> timeout
 
-  constructor(storage: InMemoryStorage) {
+  constructor(storage: IRoomStorage) {
     this.storage = storage;
     this.typingIndicators = new Map();
   }
@@ -29,7 +30,14 @@ export class RoomManager {
   /**
    * Create a new room with unique code
    */
-  async createRoom(maxUsers: number = 50): Promise<Room> {
+  async createRoom(
+    maxUsers: number = 50,
+    isPersistent: boolean = false,
+    createdBy?: string,
+    name?: string,
+    duration?: number, // in minutes
+    settings?: RoomSettings
+  ): Promise<Room> {
     let code = this.generateRoomCode();
     
     // Ensure code uniqueness
@@ -39,14 +47,21 @@ export class RoomManager {
       attempts++;
     }
 
+    const expiresAt = duration && !isPersistent ? new Date(Date.now() + duration * 60 * 1000) : undefined;
+
     const room: Room = {
       id: uuidv4(),
       code,
+      name,
       createdAt: new Date(),
       maxUsers,
       participants: new Map(),
       isLocked: false,
       moderators: new Set(),
+      isPersistent,
+      createdBy,
+      expiresAt,
+      settings,
     };
 
     await this.storage.saveRoom(room);
@@ -312,6 +327,21 @@ export class RoomManager {
     }
 
     return indicators;
+  }
+
+  /**
+   * Clean up expired temporary rooms
+   */
+  async cleanupExpiredRooms(): Promise<void> {
+    const now = new Date();
+    const allRooms = await this.storage.getAllRooms();
+    
+    for (const room of allRooms) {
+      if (!room.isPersistent && room.expiresAt && room.expiresAt <= now) {
+        console.log(`Cleaning up expired room: ${room.code} (${room.id})`);
+        await this.storage.deleteRoom(room.id);
+      }
+    }
   }
 
   /**

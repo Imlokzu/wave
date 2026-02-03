@@ -36,6 +36,10 @@ export interface Config {
  * Load configuration from environment variables
  */
 export function loadConfig(): Config {
+  console.log('[Config] Loading environment variables...');
+  console.log('[Config] SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
+  console.log('[Config] SUPABASE_KEY:', process.env.SUPABASE_KEY ? 'SET' : 'NOT SET');
+  
   return {
     port: parseInt(process.env.PORT || '3001', 10),
     nodeEnv: process.env.NODE_ENV || 'development',

@@ -1,280 +1,144 @@
-import { Router, Response } from 'express';
-import { getTelegramFeedService } from '../services/TelegramFeedService';
-import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
-import { AuthService } from '../services/AuthService';
-import { IUserManager } from '../managers/IUserManager';
+import express from 'express';
+import { createClient } from '@supabase/supabase-js';
 
-export function createFeedRouter(userManager: IUserManager): Router {
-  const router = Router();
-  const authService = new AuthService(userManager);
-  const authMiddleware = requireAuth(authService);
+const router = express.Router();
 
-// Get user's feed channels
-router.get('/channels', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
+
+/**
+ * GET /api/feed
+ * Get telegram feed messages
+ * Query params:
+ *   - limit: number of messages (default: 50, max: 100)
+ *   - channel: filter by channel_id (optional)
+ *   - offset: pagination offset (default: 0)
+ */
+router.get('/', async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
+    const offset = parseInt(req.query.offset as string) || 0;
+    const channel = req.query.channel as string;
+
+    let query = supabase
+      .from('telegram_messages')
+      .select('*')
+      .order('date', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    // Filter by channel if specified
+    if (channel) {
+      query = query.eq('channel_id', channel);
     }
 
-    const feedService = getTelegramFeedService();
-    const channels = await feedService.getUserChannels(userId);
+    const { data, error } = await query;
 
-    res.json({
-      success: true,
-      channels
-    });
-  } catch (error: any) {
-    console.error('Get channels error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message || 'Failed to get channels',
-      details: error.code === 'PGRST205' ? 'Database tables not created. Run migrations/003_add_telegram_feed_tables_fixed.sql' : undefined
-    });
-  }
-});
-
-// Add new Telegram channel
-router.post('/channels', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const { channelUrl } = req.body;
-    if (!channelUrl) {
-      return res.status(400).json({ error: 'Channel URL is required' });
-    }
-
-    // Validate Telegram URL
-    if (!channelUrl.includes('t.me/')) {
-      return res.status(400).json({ error: 'Invalid Telegram channel URL' });
-    }
-
-    const feedService = getTelegramFeedService();
-    const channel = await feedService.addChannel(userId, channelUrl);
-
-    res.json({
-      success: true,
-      channel
-    });
-  } catch (error) {
-    console.error('Add channel error:', error);
-    res.status(500).json({ error: 'Failed to add channel' });
-  }
-});
-
-// Remove channel
-router.delete('/channels/:channelId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const { channelId } = req.params;
-    const feedService = getTelegramFeedService();
-    await feedService.removeChannel(userId, channelId);
-
-    res.json({
-      success: true,
-      message: 'Channel removed'
-    });
-  } catch (error) {
-    console.error('Remove channel error:', error);
-    res.status(500).json({ error: 'Failed to remove channel' });
-  }
-});
-
-// Remove duplicate channels
-router.post('/channels/cleanup', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const feedService = getTelegramFeedService();
-    const channels = await feedService.getUserChannels(userId);
-    
-    // Find duplicates by URL
-    const seen = new Set<string>();
-    const duplicates: string[] = [];
-    
-    channels.forEach(channel => {
-      if (seen.has(channel.channel_url)) {
-        duplicates.push(channel.id);
-      } else {
-        seen.add(channel.channel_url);
-      }
-    });
-    
-    // Remove duplicates
-    for (const channelId of duplicates) {
-      await feedService.removeChannel(userId, channelId);
-    }
-
-    res.json({
-      success: true,
-      removed: duplicates.length,
-      message: `Removed ${duplicates.length} duplicate channels`
-    });
-  } catch (error) {
-    console.error('Cleanup channels error:', error);
-    res.status(500).json({ error: 'Failed to cleanup channels' });
-  }
-});
-
-// Get feed posts
-router.get('/posts', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const limit = parseInt(req.query.limit as string) || 50;
-    const autoRefresh = req.query.refresh !== 'false'; // Auto-refresh by default
-    
-    const feedService = getTelegramFeedService();
-    
-    // Auto-refresh: scrape 5 new posts from each channel when user opens feed
-    if (autoRefresh) {
-      const channels = await feedService.getUserChannels(userId);
-      if (channels.length > 0) {
-        console.log(`🔄 Scraping fresh posts from ${channels.length} channels...`);
-        
-        const feedBotUrl = process.env.FEED_BOT_URL || `http://${process.env.HOST || 'localhost'}:3000`;
-        
-        // WAIT for all channels to be scraped before returning posts
-        try {
-          await Promise.all(
-            channels.map(channel => 
-              fetch(`${feedBotUrl}/scrape`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  url: channel.channel_url,
-                  limit: 5  // Just get 5 newest posts
-                }),
-                signal: AbortSignal.timeout(15000) // 15 second timeout per channel
-              }).then(r => r.json())
-                .catch(err => {
-                  console.error(`Failed to refresh ${channel.channel_url}:`, err);
-                  return null;
-                })
-            )
-          );
-          console.log('✅ Fresh posts scraped!');
-        } catch (err) {
-          console.error('Scrape error (continuing anyway):', err);
-        }
-        
-        // Small delay to let feed bot save to database
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-    }
-    
-    const posts = await feedService.getFeedPosts(userId, limit);
-
-    res.json({
-      success: true,
-      posts
-    });
-  } catch (error: any) {
-    console.error('Get posts error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message || 'Failed to get posts',
-      details: error.code === 'PGRST205' ? 'Database tables not created. Run migrations/003_add_telegram_feed_tables_fixed.sql' : undefined
-    });
-  }
-});
-
-// Manual refresh endpoint - scrape all channels now
-router.post('/refresh', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const feedService = getTelegramFeedService();
-    const channels = await feedService.getUserChannels(userId);
-    
-    if (channels.length === 0) {
-      return res.json({
-        success: true,
-        message: 'No channels to refresh'
+    if (error) {
+      console.error('[Feed] Error fetching messages:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch feed messages'
       });
     }
 
-    const feedBotUrl = process.env.FEED_BOT_URL || `http://${process.env.HOST || 'localhost'}:3000`;
-    
-    // Scrape all channels
-    const results = await Promise.allSettled(
-      channels.map(channel => 
-        fetch(`${feedBotUrl}/scrape`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            url: channel.channel_url,
-            limit: 10
-          })
-        }).then(r => r.json())
-      )
-    );
-    
-    const successful = results.filter(r => r.status === 'fulfilled').length;
-    
     res.json({
       success: true,
-      message: `Refreshed ${successful}/${channels.length} channels`,
-      channels: channels.length,
-      successful
+      data: data || [],
+      pagination: {
+        limit,
+        offset,
+        count: data?.length || 0
+      }
     });
   } catch (error) {
-    console.error('Refresh error:', error);
-    res.status(500).json({ error: 'Failed to refresh channels' });
+    console.error('[Feed] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
   }
 });
 
-// Translate text (uses AI service)
-router.post('/translate', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+/**
+ * GET /api/feed/channels
+ * Get list of available channels
+ */
+router.get('/channels', async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+    const { data, error } = await supabase
+      .from('telegram_messages')
+      .select('channel_id, channel_name')
+      .order('channel_name');
 
-    const { text, targetLanguage = 'English' } = req.body;
-    if (!text) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Text is required' 
+    if (error) {
+      console.error('[Feed] Error fetching channels:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch channels'
       });
     }
 
-    // For now, return original text
-    // In future, integrate with translation API or AI service
+    // Deduplicate channels
+    const channelsMap = new Map();
+    data?.forEach(row => {
+      if (!channelsMap.has(row.channel_id)) {
+        channelsMap.set(row.channel_id, {
+          id: row.channel_id,
+          name: row.channel_name || row.channel_id
+        });
+      }
+    });
+
+    const channels = Array.from(channelsMap.values());
+
     res.json({
       success: true,
-      translatedText: text,
-      originalText: text,
-      targetLanguage,
-      note: 'Translation feature coming soon'
+      data: channels
     });
   } catch (error) {
-    console.error('Translation error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to translate text' 
+    console.error('[Feed] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
     });
   }
 });
 
-  return router;
-}
+/**
+ * GET /api/feed/:messageId
+ * Get a specific message by ID
+ */
+router.get('/:messageId', async (req, res) => {
+  try {
+    const { messageId } = req.params;
 
-export default createFeedRouter;
+    const { data, error } = await supabase
+      .from('telegram_messages')
+      .select('*')
+      .eq('id', messageId)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    console.error('[Feed] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
+export default router;

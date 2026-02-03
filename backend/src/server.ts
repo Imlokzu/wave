@@ -8,6 +8,7 @@ import { UserManager } from './managers/UserManager';
 import { DMManager } from './managers/DMManager';
 import { SupabaseUserManager } from './managers/SupabaseUserManager';
 import { SupabaseDMManager } from './managers/SupabaseDMManager';
+import { SupabaseRoomManager } from './managers/SupabaseRoomManager';
 import { ImageUploadService } from './services';
 import { FileUploadService } from './services/FileUploadService';
 import { createRoomRouter, createMessageRouter, createActionsRouter, errorHandler, notFoundHandler } from './routes';
@@ -26,7 +27,7 @@ import { initializeProfileManager } from './managers/ProfileManager';
 import { initializeMusicManager } from './managers/MusicManager';
 import { initializeSubscriptionManager } from './managers/SubscriptionManager';
 import { createSubscriptionRouter } from './routes/subscription';
-import { createFeedRouter } from './routes/feed';
+import feedRouter from './routes/feed';
 import { initializeTelegramFeedService } from './services/TelegramFeedService';
 import { createReportsRouter } from './routes/reports';
 import { createSettingsRouter } from './routes/settings';
@@ -37,7 +38,10 @@ import versionRouter from './routes/version';
 
 // Initialize storage and managers
 const storage = new InMemoryStorage();
-const roomManager = new RoomManager(storage);
+const roomStorage = config.supabaseUrl && config.supabaseKey
+  ? new SupabaseRoomManager(config.supabaseUrl, config.supabaseKey)
+  : storage;
+const roomManager = new RoomManager(roomStorage);
 const messageManager = new MessageManager(storage, config.messageExpirationMinutes);
 
 // Use Supabase managers if configured, otherwise use in-memory
@@ -186,7 +190,7 @@ app.use('/api/profile', createProfileRouter(userManager));
 app.use('/api/music', createMusicRouter(userManager));
 app.use('/api/ai', createAIRouter(userManager));
 app.use('/api/subscription', createSubscriptionRouter(userManager));
-app.use('/api/feed', createFeedRouter(userManager));
+app.use('/api/feed', feedRouter);
 app.use('/api/settings', createSettingsRouter(userManager));
 app.use('/api/search', createSearchRouter());
 app.use('/api/ai-chat', createAIChatRouter());
@@ -219,6 +223,11 @@ if (isPassenger && !isDevelopment) {
   const passengerPort = process.env.PASSENGER_PORT || 0;
   httpServer.listen(passengerPort, () => {
     console.log('✅ Server ready for Passenger');
+    
+    // Schedule cleanup of expired rooms every 5 minutes
+    setInterval(() => {
+      roomManager.cleanupExpiredRooms().catch(console.error);
+    }, 5 * 60 * 1000);
   });
 } else {
   // Development mode - bind to specified port
@@ -229,6 +238,11 @@ if (isPassenger && !isDevelopment) {
     console.log(`📎 File upload: ${fileUploadService.isAvailable() ? 'Enabled' : 'Disabled'}`);
     console.log('');
     console.log('📝 Frontend should use: http://localhost:' + PORT);
+    
+    // Schedule cleanup of expired rooms every 5 minutes
+    setInterval(() => {
+      roomManager.cleanupExpiredRooms().catch(console.error);
+    }, 5 * 60 * 1000);
   });
 }
 

@@ -8,6 +8,8 @@ export interface Participant {
   joinedAt: Date;
   socketId: string;
   isAway?: boolean; // True if user has switched to another tab
+  avatar?: string; // Avatar URL
+  isModerator?: boolean; // Whether this participant is a room moderator
 }
 
 /**

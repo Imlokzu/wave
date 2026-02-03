@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MobileChatList Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        #chat-list-container {
+            width: 100%;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .test-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .test-controls button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px 12px;
+            border: none;
+            background: #2196F3;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-controls button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-list-container"></div>
+    
+    <div class="test-controls">
+        <h4 style="margin-top: 0;">Test Controls</h4>
+        <button onclick="addTestDM()">Add Test DM</button>
+        <button onclick="addTestRoom()">Add Test Room</button>
+        <button onclick="switchToDMs()">Switch to DMs</button>
+        <button onclick="switchToRooms()">Switch to Rooms</button>
+        <button onclick="testSearch()">Test Search</button>
+    </div>
+
+    <!-- Load Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Load dependencies -->
+    <script src="/js/api.js"></script>
+    <script src="/js/socket.js"></script>
+    
+    <!-- Load mobile UI components -->
+    <script src="mobile-ui.js"></script>
+    
+    <script>
+        // Mock localStorage for testing
+        if (!localStorage.getItem('username')) {
+            localStorage.setItem('username', 'testuser');
+            localStorage.setItem('userId', 'test-user-id');
+            localStorage.setItem('nickname', 'Test User');
+        }
+        
+        // Create mock socket manager for testing
+        const mockSocketManager = {
+            on: function(event, handler) {
+                if (!this._handlers) this._handlers = {};
+                if (!this._handlers[event]) this._handlers[event] = [];
+                this._handlers[event].push(handler);
+            },
+            emit: function(event, data) {
+                console.log('[MockSocket] Emit:', event, data);
+            },
+            send: function(event, data) {
+                console.log('[MockSocket] Send:', event, data);
+            },
+            _trigger: function(event, data) {
+                if (this._handlers && this._handlers[event]) {
+                    this._handlers[event].forEach(handler => handler(data));
+                }
+            }
+        };
+        
+        // Create mock API client for testing
+        const mockApiClient = {
+            request: async function(endpoint, options) {
+                console.log('[MockAPI] Request:', endpoint, options);
+                return { success: true };
+            }
+        };
+        
+        // Initialize MobileChatList
+        let chatList;
+        try {
+            chatList = new MobileChatList('chat-list-container', mockSocketManager, mockApiClient);
+            console.log('✅ MobileChatList initialized successfully');
+            
+            // Load initial data
+            chatList.loadConversations();
+            
+            // Initial render
+            chatList.render();
+            
+            // Listen for chat selection
+            document.getElementById('chat-list-container').addEventListener('chat:selected', (e) => {
+                console.log('Chat selected:', e.detail.chatId);
+                alert('Chat selected: ' + e.detail.chatId);
+            });
+            
+        } catch (error) {
+            console.error('❌ Error initializing MobileChatList:', error);
+            document.getElementById('chat-list-container').innerHTML = 
+                '<div style="padding: 20px; color: red;">Error: ' + error.message + '</div>';
+        }
+        
+        // Test functions
+        function addTestDM() {
+            const testDM = {
+                fromUsername: 'alice',
+                toUsername: localStorage.getItem('username'),
+                message: {
+                    id: 'msg-' + Date.now(),
+                    content: 'Hello! This is a test DM message.',
+                    timestamp: new Date().toISOString(),
+                    senderId: 'alice-id'
+                }
+            };
+            mockSocketManager._trigger('dm:received', testDM);
+            console.log('✅ Added test DM');
+        }
+        
+        function addTestRoom() {
+            const testRoom = {
+                roomId: 'room-' + Date.now(),
+                roomCode: 'TEST' + Math.floor(Math.random() * 1000),
+                roomName: 'Test Room ' + Math.floor(Math.random() * 100)
+            };
+            mockSocketManager._trigger('room:joined', testRoom);
+            console.log('✅ Added test room');
+        }
+        
+        function switchToDMs() {
+            chatList.onTabSwitch('dms');
+            console.log('✅ Switched to DMs tab');
+        }
+        
+        function switchToRooms() {
+            chatList.onTabSwitch('rooms');
+            console.log('✅ Switched to Rooms tab');
+        }
+        
+        function testSearch() {
+            const query = prompt('Enter search query:', 'test');
+            if (query !== null) {
+                chatList.onSearchInput(query);
+                console.log('✅ Search query:', query);
+            }
+        }
+        
+        // Add some initial test data
+        setTimeout(() => {
+            console.log('Adding initial test data...');
+            addTestDM();
+            setTimeout(() => addTestRoom(), 500);
+        }, 1000);
+    </script>
+</body>
+</html>
