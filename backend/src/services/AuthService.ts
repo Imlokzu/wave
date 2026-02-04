@@ -1,6 +1,6 @@
 import { IUserManager } from '../managers/IUserManager';
 import { User } from '../models/Participant';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 // Simple in-memory session store (replace with Redis in production)
 const sessions = new Map<string, { userId: string; expiresAt: number }>();
