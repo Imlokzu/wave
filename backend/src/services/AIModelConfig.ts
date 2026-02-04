@@ -112,6 +112,16 @@ export interface AIModel {
   // EXAMPLE: "deepseek/deepseek-r1-0528:free", "meta-llama/llama-3.2-3b-instruct:free"
   // NOTE: This is the "technical name" that the API understands
   openRouterModel: string;
+  
+  // -------------------------
+  // Property 7: fallbackId (Optional)
+  // -------------------------
+  // WHAT: The ID of another model to use if this model fails
+  // WHY: Provides redundancy - if one model has issues, we can automatically try another
+  // TYPE: string | undefined = optional text (might not be set for all models)
+  // EXAMPLE: "wave-flash-2", "wave-llama-3.2"
+  // NOTE: The ? means this property is optional (not all models need a fallback)
+  fallbackId?: string;
 }
 
 
