@@ -342,9 +342,26 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">Model</label>
                     <select id="modelSelect" class="w-full px-3 py-2 bg-background-dark border border-slate-700 rounded-lg text-white">
-                        <option value="wave-flash-2">Wave Flash 2</option>
-                        <option value="wave-pro">Wave Pro</option>
-                        <option value="deepseek">DeepSeek</option>
+                        <optgroup label="Wave Flash (Fast)">
+                            <option value="wave-flash-1">Wave Flash 1</option>
+                            <option value="wave-flash-2">Wave Flash 2</option>
+                            <option value="wave-flash-3">Wave Flash 3</option>
+                            <option value="wave-flash-4">Wave Flash 4</option>
+                        </optgroup>
+                        <optgroup label="Wave (Balanced)">
+                            <option value="wave-1">Wave 1</option>
+                            <option value="wave-2">Wave 2</option>
+                            <option value="wave-3">Wave 3</option>
+                            <option value="wave-4">Wave 4 (Pro)</option>
+                            <option value="wave-5">Wave 5 (Pro)</option>
+                        </optgroup>
+                        <optgroup label="Wave O (Reasoning)">
+                            <option value="wave-o1">Wave O1</option>
+                            <option value="wave-o2">Wave O2 (Pro)</option>
+                            <option value="wave-o3">Wave O3 (Pro)</option>
+                            <option value="wave-o4">Wave O4 (Pro)</option>
+                            <option value="wave-o5">Wave O5 (Pro)</option>
+                        </optgroup>
                     </select>
                 </div>
                 <!-- Temperature -->
@@ -1404,6 +1421,10 @@
                         text.classList.add('text-slate-400');
                         text.classList.remove('text-white');
                     }
+                    
+                    // Update settings checkbox
+                    const checkbox = document.getElementById('thinkingMode');
+                    if (checkbox) checkbox.checked = thinkingEnabled;
                 }
 
                 function toggleSearch() {
@@ -1427,6 +1448,10 @@
                         text.classList.add('text-slate-400');
                         text.classList.remove('text-white');
                     }
+                    
+                    // Update settings checkbox
+                    const checkbox = document.getElementById('searchMode');
+                    if (checkbox) checkbox.checked = searchEnabled;
                 }
 
                 function handleKeyPress(event) {
@@ -1434,6 +1459,9 @@
                         sendMessage();
                     }
                 }
+                
+                // Make handleKeyPress globally accessible
+                window.handleKeyPress = handleKeyPress;
 
                 let selectedLanguage = null;
                 let selectedLanguageFlag = null;
@@ -1567,8 +1595,18 @@ Text to translate: ${text}`;
                 }
 
                 async function sendMessage() {
-                    const content = messageInput.value.trim();
-                    if (!content && !attachedCode) return;
+                    console.log('sendMessage called');
+                    const input = document.getElementById('messageInput');
+                    if (!input) {
+                        console.error('messageInput element not found!');
+                        return;
+                    }
+                    const content = input.value.trim();
+                    console.log('Message content:', content);
+                    if (!content && !attachedCode) {
+                        console.log('No content to send');
+                        return;
+                    }
 
                     let userMessage = content;
                     let aiPrompt = content;
@@ -1583,8 +1621,8 @@ Text to translate: ${text}`;
 
                         // Clear attachment
                         attachedCode = null;
-                        messageInput.placeholder = 'Message or type / for commands...';
-                        messageInput.classList.remove('text-primary');
+                        input.placeholder = 'Message or type / for commands...';
+                        input.classList.remove('text-primary');
                     }
 
                     // Add user message to UI (shows attachment summary)
@@ -1594,41 +1632,64 @@ Text to translate: ${text}`;
                     conversationHistory.push({ role: 'user', parts: [{ text: aiPrompt }] });
                     saveConversation();
 
-                    messageInput.value = '';
+                    input.value = '';
 
                     // Send to AI (with full code)
                     await sendToQwenAI(aiPrompt, true); // Pass flag to skip adding to history
                 }
+                
+                // Make sendMessage globally accessible
+                window.sendMessage = sendMessage;
 
                 async function sendToQwenAI(content, skipAddingToHistory = false) {
                     try {
-                        // ... existing model setup ...
+                        console.log('sendToQwenAI called with content:', content);
+                        
+                        // Load saved settings from localStorage
+                        const savedSettings = JSON.parse(localStorage.getItem('aiSettings') || '{}');
+                        console.log('Loaded settings:', savedSettings);
+                        
                         // Get preferred model from localStorage (set in Settings)
-                        const preferredModel = localStorage.getItem('preferredAIModel');
+                        const preferredModel = savedSettings.model || localStorage.getItem('preferredAIModel') || 'auto';
+                        console.log('Using model:', preferredModel);
+                        
+                        // Get temperature and max tokens from settings
+                        const temperature = parseFloat(savedSettings.temperature || '0.7');
+                        const maxTokens = parseInt(savedSettings.maxTokens || '1000');
+                        const customSystemPrompt = savedSettings.systemPrompt || '';
+                        
+                        // Update thinking and search enabled from settings
+                        if (savedSettings.thinkingMode !== undefined) {
+                            thinkingEnabled = savedSettings.thinkingMode;
+                        }
+                        if (savedSettings.searchMode !== undefined) {
+                            searchEnabled = savedSettings.searchMode;
+                        }
 
                         // Model mapping from settings ID to OpenRouter model (matching ai.md)
                         const modelMap = {
                             // Wave Flash (Free - Fast models)
-                            'wave-flash-2': 'arcee-ai/trinity-mini:free',
-                            'wave-flash-3': 'nvidia/nemotron-3-nano-30b-a3b:free',
-                            'wave-flash-4': 'mistralai/mistral-small-3.1-24b-instruct:free',
-                            'wave-flash-5': 'arcee-ai/trinity-large-preview:free', // Pro
+                            'wave-flash-1': 'liquid/lfm-2.5-1.2b-instruct:free',
+                            'wave-flash-2': 'qwen/qwen3-4b:free',
+                            'wave-flash-3': 'google/gemma-3n-e4b-it:free',
+                            'wave-flash-4': 'google/gemma-3-12b-it:free',
 
                             // Wave (Standard models)
-                            'wave-2': 'meta-llama/llama-3.3-70b-instruct:free',
-                            'wave-3': 'z-ai/glm-4.5-air:free',
-                            'wave-4': 'openai/gpt-oss-120b:free', // Pro - Thinking model
+                            'wave-1': 'nvidia/nemotron-3-nano-30b-a3b:free',
+                            'wave-2': 'arcee-ai/trinity-mini:free',
+                            'wave-3': 'google/gemma-3-27b-it:free',
+                            'wave-4': 'meta-llama/llama-3.3-70b-instruct:free', // Pro
+                            'wave-5': 'arcee-ai/trinity-large-preview:free', // Pro
 
-                            // Wave O (Reasoning models) - REMOVED unavailable models
-                            'wave-o3': 'meta-llama/llama-3.3-70b-instruct:free', // Fallback
-                            'wave-o4': 'z-ai/glm-4.5-air:free', // Pro (thinking enabled)
-                            'wave-o5': 'meta-llama/llama-3.3-70b-instruct:free', // Fallback
-
-                            // Wave Coder
-                            'wave-coder-4': 'qwen/qwen3-coder:free', // Pro
+                            // Wave O (Reasoning models)
+                            'wave-o1': 'liquid/lfm-2.5-1.2b-thinking:free',
+                            'wave-o2': 'z-ai/glm-4.5-air:free', // Pro
+                            'wave-o3': 'stepfun/step-3.5-flash:free', // Pro
+                            'wave-o4': 'tngtech/tng-r1t-chimera:free', // Pro
+                            'wave-o5': 'deepseek/deepseek-r1-0528:free', // Pro
 
                             // Auto/default (use Wave Flash 2)
-                            'auto': 'arcee-ai/trinity-mini:free'
+                            'auto': 'qwen/qwen3-4b:free'
                         };
 
                         // Select model (default to free MiMo Flash)
@@ -1657,7 +1718,7 @@ Wave is a modern, feature-rich messaging platform you're integrated into. Here's
 - 📱 Mobile-optimized interface with swipe gestures
 
 **AI Features (Your Capabilities):**
-- 🔍 Web Search - Use [SEARCH: query] to find current information
+- 🔍 Web Search - AI can search DuckDuckGo automatically for current information
 - 🌤️ Weather - Use [WEATHER: city] to get weather info
 - 📄 Read Files - Use [READ_FILE: filename.html] to read Wave HTML files for accurate help
 - 🌐 Translation - Translate text to any language
@@ -1697,105 +1758,8 @@ Wave is a modern, feature-rich messaging platform you're integrated into. Here's
 - If they need help - direct them to /help.html or Settings → About
 - Always be helpful and friendly - you represent Wave!`;
 
-                            const baseRules = `
-
-🚨 CRITICAL RULES - YOU MUST FOLLOW THESE:
-
-1. NEVER EVER say "I cannot answer" or "I don't know"
-2. ALWAYS use search for current information (prices, news, products, events)
-3. ALWAYS use weather for weather questions
-4. You can analyze PDF documents when provided in the context
-5. You can perform MULTIPLE searches or weather checks in ONE response if needed
-   Example: [SEARCH: vivo x200 ultra specs] [SEARCH: oppo x8 ultra specs] [WEATHER: London]
-6. NEVER show your internal thinking process or reasoning to the user - respond directly with the answer
-7. NEVER mention "the user", "the rules", "I should", "I need to", "according to", "wait", "hmm", "let me think"
-8. Start your response IMMEDIATELY with the actual answer - no preamble, no thinking, no explanation of your process
-
-🚫 ABSOLUTELY FORBIDDEN - NEVER DO THESE:
-- NEVER write <thinking> tags or any thinking process
-- NEVER mention "the user", "the rules", "I should", "I need to", "according to", "wait", "hmm", "let me think", "okay"
-- NEVER start with "Okay, the user asked..." or similar meta-commentary
-- NEVER explain your reasoning process or how you're deciding what to say
-- NEVER use phrases like "Looking at", "Since", "But", "However" at the start of responses
-- NEVER repeat the same response multiple times
-- Start IMMEDIATELY with the actual answer - no preamble, no thinking, no explanation
-
-✅ CORRECT RESPONSE STYLE:
-User: "what's the latest changelog?"
-You: "Wave Messenger Version 1.1.0 was released on February 1, 2026! Here are the new features: [list features]"
-
-❌ WRONG - NEVER DO THIS:
-User: "what's the latest changelog?"
-You: "<thinking>Okay, the user asked about changelog. Let me check... According to the info, version 1.1.0...</thinking> The latest changelog..."
-
-🎯 REMEMBER:
-- Your response should ONLY contain the answer the user needs
-- NO thinking tags, NO meta-commentary, NO process explanation
-- Just the clean, direct answer
-
-HOW TO USE SEARCH:
-When user asks about:
-- Product prices (e.g., "how much is X on AliExpress")
-- Current news or events
-- Information after 2023
-- Anything you're not 100% certain about
-
-YOU MUST respond with ONLY this format:
-[SEARCH: your search query here]
-
-Example:
-User: "How much is OnePlus Pad 2 on AliExpress?"
-You: [SEARCH: OnePlus Pad 2 price AliExpress 2025]
-
-HOW TO USE WEATHER:
-When user asks about weather, temperature, or climate:
-[WEATHER: city name]
-
-Example:
-User: "Weather in Munich?"
-You: [WEATHER: Munich]
-
-HOW TO USE READ_FILE:
-When user asks about Wave features, settings, or how to do something in Wave:
-[READ_FILE: filename.html]
-
-Available files:
-- settings.html - All Wave settings (Account, Appearance, Privacy, AI, Notifications, About)
-- chat.html - Main chat interface and features
-- ai-chat.html - AI chat interface (where you are now)
-- profile.html - User profile page
-- feed.html - Telegram feed page
-- music.html - Music player page
-- changelog.html - Full changelog with all versions
-
-Example:
-User: "How do I change my theme?"
-You: [READ_FILE: settings.html]
-
-User: "How do I send a message?"
-You: [READ_FILE: chat.html]
-
-User: "What AI models are available?"
-You: [READ_FILE: settings.html]
-
-WHEN TO ANSWER DIRECTLY (without search):
-- Math calculations (2+2=4)
-- Code writing/debugging
-- Translations
-- Explanations of concepts you're certain about
-- Questions about your own capabilities
-- **Questions about Wave features, changelog, or updates** - You already know this info!
-- Questions about Wave settings, help pages, or how to use Wave
-
-📝 FORMATTING:
-Use markdown: **bold**, *italic*, \`code\`, ### headings, - lists
-
-⚠️ NEVER:
-- Say "I cannot answer" or "I don't know"
-- Show your thinking process (like "Okay, let's see..." or "The user asked...")
-- Add signatures, footers, or "powered by" messages
-- Refuse to search when information is needed
-- Start responses with phrases like "Alright", "Let me think", "According to the rules"`;
+                            // Note: Detailed AI behavior rules are now handled by the backend system prompt
+                            // This keeps the codebase cleaner and ensures consistency
 
                             // Model-specific identities
                             const modelIdentities = {
@@ -1881,13 +1845,14 @@ You're here to help users with anything they need - from answering questions to 
                             };
 
                             const identity = modelIdentities[modelId] || modelIdentities['auto'];
-                            return identity + waveGuide + baseRules;
+                            // Note: baseRules are now in backend system prompt
+                            return identity + waveGuide;
                         };
 
-                        // Add system message with model-specific identity
+                        // Add system message with model-specific identity or custom system prompt
                         messages.push({
                             role: 'system',
-                            content: getSystemPrompt(preferredModel || 'auto')
+                            content: customSystemPrompt || getSystemPrompt(preferredModel || 'auto')
                         });
 
                         // Convert conversation history to OpenRouter format
@@ -1934,8 +1899,12 @@ You're here to help users with anything they need - from answering questions to 
                             messages: messages,
                             enableSearch: searchEnabled,
                             thinking: true, // Always request thinking if model supports it
-                            model: preferredModel || 'auto'
+                            model: preferredModel || 'auto',
+                            temperature: temperature,
+                            maxTokens: maxTokens
                         };
+                        
+                        console.log('Sending AI request:', requestBody);
 
                         // Use streaming for better UX
                         const response = await fetch('/api/ai-chat?stream=true', {
@@ -1945,6 +1914,8 @@ You're here to help users with anything they need - from answering questions to 
                             },
                             body: JSON.stringify(requestBody)
                         });
+                        
+                        console.log('Response status:', response.status, response.statusText);
 
                         if (!response.ok) {
                             const errorData = await response.json().catch(() => ({}));
@@ -1978,6 +1949,8 @@ You're here to help users with anything they need - from answering questions to 
                         contentDiv.innerHTML = '';
                         contentDiv.appendChild(textContainer);
 
+                        let hasReceivedContent = false;
+
                         try {
                             while (true) {
                                 const { done, value } = await reader.read();
@@ -2007,6 +1980,13 @@ You're here to help users with anything they need - from answering questions to 
                                             }
 
                                             if (parsed.content) {
+                                                // Remove thinking badge and loader on first content
+                                                if (!hasReceivedContent) {
+                                                    hasReceivedContent = true;
+                                                    const thinkingBadge = streamingDiv.querySelector('.inline-flex.items-center.gap-1\\.5');
+                                                    if (thinkingBadge) thinkingBadge.remove();
+                                                }
+
                                                 fullResponse += parsed.content;
                                                 tokenBuffer += parsed.content;
 
@@ -2037,17 +2017,47 @@ You're here to help users with anything they need - from answering questions to 
                                 textContainer.textContent = fullResponse;
                                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
                             }
+                        } catch (streamError) {
+                            console.error('Stream reading error:', streamError);
+                            // Don't show error to user if we got some content
+                            if (!hasReceivedContent) {
+                                streamingDiv?.remove();
+                                addMessage('Connection interrupted. Please try again.', false);
+                                return;
+                            }
                         } finally {
-                            reader.cancel();
+                            try {
+                                reader.cancel();
+                            } catch (e) {
+                                // Ignore cancel errors
+                            }
                         }
 
-                        // Collect all searches, weather requests, and file reads
-                        const searchMatches = [...fullResponse.matchAll(/\[SEARCH:\s*(.+?)\]/g)];
+                        // Parse JSON search requests from AI response
+                        let searchQueries = [];
+                        const jsonBlockMatch = fullResponse.match(/```json\s*({[\s\S]*?})\s*```/);
+                        if (jsonBlockMatch) {
+                            try {
+                                const searchRequest = JSON.parse(jsonBlockMatch[1]);
+                                if (searchRequest.searches && Array.isArray(searchRequest.searches)) {
+                                    searchQueries = searchRequest.searches.map(s => s.query || s);
+                                    console.log('🔍 Parsed JSON search request:', searchQueries);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse JSON search request:', e);
+                            }
+                        }
+
+                        // Fallback: Collect pattern-based searches for backward compatibility
+                        if (searchQueries.length === 0) {
+                            const searchMatches = [...fullResponse.matchAll(/\[SEARCH:\s*(.+?)\]/g)];
+                            searchQueries = searchMatches.map(m => m[1].trim());
+                        }
+
                         const weatherMatches = [...fullResponse.matchAll(/\[WEATHER:\s*(.+?)\]/g)];
                         const fileMatches = [...fullResponse.matchAll(/\[READ_FILE:\s*(.+?)\]/g)];
 
-                        if (searchMatches.length > 0 || weatherMatches.length > 0 || fileMatches.length > 0) {
-                            const searchQueries = searchMatches.map(m => m[1].trim());
+                        if (searchQueries.length > 0 || weatherMatches.length > 0 || fileMatches.length > 0) {
                             const weatherCities = weatherMatches.map(m => m[1].trim());
                             const filesToRead = fileMatches.map(m => m[1].trim());
 
@@ -2149,14 +2159,20 @@ You're here to help users with anything they need - from answering questions to 
                                 // Remove status message
                                 statusMsg.remove();
 
-                                // Call AI again with consolidated results (don't show the system prompt to user)
+                                // Remove JSON search block from the original response
+                                const cleanedResponse = fullResponse.replace(/```json[\s\S]*?```/g, '').trim();
+
+                                // Call AI again with consolidated results
                                 const finalResponse = await fetch('/api/ai-chat', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                         messages: messages.concat([{
+                                            role: 'assistant',
+                                            content: cleanedResponse || 'I need to search for information.'
+                                        }, {
                                             role: 'user',
-                                            content: `Here is the information I found:\n\n${consolidatedContext}\n\nNow, please provide a comprehensive answer using this information.`
+                                            content: `Search Results:\n\n${consolidatedContext}\n\nNow please provide a comprehensive answer to my original question using these search results. Be specific and cite the information.`
                                         }]),
                                         enableSearch: false,
                                         thinking: false,
@@ -2229,7 +2245,11 @@ You're here to help users with anything they need - from answering questions to 
 
                     } catch (error) {
                         console.error('AI error:', error);
-                        streamingDiv?.remove();
+                        // Try to remove any streaming message if it exists
+                        const existingStreamingMsg = document.querySelector('.streaming-ai-message');
+                        if (existingStreamingMsg) {
+                            existingStreamingMsg.remove();
+                        }
                         addMessage('Sorry, I encountered an error. Please try again.', false);
                     }
                 }
@@ -2266,7 +2286,7 @@ You're here to help users with anything they need - from answering questions to 
                     }
 
                     // Simple text cleanup for better reading
-                    const cleanText = text.replace(/\[SEARCH:.*?\]/g, '')
+                    const cleanText = text.replace(/\[SEARCH:.*?\]/g, '').replace(/```json[\s\S]*?```/g, '')
                         .replace(/\[WEATHER:.*?\]/g, '')
                         .replace(/>\s*⚠️\s*Notice:.*?\n\n/g, '') // Remove fallback notice
                         .replace(/```[\s\S]*?```/g, 'Code block skipped.') // Skip large code blocks
@@ -2596,56 +2616,65 @@ You're here to help users with anything they need - from answering questions to 
                     formatted = formatted.replace(/- (open_in_new|openinnew)/gi, '');
                     formatted = formatted.replace(/\[\s*(open_in_new|openinnew)\s*\]/gi, '');
 
-                    // Remove thinking/reasoning text patterns (AI internal monologue) - ULTRA AGGRESSIVE
-                    // First, remove entire paragraphs that are clearly thinking
-                    formatted = formatted.replace(/^(Okay|Alright|Let me|Let's see|I need to|I should|According to|The user|Double-check|Just make sure|No need for|So I should|That should|Hmm|Since they|But according|There's the|I can't say|maybe they|I'll say|Wait|Looking at|Now they're|followed by|which is a new|But the current|Since I know|Also avoid|Make sure to|Wait the user|Example:|User:|You:)[^.!?]*[.!?]/gi, '');
-                    
-                    // Remove sentences that contain thinking keywords
-                    formatted = formatted.replace(/[^.!?]*\b(the user asked|the user might|the user's last|looking at the rules|according to the rules|I should never|I must respond|I need to|I can answer|avoid any markdown|remind them|explaining my role|in the context of)\b[^.!?]*[.!?]/gi, '');
-                    
-                    // Split into sentences and filter out remaining thinking
-                    const sentences = formatted.split(/(?<=[.!?])\s+/);
-                    const filteredSentences = sentences.filter(sentence => {
-                        const trimmed = sentence.trim();
-                        const lower = trimmed.toLowerCase();
+                    // Remove thinking/reasoning text patterns (AI internal monologue) - ONLY if thinking mode is OFF
+                    if (!thinkingEnabled) {
+                        // First, remove entire paragraphs that are clearly thinking
+                        formatted = formatted.replace(/^(We need to|As per system|We are|We should|Should we|Possibly respond|First|Okay|Alright|Let me|Let's see|I need to|I should|According to|The user|Double-check|Just make sure|No need for|So I should|That should|Hmm|Since they|But according|There's the|I can't say|maybe they|I'll say|I'll craft|I'll respond|Wait|Looking at|Now they're|followed by|which is a new|But the current|Since I know|Also avoid|Make sure to|Wait the user|Example:|User:|You:|Key points to include|I notice that|Might be a|Provide a|Keep conversation)[^.!?]*[.!?]/gi, '');
                         
-                        // Remove if it starts with thinking phrases
-                        if (/^(Okay|Alright|Let me|Let's see|I need to|I should|According to|The user|Double-check|Just make sure|No need for|So I should|That should|Hmm|Since they|But according|There's the|I can't say|maybe they|I'll say|Wait|Looking|Now they|followed by|which is|But the current|Since I|Also avoid|Make sure|Example|User|You)/i.test(trimmed)) {
-                            return false;
-                        }
+                        // Remove sentences that contain thinking keywords
+                        formatted = formatted.replace(/[^.!?]*\b(we need to|as per system|we are|we should|should we|possibly respond|provide a|keep conversation|the user asked|the user might|the user's last|looking at the rules|according to the rules|I should never|I must respond|I need to|I can answer|avoid any markdown|remind them|explaining my role|in the context of|I'll treat|I notice|could be a|seems like a|appears to be|might be a|I'll craft|Key points|key concept)\b[^.!?]*[.!?]/gi, '');
                         
-                        // Remove if contains thinking keywords anywhere
-                        if (lower.includes('the user') || lower.includes('looking at') || lower.includes('according to the rules') || 
-                            lower.includes('i should') || lower.includes('i need to') || lower.includes('i must') ||
-                            lower.includes('wait,') || lower.includes('hmm,') || lower.includes('example:')) {
-                            return false;
-                        }
+                        // Split into sentences and filter out remaining thinking
+                        const sentences = formatted.split(/(?<=[.!?])\s+/);
+                        const filteredSentences = sentences.filter(sentence => {
+                            const trimmed = sentence.trim();
+                            const lower = trimmed.toLowerCase();
+                            
+                            // Remove if it starts with thinking phrases
+                            if (/^(We need|We are|We should|Should we|As per|Possibly|Provide a|Keep conversation|First|Okay|Alright|Let me|Let's see|I need to|I should|According to|The user|Double-check|Just make sure|No need for|So I should|That should|Hmm|Since they|But according|There's the|I can't say|maybe they|I'll say|I'll craft|Wait|Looking|Now they|followed by|which is|But the current|Since I|Also avoid|Make sure|Example|User|You|Key points|I notice)/i.test(trimmed)) {
+                                return false;
+                            }
+                            
+                            // Remove if contains thinking keywords anywhere
+                            if (lower.includes('we need to') || lower.includes('we are') || lower.includes('we should') || 
+                                lower.includes('as per system') || lower.includes('should we') || lower.includes('possibly respond') ||
+                                lower.includes('provide a') || lower.includes('keep conversation') ||
+                                lower.includes('the user') || lower.includes('looking at') || lower.includes('according to the rules') || 
+                                lower.includes('i should') || lower.includes('i need to') || lower.includes('i must') ||
+                                lower.includes('wait,') || lower.includes('hmm,') || lower.includes('example:') ||
+                                lower.includes('i notice') || lower.includes('i\'ll craft') || lower.includes('i\'ll treat') ||
+                                lower.includes('key points') || lower.includes('might be a') || lower.includes('seems like')) {
+                                return false;
+                            }
+                            
+                            // Remove tool/function reasoning
+                            if (/function|tool|ddgsearch|available/i.test(trimmed) && trimmed.length < 100) {
+                                return false;
+                            }
+                            
+                            return trimmed.length > 0;
+                        });
                         
-                        // Remove tool/function reasoning
-                        if (/function|tool|ddgsearch|available/i.test(trimmed) && trimmed.length < 100) {
-                            return false;
-                        }
+                        formatted = filteredSentences.join(' ').trim();
                         
-                        return trimmed.length > 0;
-                    });
-                    
-                    formatted = filteredSentences.join(' ').trim();
-                    
-                    // Remove any remaining thinking artifacts
-                    formatted = formatted.replace(/\s+(Okay|Alright|Wait|Hmm|Let me|Let's see)\s+/gi, ' ');
+                        // Remove any remaining thinking artifacts
+                        formatted = formatted.replace(/\s+(First|Okay|Alright|Wait|Hmm|Let me|Let's see)\s+/gi, ' ');
+                    }
                     
                     // Remove template placeholders from failed translations
                     formatted = formatted.replace(/YOUR_TRANSLATION_HERE|DETECTED_LANGUAGE|Actual text to translate goes here|The translated result goes here|Language name detected/gi, '');
                     
-                    // CRITICAL: Remove ALL thinking tags (both escaped and unescaped) but KEEP the rest of the content
-                    // Remove thinking tags with their content
-                    formatted = formatted.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
-                    formatted = formatted.replace(/&lt;thinking&gt;[\s\S]*?&lt;\/thinking&gt;/gi, '');
-                    formatted = formatted.replace(/\[thinking\][\s\S]*?\[\/thinking\]/gi, '');
-                    
-                    // Remove any stray thinking tag remnants
-                    formatted = formatted.replace(/<\/?thinking>/gi, '');
-                    formatted = formatted.replace(/&lt;\/?thinking&gt;/gi, '');
+                    // Handle thinking tags based on thinking mode
+                    if (!thinkingEnabled) {
+                        // REMOVE thinking tags when thinking mode is OFF
+                        formatted = formatted.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+                        formatted = formatted.replace(/&lt;thinking&gt;[\s\S]*?&lt;\/thinking&gt;/gi, '');
+                        formatted = formatted.replace(/\[thinking\][\s\S]*?\[\/thinking\]/gi, '');
+                        
+                        // Remove any stray thinking tag remnants
+                        formatted = formatted.replace(/<\/?thinking>/gi, '');
+                        formatted = formatted.replace(/&lt;\/?thinking&gt;/gi, '');
+                    }
                     
                     // Clean up extra whitespace left by removed tags
                     formatted = formatted.replace(/\n{3,}/g, '\n\n').trim();
@@ -3033,8 +3062,17 @@ You're here to help users with anything they need - from answering questions to 
                 }
 
                 // Load AI status on page load
-                // Load AI status on page load
                 async function loadAIStatus() {
+                    console.log('loadAIStatus called');
+                    
+                    // Ensure messagesContainer exists
+                    const container = document.getElementById('messages-inner-container');
+                    if (!container) {
+                        console.error('Messages container not found! Retrying in 100ms...');
+                        setTimeout(loadAIStatus, 100);
+                        return;
+                    }
+                    
                     // First restore conversation if available
                     if (!conversationRestored) {
                         restoreConversation();
@@ -3042,13 +3080,16 @@ You're here to help users with anything they need - from answering questions to 
                     
                     // Check for visible messages instead of total history
                     const visibleMessages = conversationHistory.filter(msg => !msg._hidden);
+                    console.log('Visible messages count:', visibleMessages.length);
                     if (visibleMessages.length > 0) {
+                        console.log('Conversation already has messages, skipping welcome');
                         return;
                     }
 
-                    // Get preferred model from localStorage
-                    const preferredModel = localStorage.getItem('preferredAIModel');
-                    const modelName = preferredModel ? preferredModel.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Wave Flash 2';
+                    // Get preferred model from localStorage (check settings first)
+                    const savedSettings = JSON.parse(localStorage.getItem('aiSettings') || '{}');
+                    const preferredModel = savedSettings.model || localStorage.getItem('preferredAIModel') || 'auto';
+                    const modelName = preferredModel === 'auto' ? 'Auto Select' : preferredModel.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
                     // Add welcome message without HTML tags
                     const welcomeDiv = document.createElement('div');
@@ -3067,14 +3108,22 @@ You're here to help users with anything they need - from answering questions to 
                     </div>
                 </div>
             `;
-                    if (messagesContainer) {
-                        messagesContainer.appendChild(welcomeDiv);
+                    // Reuse container from earlier in function
+                    if (container) {
+                        container.appendChild(welcomeDiv);
+                        console.log('Welcome message added to chat');
                     } else {
-                        console.error('Messages container not found!');
+                        console.error('Messages container not found when trying to show welcome!');
                     }
                 }
 
-                loadAIStatus();
+                // Wait for DOM to be ready before loading AI status
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', loadAIStatus);
+                } else {
+                    // DOM already loaded
+                    loadAIStatus();
+                }
             </script>
 
             <!-- Background Image Script -->
@@ -3254,8 +3303,91 @@ You're here to help users with anything they need - from answering questions to 
                         document.getElementById('maxTokensValue').textContent = settings.maxTokens;
                     }
                     if (settings.systemPrompt) document.getElementById('systemPrompt').value = settings.systemPrompt;
-                    if (settings.thinkingMode) document.getElementById('thinkingMode').checked = settings.thinkingMode;
-                    if (settings.searchMode) document.getElementById('searchMode').checked = settings.searchMode;
+                    if (settings.thinkingMode !== undefined) {
+                        document.getElementById('thinkingMode').checked = settings.thinkingMode;
+                        thinkingEnabled = settings.thinkingMode;
+                        // Update toggle button appearance
+                        if (thinkingEnabled) {
+                            const btn = document.getElementById('thinkingToggle');
+                            if (btn) {
+                                btn.classList.add('bg-primary', 'border-primary');
+                                btn.classList.remove('bg-surface-dark');
+                                const icon = btn.querySelector('.material-symbols-outlined');
+                                const text = btn.querySelector('.text-xs');
+                                icon?.classList.remove('text-slate-400');
+                                icon?.classList.add('text-white');
+                                text?.classList.remove('text-slate-400');
+                                text?.classList.add('text-white');
+                            }
+                        }
+                    }
+                    if (settings.searchMode !== undefined) {
+                        document.getElementById('searchMode').checked = settings.searchMode;
+                        searchEnabled = settings.searchMode;
+                        // Update toggle button appearance
+                        if (searchEnabled) {
+                            const btn = document.getElementById('searchToggle');
+                            if (btn) {
+                                btn.classList.add('bg-primary', 'border-primary');
+                                btn.classList.remove('bg-surface-dark');
+                                const icon = btn.querySelector('.material-symbols-outlined');
+                                const text = btn.querySelector('.text-xs');
+                                icon?.classList.remove('text-slate-400');
+                                icon?.classList.add('text-white');
+                                text?.classList.remove('text-slate-400');
+                                text?.classList.add('text-white');
+                            }
+                        }
+                    }
+                    
+                    // Add event listeners to checkboxes
+                    document.getElementById('thinkingMode')?.addEventListener('change', function() {
+                        thinkingEnabled = this.checked;
+                        const btn = document.getElementById('thinkingToggle');
+                        if (!btn) return;
+                        const icon = btn.querySelector('.material-symbols-outlined');
+                        const text = btn.querySelector('.text-xs');
+                        
+                        if (this.checked) {
+                            btn.classList.add('bg-primary', 'border-primary');
+                            btn.classList.remove('bg-surface-dark');
+                            icon?.classList.remove('text-slate-400');
+                            icon?.classList.add('text-white');
+                            text?.classList.remove('text-slate-400');
+                            text?.classList.add('text-white');
+                        } else {
+                            btn.classList.remove('bg-primary', 'border-primary');
+                            btn.classList.add('bg-surface-dark');
+                            icon?.classList.add('text-slate-400');
+                            icon?.classList.remove('text-white');
+                            text?.classList.add('text-slate-400');
+                            text?.classList.remove('text-white');
+                        }
+                    });
+                    
+                    document.getElementById('searchMode')?.addEventListener('change', function() {
+                        searchEnabled = this.checked;
+                        const btn = document.getElementById('searchToggle');
+                        if (!btn) return;
+                        const icon = btn.querySelector('.material-symbols-outlined');
+                        const text = btn.querySelector('.text-xs');
+                        
+                        if (this.checked) {
+                            btn.classList.add('bg-primary', 'border-primary');
+                            btn.classList.remove('bg-surface-dark');
+                            icon?.classList.remove('text-slate-400');
+                            icon?.classList.add('text-white');
+                            text?.classList.remove('text-slate-400');
+                            text?.classList.add('text-white');
+                        } else {
+                            btn.classList.remove('bg-primary', 'border-primary');
+                            btn.classList.add('bg-surface-dark');
+                            icon?.classList.add('text-slate-400');
+                            icon?.classList.remove('text-white');
+                            text?.classList.add('text-slate-400');
+                            text?.classList.remove('text-white');
+                        }
+                    });
                 });
 
                 // Settings sliders

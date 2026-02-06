@@ -32,7 +32,7 @@ export function createAIChatRouter(): Router {
    */
   router.post('/', async (req: Request, res: Response) => {
     try {
-      const { messages, enableSearch = true, thinking = false, model } = req.body;
+      const { messages, enableSearch = true, thinking = false, model, temperature, maxTokens } = req.body;
       const stream = req.query.stream === 'true';
 
       if (!messages || !Array.isArray(messages)) {
@@ -41,7 +41,7 @@ export function createAIChatRouter(): Router {
         });
       }
 
-      console.log(`[AI Chat API] Received chat request (${messages.length} messages, search: ${enableSearch}, thinking: ${thinking}, model: ${model || 'auto'}, stream: ${stream})`);
+      console.log(`[AI Chat API] Received chat request (${messages.length} messages, search: ${enableSearch}, thinking: ${thinking}, model: ${model || 'auto'}, temp: ${temperature || 'default'}, maxTokens: ${maxTokens || 'default'}, stream: ${stream})`);
 
       const aiService = getUnifiedAIService();
 
@@ -53,19 +53,35 @@ export function createAIChatRouter(): Router {
 
         try {
           await aiService.chatStream(messages, (chunk: string) => {
-            res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
-          }, enableSearch, model, thinking);
+            try {
+              res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
+            } catch (writeError: any) {
+              // Client disconnected, stop streaming
+              if (writeError.code === 'ERR_STREAM_WRITE_AFTER_END' || writeError.message.includes('ECONNRESET')) {
+                throw new Error('Client disconnected');
+              }
+              throw writeError;
+            }
+          }, enableSearch, model, thinking, temperature, maxTokens);
           res.write('data: [DONE]\n\n');
           res.end();
         } catch (error: any) {
-          res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
-          res.end();
+          // Only log non-connection errors
+          if (error.message !== 'Client disconnected' && !error.message.includes('ECONNRESET')) {
+            console.error('[AI Chat API] Streaming error:', error.message);
+          }
+          if (!res.headersSent) {
+            res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+          }
+          if (!res.writableEnded) {
+            res.end();
+          }
         }
         return;
       }
 
       // Non-streaming response
-      const response = await aiService.chat(messages, enableSearch, model, 0, thinking);
+      const response = await aiService.chat(messages, enableSearch, model, 0, thinking, temperature, maxTokens);
 
       res.json({
         success: true,

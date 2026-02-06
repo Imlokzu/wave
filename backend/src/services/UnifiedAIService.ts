@@ -83,7 +83,9 @@ export class UnifiedAIService {
     onChunk: (chunk: string) => void,
     enableSearch: boolean = true,
     modelId?: string,
-    thinking: boolean = false
+    thinking: boolean = false,
+    temperature?: number,
+    maxTokens?: number
   ): Promise<void> {
     const model = this.getModel(modelId);
 
@@ -95,7 +97,7 @@ export class UnifiedAIService {
       this.ensureSystemMessage(messages, enableSearch);
 
       // Call API with streaming
-      await this.callOpenRouterAPIStream(model, messages, enableSearch, thinking, onChunk);
+      await this.callOpenRouterAPIStream(model, messages, enableSearch, thinking, onChunk, temperature, maxTokens);
     } catch (error: any) {
       console.error(`[UnifiedAI] Streaming error: ${error.message || 'Unknown error'}`);
       throw error;
@@ -110,22 +112,40 @@ export class UnifiedAIService {
     messages: AIMessage[],
     enableSearch: boolean,
     thinking: boolean = false,
-    onChunk: (chunk: string) => void
+    onChunk: (chunk: string) => void,
+    temperature?: number,
+    maxTokens?: number
   ): Promise<void> {
     console.log(`[UnifiedAI] Calling OpenRouter API with streaming...`);
 
+    const requestBody: any = {
+      model: model.openRouterModel,
+      messages,
+      stream: true
+    };
+
+    // Add optional parameters
+    if (temperature !== undefined) {
+      requestBody.temperature = temperature;
+    }
+    if (maxTokens !== undefined) {
+      requestBody.max_tokens = maxTokens;
+    }
+
+    // Only add extra_body if needed (some models don't support it)
+    if (enableSearch || thinking) {
+      requestBody.extra_body = {};
+      if (enableSearch) {
+        requestBody.extra_body.plugins = ["pdf"];
+      }
+      if (thinking) {
+        requestBody.extra_body.include_reasoning = true;
+      }
+    }
+
     const response = await axios.post(
       `${this.baseUrl}/chat/completions`,
-      {
-        model: model.openRouterModel,
-        messages,
-        stream: true,
-        extra_body: {
-          plugins: enableSearch ? ["pdf"] : [],
-          response_healing: true,
-          include_reasoning: thinking
-        }
-      },
+      requestBody,
       {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
@@ -200,6 +220,10 @@ export class UnifiedAIService {
       });
 
       response.data.on('error', (error: Error) => {
+        // Only log non-connection errors
+        if (error.message !== 'read ECONNRESET' && !error.message.includes('ECONNRESET')) {
+          console.error(`[UnifiedAI] Stream error: ${error.message}`);
+        }
         reject(error);
       });
     });
@@ -213,7 +237,9 @@ export class UnifiedAIService {
     enableSearch: boolean = true,
     modelId?: string,
     fallbackDepth: number = 0,
-    thinking: boolean = false
+    thinking: boolean = false,
+    temperature?: number,
+    maxTokens?: number
   ): Promise<string> {
     const model = this.getModel(modelId);
 
@@ -230,7 +256,7 @@ export class UnifiedAIService {
       this.ensureSystemMessage(messages, enableSearch);
 
       // Call API
-      const responseMessage = await this.callOpenRouterAPI(model, messages, enableSearch, thinking);
+      const responseMessage = await this.callOpenRouterAPI(model, messages, enableSearch, thinking, temperature, maxTokens);
 
       let response = responseMessage.content;
 
@@ -251,7 +277,7 @@ export class UnifiedAIService {
           messages.shift();
         }
 
-        return this.chat(messages, enableSearch, model.fallbackId, fallbackDepth + 1, thinking);
+        return this.chat(messages, enableSearch, model.fallbackId, fallbackDepth + 1, thinking, temperature, maxTokens);
       }
 
       return this.handleChatError(error);
@@ -263,11 +289,142 @@ export class UnifiedAIService {
    */
   private ensureSystemMessage(messages: AIMessage[], enableSearch: boolean): void {
     if (messages.length === 0 || messages[0].role !== 'system') {
+      
+      const searchInstructions = `⚠️⚠️⚠️ STOP AND READ THIS FIRST ⚠️⚠️⚠️
+
+WHEN USER ASKS ABOUT PRICES, SPECS, OR CURRENT INFO:
+
+YOUR ENTIRE RESPONSE MUST BE:
+\`\`\`json
+{"searches": [{"query": "search term"}]}
+\`\`\`
+
+NOTHING BEFORE IT.
+NOTHING AFTER IT.
+NO TEXT.
+NO EXPLANATIONS.
+NO "Let me check"
+NO "Performing search"
+NO "Wait for results"
+NO THINKING TAGS.
+
+JUST THE JSON. PERIOD.
+
+❌ WRONG (DO NOT DO THIS):
+"Let me check the latest pricing for the OnePlus Nord 5...
+🔍 [Performing web search...]"
+
+✅ CORRECT (DO THIS):
+\`\`\`json
+{"searches": [{"query": "OnePlus Nord 5 price 2026"}]}
+\`\`\`
+
+After I give you search results, THEN you can write a proper answer.
+
+FORBIDDEN PHRASES FOR PRICE QUESTIONS:
+- "Let me check"
+- "I'll search for"
+- "Performing search"
+- "[WEBSEARCH]"
+- "Wait for"
+- "As of 2026"
+- "isn't officially released yet"
+- Any text before the JSON
+
+IF YOU WRITE TEXT INSTEAD OF JSON FOR A PRICE QUESTION, YOU FAILED.
+
+`;
+
+      const appKnowledge = `You are the AI assistant for Wave Messenger, a modern real-time chat application.
+
+## ABOUT WAVE MESSENGER
+
+**Core Features:**
+- 💬 Real-time messaging with Socket.io (DMs, groups, read receipts)
+- 🤖 AI Chat - 20+ models including Wave Flash, Wave, Wave O (reasoning), Wave Coder
+- 📰 Feed - Curated content from Telegram channels
+- 🎵 Music Player - Built-in streaming while chatting
+- 👤 User Profiles - Avatars, bios, customization
+- 🌓 Themes - Dark/Light mode with transparency and custom backgrounds
+- 📱 Mobile-optimized - Swipe gestures, responsive design
+- 🔒 Secure - JWT auth with Supabase, end-to-end encryption
+- 📊 Admin Panel - User management and moderation
+
+**Latest Version: 1.1.0 (February 1, 2026)**
+New in this release:
+- AI Model Selection (Wave Flash/Wave/Wave O/Wave Coder)
+- Real-time AI streaming with smooth updates
+- Transparency mode with customizable blur
+- Custom background uploads
+- Advanced theme system
+- Model-specific AI prompts
+- Enhanced mobile UI with improved swipes
+- Compact translation cards
+- Performance improvements
+
+**Navigation:**
+- Bottom nav: Chat, Feed, AI Chat, Music, Profile
+- Settings: Account, Appearance, Privacy, AI, Notifications, About
+- Help pages: /help.html, /changelog.html, /report-bug.html
+
+**AI Models Available:**
+Wave Flash (fast): lfm-2.5-1.2b, qwen3-4b, gemma-3n-e4b, gemma-3-12b
+Wave (balanced): nemotron-3-nano, trinity-mini, gemma-3-27b, llama-3.3-70b, trinity-large
+Wave O (reasoning): lfm-2.5-thinking, glm-4.5-air, step-3.5-flash, tng-r1t-chimera, deepseek-r1
+Wave Coder: qwen-coder-32b, deepseek-coder-v2
+
+**Wave Pro Features:**
+- Access to premium AI models (llama-3.3-70b, trinity-large, glm-4.5-air, etc.)
+- Priority support
+- Advanced features
+
+**Tech Stack:**
+Backend: Node.js, TypeScript, Express, Socket.io, Supabase
+Frontend: Vanilla JS, Tailwind CSS, Material Icons
+Additional: Python Telegram scraper, Telethon
+
+**How Users Can Get Help:**
+- Settings → About section
+- Help Center at /help.html
+- Changelog at /changelog.html
+- Report bugs at /report-bug.html
+- Ask you (the AI) for assistance`;
+
+      const basePrompt = enableSearch ? searchInstructions + '\n\n' + appKnowledge : appKnowledge;
+      
+      const thinkingRules = `
+
+CRITICAL INSTRUCTION: NEVER include your internal reasoning, thinking process, or analysis in your response to the user. Do NOT write things like:
+- "We need to respond..."
+- "As per system..."
+- "We are [name], an AI..."
+- "We should respond..."
+- "Should we sign as..."
+- "Possibly respond..."
+- "Provide a friendly greeting..."
+- "Keep conversation open..."
+- "First, I notice that..."
+- "Looking at the search results..."
+- "The user asked about..."
+- "I should respond..."
+- "Let me analyze..."
+- "According to the information..."
+- "I'll craft a response..."
+- Any meta-commentary about how you're processing the request
+
+Your thinking should ONLY appear in <thinking> tags if the model supports them. Otherwise, respond DIRECTLY with the answer.
+
+BAD Example:
+"We need to respond. As per system, we are 'rob', an AI. We should respond in a friendly manner. Should we sign as 'Rob'? Possibly respond: 'Hello! How can I help you today?' Provide a friendly greeting."
+
+GOOD Example:
+"Hello! How can I help you today?"
+
+Respond naturally and directly. No thinking process in the main response.`;
+
       messages.unshift({
         role: 'system',
-        content: enableSearch
-          ? 'You are a helpful AI assistant with web search and weather capabilities. Use [SEARCH: query] for searches and [WEATHER: city] for weather.'
-          : 'You are a helpful AI assistant.'
+        content: basePrompt + thinkingRules
       });
     }
   }
@@ -279,21 +436,39 @@ export class UnifiedAIService {
     model: AIModel,
     messages: AIMessage[],
     enableSearch: boolean,
-    thinking: boolean = false
+    thinking: boolean = false,
+    temperature?: number,
+    maxTokens?: number
   ): Promise<AIMessage> {
     console.log(`[UnifiedAI] Calling OpenRouter API with ${enableSearch ? 'tools enabled' : 'no tools'} (thinking: ${thinking})...`);
 
+    const requestBody: any = {
+      model: model.openRouterModel,
+      messages
+    };
+
+    // Add optional parameters
+    if (temperature !== undefined) {
+      requestBody.temperature = temperature;
+    }
+    if (maxTokens !== undefined) {
+      requestBody.max_tokens = maxTokens;
+    }
+
+    // Only add extra_body if needed (some models don't support it)
+    if (enableSearch || thinking) {
+      requestBody.extra_body = {};
+      if (enableSearch) {
+        requestBody.extra_body.plugins = ["pdf"];
+      }
+      if (thinking) {
+        requestBody.extra_body.include_reasoning = true;
+      }
+    }
+
     const response = await axios.post(
       `${this.baseUrl}/chat/completions`,
-      {
-        model: model.openRouterModel,
-        messages,
-        extra_body: {
-          plugins: enableSearch ? ["pdf"] : [],
-          response_healing: true,
-          include_reasoning: thinking
-        }
-      },
+      requestBody,
       {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,

@@ -24,9 +24,6 @@
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
-    <!-- Theme System -->
-    <link href="/css/theme.css" rel="stylesheet"/>
-    <link href="/css/theme-config.css" rel="stylesheet"/>
     <script src="/js/auth-guard.js"></script>
     <script src="/js/mobile-detector.js"></script>
     <script src="/js/update-checker.js"></script>
@@ -38,22 +35,18 @@
                 extend: {
                     colors: {
                         "primary": "#0db9f2",
-                        "primary-dark": "#0a8fc4",
                         "background-light": "#f5f8f8",
-                        "background-dark": "#0a0f12",
-                        "surface-dark": "#0f1419",
-                        "surface-hover": "#151b21",
-                        "surface-lighter": "#1a2128",
-                        "border-dark": "#1f2830",
+                        "background-dark": "#101e22",
+                        "surface-dark": "#16262c",
+                        "surface-hover": "#1d2f36",
+                        "surface-lighter": "#1d2f36",
                     },
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
                     boxShadow: {
                         'glow': '0 0 15px -3px rgba(13, 185, 242, 0.3)',
-                        'glow-lg': '0 0 30px -5px rgba(13, 185, 242, 0.4)',
-                        'dark': '0 4px 20px rgba(0, 0, 0, 0.5)',
                     }
                 },
             },
@@ -62,104 +55,29 @@
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         
-        /* Transparency Mode Styles */
-        body.transparency-mode .bg-surface-dark,
-        body.transparency-mode aside.desktop-sidebar,
-        body.transparency-mode aside#roomInfoPanel {
-            background: rgba(15, 20, 25, 0.4) !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        body.transparency-mode header {
-            background: rgba(15, 20, 25, 0.6) !important;
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-        }
-        
-        body.transparency-mode .bg-surface-hover:hover {
-            background: rgba(21, 27, 33, 0.5) !important;
-        }
-        
-        body.transparency-mode .bg-surface-lighter {
-            background: rgba(26, 33, 40, 0.5) !important;
-        }
-        
-        /* Custom Scrollbar - Darker */
+        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f2830; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2a3440; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
         
-        /* Tabs - Sliding Highlight */
-        #tabHighlight {
-            background: var(--color-primary);
-            box-shadow: 0 2px 12px var(--accent-glow), 0 0 20px var(--accent-glow);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                        width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                        opacity 0.2s ease;
-            opacity: 0; /* Start hidden, will be shown by JS */
-        }
-
-        
-        /* Attachment Menu Animations - Real Glass */
-        #attachmentMenu {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.2s ease-out,
-                        transform 0.2s ease-out;
-            pointer-events: none;
-            background: rgba(15, 20, 25, 0.25) !important;
-            backdrop-filter: blur(40px) saturate(180%) brightness(1.1) !important;
-            -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
+        /* Tabs */
+        .tab-active {
+            background: linear-gradient(135deg, #0db9f2 0%, #0a8fc4 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(13, 185, 242, 0.3);
         }
         
-        #attachmentMenu.show {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: all;
-            transition: opacity 0.2s ease-out,
-                        transform 0.2s ease-out;
-        }
-        
-        #attachmentMenu.closing {
-            opacity: 0 !important;
-            transform: translateY(20px) !important;
-            pointer-events: none;
-            transition: opacity 0.25s ease-in,
-                        transform 0.25s ease-in;
-        }
-        
-        /* Plus button rotation */
-        #attachmentBtn .material-symbols-outlined {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        #attachmentBtn.active .material-symbols-outlined {
-            transform: rotate(45deg);
-        }
-        
-        /* Context Menu - Real Glass */
+        /* Context Menu */
         .context-menu {
             position: fixed;
-            background: linear-gradient(135deg, rgba(15, 20, 25, 0.4) 0%, rgba(10, 15, 18, 0.5) 100%);
-            backdrop-filter: blur(24px) saturate(200%);
-            -webkit-backdrop-filter: blur(24px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+            background: #1d2f36;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             z-index: 9999;
             min-width: 180px;
-            padding: 6px;
+            padding: 4px;
             display: none;
         }
         .context-menu.show { display: block; }
@@ -169,25 +87,21 @@
             gap: 12px;
             padding: 10px 12px;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            color: rgba(255, 255, 255, 0.95);
+            border-radius: 6px;
+            transition: all 0.15s;
+            color: #e2e8f0;
             font-size: 14px;
-            background: rgba(255, 255, 255, 0.02);
         }
         .context-menu-item:hover {
-            background: linear-gradient(135deg, rgba(13, 185, 242, 0.6) 0%, rgba(13, 185, 242, 0.8) 100%);
+            background: #0db9f2;
             color: white;
-            transform: translateX(2px);
-            box-shadow: 0 4px 12px rgba(13, 185, 242, 0.3);
         }
         .context-menu-item.danger:hover {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.6) 0%, rgba(239, 68, 68, 0.8) 100%);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            background: #ef4444;
         }
         .context-menu-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            background: #334155;
             margin: 4px 0;
         }
         
@@ -264,16 +178,32 @@
                 </div>
             </div>
             
-            
-            <!-- Combined Chats List -->
-            <div class="flex-1 overflow-y-auto custom-scrollbar px-4 py-2">
-                <!-- All chats (DMs and Rooms) will be added here dynamically -->
-                <div id="dmsListContainer" class="flex flex-col gap-1">
-                    <!-- Chats will be added here dynamically -->
+            <!-- Tabs -->
+            <div class="px-4 mb-2 shrink-0">
+                <div class="flex gap-2 bg-background-dark rounded-lg p-1">
+                    <button id="tabDMs" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all tab-active">
+                        Direct Messages
+                    </button>
+                    <button id="tabRooms" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white">
+                        Rooms
+                    </button>
                 </div>
             </div>
             
-            <div id="roomsListContainer" class="hidden"></div>
+            <!-- Lists Container -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar px-4 py-2">
+                <!-- DMs List -->
+                <div id="dmsListContainer" class="flex flex-col gap-1">
+                    <!-- DMs will be added here dynamically -->
+                </div>
+                
+                <!-- Rooms List -->
+                <div id="roomsListContainer" class="flex flex-col gap-1 hidden">
+                    <!-- Rooms will be added here dynamically -->
+                </div>
+            </div>
+            
+            <!-- Combined chats list (for backward compatibility) -->
             <div id="chatsList" class="hidden"></div>
             
             <!-- Bottom Navigation Bar (Sidebar Footer) -->
@@ -299,7 +229,7 @@
                         <span class="material-symbols-outlined text-[24px]">person</span>
                         <span class="text-[10px] font-medium mt-1" id="userNickname">Profile</span>
                     </a>
-                    <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/settings.html" id="settingsNavLink">
+                    <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/settings.html" id="setStatusLink">
                         <span class="material-symbols-outlined text-[24px]">settings</span>
                         <span class="text-[10px] font-medium mt-1">Settings</span>
                     </a>
@@ -415,7 +345,9 @@
         <!-- RIGHT PANEL (320px, XL only) - Room Info -->
         <aside id="roomInfoPanel" class="w-80 bg-surface-dark border-l border-slate-800 shrink-0 hidden xl:flex flex-col overflow-y-auto">
             <div class="p-6 flex flex-col items-center border-b border-slate-800">
-                <img src="/wavechat.png" alt="Room" class="w-24 h-24 rounded-full shadow-lg ring-4 ring-background-dark mb-4 object-cover" />
+                <div class="w-24 h-24 rounded-full bg-surface-lighter shadow-lg ring-4 ring-background-dark mb-4 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-5xl">waves</span>
+                </div>
                 <h2 class="text-xl font-bold text-white mb-1" id="roomNameRight">Room</h2>
                 <p class="text-sm text-slate-400 text-center mb-4">WaveChat room</p>
                 <div class="flex gap-4 w-full">
@@ -522,7 +454,7 @@
     </nav>
     
     <!-- Attachment Menu -->
-    <div id="attachmentMenu" class="fixed rounded-xl shadow-2xl z-50" style="display: none;">
+    <div id="attachmentMenu" class="fixed bg-surface-dark border border-slate-700 rounded-xl shadow-2xl z-50 hidden">
         <div class="p-2 space-y-1 min-w-[200px]">
             <button id="attachImage" class="w-full px-4 py-3 hover:bg-surface-lighter rounded-lg text-left flex items-center gap-3 text-white transition-colors">
                 <span class="material-symbols-outlined text-primary">image</span>
@@ -605,85 +537,19 @@
     <div id="createJoinRoomModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
         <div class="bg-surface-dark border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-white">Room</h3>
+                <h3 class="text-lg font-bold text-white">Create or Join Room</h3>
                 <button id="closeCreateJoinModal" class="text-slate-400 hover:text-white">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            
-            <!-- Tabs -->
-            <div class="flex gap-2 bg-background-dark rounded-lg p-1 mb-4">
-                <button id="createRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all bg-primary text-white">
-                    Create Room
-                </button>
-                <button id="joinRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white">
-                    Join Room
-                </button>
-            </div>
-            
-            <!-- Create Room Content -->
-            <div id="createRoomContent" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Name (Optional)</label>
-                    <input id="roomNameInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="My Awesome Room" type="text"/>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Type</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="tempRoomBtn" class="p-3 rounded-lg border-2 border-primary bg-primary/10 text-white transition-all">
-                            <div class="flex flex-col items-center gap-1">
-                                <span class="material-symbols-outlined text-2xl">schedule</span>
-                                <span class="text-sm font-medium">Temporary</span>
-                                <span class="text-xs text-slate-400">Expires when empty</span>
-                            </div>
-                        </button>
-                        <button id="foreverRoomBtn" class="p-3 rounded-lg border-2 border-slate-700 bg-surface-lighter text-slate-400 hover:text-white hover:border-slate-600 transition-all">
-                            <div class="flex flex-col items-center gap-1">
-                                <span class="material-symbols-outlined text-2xl">all_inclusive</span>
-                                <span class="text-sm font-medium">Forever</span>
-                                <span class="text-xs text-slate-400">Permanent room</span>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Settings -->
-                <div class="border-t border-slate-700 pt-3">
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Settings</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center justify-between text-sm text-slate-300">
-                            <span>Allow Polls</span>
-                            <input type="checkbox" id="allowPolls" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
-                        </label>
-                        <label class="flex items-center justify-between text-sm text-slate-300">
-                            <span>Allow Voice Messages</span>
-                            <input type="checkbox" id="allowVoice" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
-                        </label>
-                        <label class="flex items-center justify-between text-sm text-slate-300">
-                            <span>Allow Files</span>
-                            <input type="checkbox" id="allowFiles" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
-                        </label>
-                        <label class="flex items-center justify-between text-sm text-slate-300">
-                            <span>Allow Images</span>
-                            <input type="checkbox" id="allowImages" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
-                        </label>
-                    </div>
-                </div>
-                
-                <button id="createRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors">
-                    Create Room
-                </button>
-            </div>
-            
-            <!-- Join Room Content -->
-            <div id="joinRoomContent" class="space-y-4 hidden">
+            <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">Room Code</label>
-                    <input id="roomCodeInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="Enter 6-character room code..." type="text" maxlength="6"/>
+                    <input id="roomCodeInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="Enter room code to join..." type="text"/>
+                    <p class="text-xs text-slate-400 mt-1">Leave empty to create a new room</p>
                 </div>
-                <button id="joinRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors">
-                    Join Room
+                <button id="submitRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors">
+                    Continue
                 </button>
             </div>
         </div>
@@ -779,427 +645,154 @@
     <script src="/js/ui.js"></script>
     <script src="/js/app.js"></script>
     
-    <!-- Context Menu -->
+    <!-- Tab Switching & Context Menu -->
     <script>
-        // Context Menu - Wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', function() {
-            let contextMenuTarget = null;
-            const contextMenu = document.getElementById('messageContextMenu');
+        // Tab Switching
+        document.getElementById('tabDMs').addEventListener('click', function() {
+            document.getElementById('tabDMs').classList.add('tab-active');
+            document.getElementById('tabDMs').classList.remove('text-slate-400', 'hover:text-white');
+            document.getElementById('tabRooms').classList.remove('tab-active');
+            document.getElementById('tabRooms').classList.add('text-slate-400', 'hover:text-white');
             
-            if (!contextMenu) {
-                console.error('[Context Menu] Menu element not found!');
-                return;
+            document.getElementById('dmsListContainer').classList.remove('hidden');
+            document.getElementById('roomsListContainer').classList.add('hidden');
+        });
+        
+        document.getElementById('tabRooms').addEventListener('click', function() {
+            document.getElementById('tabRooms').classList.add('tab-active');
+            document.getElementById('tabRooms').classList.remove('text-slate-400', 'hover:text-white');
+            document.getElementById('tabDMs').classList.remove('tab-active');
+            document.getElementById('tabDMs').classList.add('text-slate-400', 'hover:text-white');
+            
+            document.getElementById('roomsListContainer').classList.remove('hidden');
+            document.getElementById('dmsListContainer').classList.add('hidden');
+        });
+        
+        // Context Menu
+        let contextMenuTarget = null;
+        const contextMenu = document.getElementById('messageContextMenu');
+        
+        // Show context menu on right-click
+        document.addEventListener('contextmenu', function(e) {
+            const messageEl = e.target.closest('[data-message-id]');
+            if (messageEl) {
+                e.preventDefault();
+                contextMenuTarget = messageEl;
+                
+                // Position menu
+                contextMenu.style.left = e.pageX + 'px';
+                contextMenu.style.top = e.pageY + 'px';
+                contextMenu.classList.add('show');
+                
+                // Check if user owns the message to show/hide edit/delete
+                const messageId = messageEl.dataset.messageId;
+                const userId = localStorage.getItem('userId');
+                const senderId = messageEl.dataset.senderId;
+                
+                const editBtn = contextMenu.querySelector('[data-action="edit"]');
+                const deleteBtn = contextMenu.querySelector('[data-action="delete"]');
+                
+                if (senderId === userId) {
+                    editBtn.style.display = 'flex';
+                    deleteBtn.style.display = 'flex';
+                } else {
+                    editBtn.style.display = 'none';
+                    deleteBtn.style.display = 'none';
+                }
             }
-            
-            console.log('[Context Menu] Menu element found:', contextMenu);
-            
-            // Show context menu on right-click
-            document.addEventListener('contextmenu', function(e) {
-                console.log('[Context Menu] Right-click detected on:', e.target);
-                
-                const messageEl = e.target.closest('[data-message-id]');
-                console.log('[Context Menu] Message element found:', !!messageEl);
-                
-                if (messageEl) {
-                    e.preventDefault();
+        });
+        
+        // Long press for mobile
+        let longPressTimer;
+        document.addEventListener('touchstart', function(e) {
+            const messageEl = e.target.closest('[data-message-id]');
+            if (messageEl) {
+                longPressTimer = setTimeout(function() {
                     contextMenuTarget = messageEl;
-                    
-                    console.log('[Context Menu] Opening menu at:', e.pageX, e.pageY);
-                    
-                    // Position menu
-                    contextMenu.style.left = e.pageX + 'px';
-                    contextMenu.style.top = e.pageY + 'px';
+                    const touch = e.touches[0];
+                    contextMenu.style.left = touch.pageX + 'px';
+                    contextMenu.style.top = touch.pageY + 'px';
                     contextMenu.classList.add('show');
                     
-                    console.log('[Context Menu] Menu classes:', contextMenu.className);
-                    console.log('[Context Menu] Menu display:', window.getComputedStyle(contextMenu).display);
-                    
-                    // Check if user owns the message to show/hide edit/delete
-                    const messageId = messageEl.dataset.messageId;
-                    const userId = localStorage.getItem('userId');
-                    const senderId = messageEl.dataset.senderId;
-                    
-                    const editBtn = contextMenu.querySelector('[data-action="edit"]');
-                    const deleteBtn = contextMenu.querySelector('[data-action="delete"]');
-                    
-                    // Show edit/delete only for own messages
-                    if (senderId === userId) {
-                        if (editBtn) editBtn.style.display = 'flex';
-                        if (deleteBtn) deleteBtn.style.display = 'flex';
-                    } else {
-                        if (editBtn) editBtn.style.display = 'none';
-                        if (deleteBtn) deleteBtn.style.display = 'none';
+                    // Vibrate on mobile
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
                     }
-                }
-            });
-            
-            // Long press for mobile
-            let longPressTimer;
-            document.addEventListener('touchstart', function(e) {
-                const messageEl = e.target.closest('[data-message-id]');
-                if (messageEl) {
-                    longPressTimer = setTimeout(function() {
-                        contextMenuTarget = messageEl;
-                        const touch = e.touches[0];
-                        contextMenu.style.left = touch.pageX + 'px';
-                        contextMenu.style.top = touch.pageY + 'px';
-                        contextMenu.classList.add('show');
-                        
-                        // Vibrate on mobile
-                        if (navigator.vibrate) {
-                            navigator.vibrate(50);
-                        }
-                    }, 500);
-                }
-            });
-            
-            document.addEventListener('touchend', function() {
-                clearTimeout(longPressTimer);
-            });
-            
-            document.addEventListener('touchmove', function() {
-                clearTimeout(longPressTimer);
-            });
-            
-            // Hide context menu on click outside
-            document.addEventListener('click', function(e) {
-                if (!contextMenu.contains(e.target)) {
-                    contextMenu.classList.remove('show');
-                }
-            });
-            
-            // Handle context menu actions
-            contextMenu.addEventListener('click', function(e) {
-                const action = e.target.closest('[data-action]')?.dataset.action;
-                if (!action || !contextMenuTarget) return;
-                
-                const messageId = contextMenuTarget.dataset.messageId;
-                const senderId = contextMenuTarget.dataset.senderId;
-                const userId = localStorage.getItem('userId');
-                
-                // Find message text from various possible locations
-                let messageText = '';
-                const textElement = contextMenuTarget.querySelector('.message-text') || 
-                                  contextMenuTarget.querySelector('p') ||
-                                  contextMenuTarget.querySelector('div[class*="text"]');
-                if (textElement) {
-                    messageText = textElement.textContent || textElement.innerText || '';
-                }
-                
-                console.log('[Context Menu] Action:', action, 'MessageId:', messageId, 'Text:', messageText);
-                
-                switch(action) {
-                    case 'reply':
-                        console.log('[Context Menu] Reply to message:', messageId);
-                        // Set reply mode in the input
-                        const messageInput = document.getElementById('messageInput');
-                        if (messageInput && messageText) {
-                            // Show reply indicator
-                            const replyIndicator = document.createElement('div');
-                            replyIndicator.id = 'replyIndicator';
-                            replyIndicator.className = 'flex items-center justify-between px-4 py-2 bg-surface-lighter border-l-4 border-primary mb-2';
-                            replyIndicator.innerHTML = `
-                                <div class="flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-primary text-[18px]">reply</span>
-                                    <div>
-                                        <p class="text-xs text-primary font-medium">Replying to message</p>
-                                        <p class="text-xs text-slate-400 truncate max-w-[300px]">${messageText}</p>
-                                    </div>
-                                </div>
-                                <button onclick="document.getElementById('replyIndicator').remove()" class="text-slate-400 hover:text-white">
-                                    <span class="material-symbols-outlined text-[18px]">close</span>
-                                </button>
-                            `;
-                            
-                            // Insert before message input
-                            const inputContainer = messageInput.parentElement;
-                            const existingIndicator = document.getElementById('replyIndicator');
-                            if (existingIndicator) existingIndicator.remove();
-                            inputContainer.insertBefore(replyIndicator, inputContainer.firstChild);
-                            
-                            // Focus input
-                            messageInput.focus();
-                        }
-                        break;
-                        
-                    case 'forward':
-                        console.log('[Context Menu] Forward message:', messageId);
-                        // Show forward modal with room/user selection
-                        alert('Forward feature: Select a chat to forward this message to.\n\nComing soon!');
-                        break;
-                        
-                    case 'copy':
-                        console.log('[Context Menu] Copy message text:', messageText);
-                        if (messageText && messageText.trim()) {
-                            navigator.clipboard.writeText(messageText.trim()).then(() => {
-                                console.log('[Context Menu] Message copied to clipboard');
-                                // Show toast notification
-                                const toast = document.createElement('div');
-                                toast.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
-                                toast.textContent = 'Message copied!';
-                                document.body.appendChild(toast);
-                                setTimeout(() => {
-                                    toast.style.opacity = '0';
-                                    toast.style.transition = 'opacity 0.3s';
-                                    setTimeout(() => toast.remove(), 300);
-                                }, 2000);
-                            }).catch(err => {
-                                console.error('[Context Menu] Failed to copy:', err);
-                                alert('Failed to copy message');
-                            });
-                        } else {
-                            console.warn('[Context Menu] No text to copy');
-                            alert('No text to copy');
-                        }
-                        break;
-                        
-                    case 'ask-ai':
-                        console.log('[Context Menu] Ask AI about message:', messageText);
-                        if (messageText && messageText.trim()) {
-                            // Show loading indicator
-                            const loadingToast = document.createElement('div');
-                            loadingToast.id = 'aiLoadingToast';
-                            loadingToast.className = 'fixed bottom-4 right-4 bg-surface-dark text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3 border border-primary';
-                            loadingToast.innerHTML = `
-                                <div class="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
-                                <span>Asking AI...</span>
-                            `;
-                            document.body.appendChild(loadingToast);
-                            
-                            // Add loading message to chat
-                            const loadingMessageId = `ai_loading_${Date.now()}`;
-                            state.addMessage({
-                                id: loadingMessageId,
-                                type: 'system',
-                                content: '🤖 AI is thinking...',
-                                timestamp: new Date()
-                            });
-                            
-                            // Scroll to bottom to show loading message
-                            setTimeout(() => {
-                                const messagesContainer = document.getElementById('messages');
-                                if (messagesContainer) {
-                                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                                }
-                            }, 100);
-                            
-                            // Call AI API
-                            fetch('/api/ai-chat/simple', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    message: `Analyze this message: "${messageText.trim()}"`,
-                                    enableSearch: false
-                                })
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                console.log('[Context Menu] AI response received:', data);
-                                
-                                // Remove loading toast
-                                loadingToast.remove();
-                                
-                                // Remove loading message
-                                state.removeMessage(loadingMessageId);
-                                
-                                // Get response from API - check multiple possible fields
-                                const aiResponse = data.response || data.message || data.content;
-                                
-                                console.log('[Context Menu] Extracted AI response:', aiResponse ? 'Found' : 'Not found');
-                                
-                                if (aiResponse && aiResponse.trim()) {
-                                    // Add AI response as a message in chat
-                                    state.addMessage({
-                                        id: `ai_response_${Date.now()}`,
-                                        type: 'ai',
-                                        content: aiResponse,
-                                        senderNickname: 'AI Assistant',
-                                        timestamp: new Date(),
-                                        isAI: true
-                                    });
-                                    
-                                    // Scroll to bottom to show AI response
-                                    setTimeout(() => {
-                                        const messagesContainer = document.getElementById('messages');
-                                        if (messagesContainer) {
-                                            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                                        }
-                                    }, 100);
-                                    
-                                    // Show success toast
-                                    const successToast = document.createElement('div');
-                                    successToast.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50';
-                                    successToast.textContent = '✓ AI response received';
-                                    document.body.appendChild(successToast);
-                                    setTimeout(() => successToast.remove(), 2000);
-                                } else {
-                                    console.error('[Context Menu] Response data:', data);
-                                    throw new Error('No response from AI');
-                                }
-                            })
-                            .catch(err => {
-                                console.error('[Context Menu] AI request failed:', err);
-                                loadingToast.remove();
-                                
-                                // Remove loading message
-                                state.removeMessage(loadingMessageId);
-                                
-                                // Show error toast
-                                const errorToast = document.createElement('div');
-                                errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-                                errorToast.textContent = 'Failed to get AI response: ' + err.message;
-                                document.body.appendChild(errorToast);
-                                setTimeout(() => errorToast.remove(), 3000);
-                            });
-                        } else {
-                            alert('No text to send to AI');
-                        }
-                        break;
-                        
-                    case 'edit':
-                        console.log('[Context Menu] Edit message:', messageId);
-                        // Check if user owns the message
-                        if (senderId === userId) {
-                            // Dispatch edit event
-                            const editEvent = new CustomEvent('message:edit', {
-                                detail: { messageId, content: messageText }
-                            });
-                            document.dispatchEvent(editEvent);
-                        } else {
-                            alert('You can only edit your own messages');
-                        }
-                        break;
-                        
-                    case 'delete':
-                        console.log('[Context Menu] Delete message:', messageId);
-                        // Check if user owns the message
-                        if (senderId === userId) {
-                            // Confirm deletion
-                            if (confirm('Delete this message?')) {
-                                // Dispatch delete event
-                                const deleteEvent = new CustomEvent('message:delete', {
-                                    detail: { messageId }
-                                });
-                                document.dispatchEvent(deleteEvent);
-                            }
-                        } else {
-                            alert('You can only delete your own messages');
-                        }
-                        break;
-                }
-                
-                contextMenu.classList.remove('show');
-            });
-        });
-    </script>
-    
-    <!-- Attachment Menu Handler -->
-    <script>
-        // Wait for chat screen to be active
-        function initAttachmentMenu() {
-            const attachmentBtn = document.getElementById('attachmentBtn');
-            const attachmentMenu = document.getElementById('attachmentMenu');
-            
-            console.log('[Attachment] Button:', attachmentBtn);
-            console.log('[Attachment] Menu:', attachmentMenu);
-            
-            if (attachmentBtn && attachmentMenu) {
-                attachmentBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    console.log('[Attachment] Button clicked');
-                    
-                    // Toggle menu
-                    const isShowing = attachmentMenu.classList.contains('show');
-                    console.log('[Attachment] Is showing:', isShowing);
-                    
-                    if (isShowing) {
-                        // Hide menu with clean slide-out animation
-                        attachmentMenu.classList.add('closing');
-                        attachmentMenu.classList.remove('show');
-                        attachmentBtn.classList.remove('active');
-                        
-                        // Remove closing class and hide after animation
-                        setTimeout(() => {
-                            attachmentMenu.classList.remove('closing');
-                            attachmentMenu.style.display = 'none';
-                        }, 250);
-                    } else {
-                        // Show menu - position it above the button
-                        const btnRect = attachmentBtn.getBoundingClientRect();
-                        attachmentMenu.style.left = btnRect.left + 'px';
-                        attachmentMenu.style.bottom = (window.innerHeight - btnRect.top + 8) + 'px';
-                        attachmentMenu.style.top = 'auto';
-                        
-                        // Remove hidden state and trigger animation
-                        attachmentMenu.style.display = 'block';
-                        attachmentMenu.classList.remove('closing');
-                        
-                        // Force reflow to ensure display change is applied before animation
-                        attachmentMenu.offsetHeight;
-                        
-                        // Add show class to trigger animation
-                        attachmentMenu.classList.add('show');
-                        attachmentBtn.classList.add('active');
-                        console.log('[Attachment] Menu opened');
-                    }
-                });
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', function(e) {
-                    // Don't close if clicking the button or menu itself
-                    if (attachmentBtn.contains(e.target) || attachmentMenu.contains(e.target)) {
-                        return;
-                    }
-                    
-                    if (attachmentMenu.classList.contains('show')) {
-                        attachmentMenu.classList.add('closing');
-                        attachmentMenu.classList.remove('show');
-                        attachmentBtn.classList.remove('active');
-                        
-                        setTimeout(() => {
-                            attachmentMenu.classList.remove('closing');
-                            attachmentMenu.style.display = 'none';
-                        }, 250);
-                    }
-                });
-                
-                // Close menu when clicking a menu item
-                attachmentMenu.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        attachmentMenu.classList.add('closing');
-                        attachmentMenu.classList.remove('show');
-                        attachmentBtn.classList.remove('active');
-                        
-                        setTimeout(() => {
-                            attachmentMenu.classList.remove('closing');
-                            attachmentMenu.style.display = 'none';
-                        }, 250);
-                    });
-                });
-                
-                console.log('[Attachment] Menu initialized successfully');
-            } else {
-                console.error('[Attachment] Elements not found!');
+                }, 500);
             }
-        }
-        
-        // Try to initialize immediately
-        document.addEventListener('DOMContentLoaded', function() {
-            // Wait a bit for chat screen to become active
-            setTimeout(initAttachmentMenu, 500);
         });
         
-        // Also try when window loads
-        window.addEventListener('load', function() {
-            setTimeout(initAttachmentMenu, 100);
+        document.addEventListener('touchend', function() {
+            clearTimeout(longPressTimer);
+        });
+        
+        document.addEventListener('touchmove', function() {
+            clearTimeout(longPressTimer);
+        });
+        
+        // Hide context menu on click outside
+        document.addEventListener('click', function(e) {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.classList.remove('show');
+            }
+        });
+        
+        // Handle context menu actions
+        contextMenu.addEventListener('click', function(e) {
+            const action = e.target.closest('[data-action]')?.dataset.action;
+            if (!action || !contextMenuTarget) return;
+            
+            const messageId = contextMenuTarget.dataset.messageId;
+            const messageText = contextMenuTarget.querySelector('.message-text')?.textContent || '';
+            
+            switch(action) {
+                case 'reply':
+                    // Set reply mode
+                    console.log('Reply to message:', messageId);
+                    // TODO: Implement reply functionality
+                    alert('Reply feature coming soon!');
+                    break;
+                    
+                case 'forward':
+                    console.log('Forward message:', messageId);
+                    // TODO: Implement forward functionality
+                    alert('Forward feature coming soon!');
+                    break;
+                    
+                case 'copy':
+                    navigator.clipboard.writeText(messageText).then(() => {
+                        console.log('Message copied to clipboard');
+                        // Show toast notification
+                        const toast = document.createElement('div');
+                        toast.className = 'fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                        toast.textContent = 'Message copied!';
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 2000);
+                    });
+                    break;
+                    
+                case 'ask-ai':
+                    console.log('Ask AI about message:', messageText);
+                    // TODO: Implement AI query
+                    alert('Ask AI feature coming soon!');
+                    break;
+                    
+                case 'edit':
+                    console.log('Edit message:', messageId);
+                    // TODO: Implement edit functionality
+                    alert('Edit feature coming soon!');
+                    break;
+                    
+                case 'delete':
+                    if (confirm('Delete this message?')) {
+                        console.log('Delete message:', messageId);
+                        // TODO: Implement delete functionality
+                        alert('Delete feature coming soon!');
+                    }
+                    break;
+            }
+            
+            contextMenu.classList.remove('show');
         });
     </script>
     
@@ -1246,218 +839,5 @@
             <span>Delete</span>
         </div>
     </div>
-    
-    <!-- Background Application Script -->
-    <!-- Load Theme Colors -->
-    <script>
-        (function() {
-            const primary = localStorage.getItem('themeColorPrimary');
-            const secondary = localStorage.getItem('themeColorSecondary');
-            const tertiary = localStorage.getItem('themeColorTertiary');
-            const background = localStorage.getItem('themeColorBackground');
-            const surface = localStorage.getItem('themeColorSurface');
-            const highlight = localStorage.getItem('themeColorHighlight');
-            
-            if (primary) document.documentElement.style.setProperty('--color-primary', primary);
-            if (secondary) document.documentElement.style.setProperty('--color-secondary', secondary);
-            if (tertiary) document.documentElement.style.setProperty('--color-tertiary', tertiary);
-            if (background) {
-                document.documentElement.style.setProperty('--bg-page', background);
-                document.body.style.backgroundColor = background;
-                // Apply to main chat area
-                const mainArea = document.querySelector('main.flex-1');
-                if (mainArea) mainArea.style.backgroundColor = background;
-            }
-            if (surface) {
-                document.documentElement.style.setProperty('--bg-surface', surface);
-                // Apply to surface elements including sidebars
-                setTimeout(() => {
-                    const surfaceElements = document.querySelectorAll('.bg-surface-dark, aside.desktop-sidebar, aside#roomInfoPanel');
-                    surfaceElements.forEach(el => el.style.backgroundColor = surface);
-                }, 100);
-            }
-            if (highlight) {
-                document.documentElement.style.setProperty('--surface-hover', highlight);
-                document.documentElement.style.setProperty('--bg-surface-lighter', highlight);
-            }
-        })();
-    </script>
-    
-    <!-- Load Background Image -->
-    <script>
-        // Load transparency mode from localStorage
-        (function() {
-            const isTransparent = localStorage.getItem('transparencyMode') === 'true';
-            if (isTransparent) {
-                document.body.classList.add('transparency-mode');
-            }
-        })();
-        
-        (function() {
-            const chatBackground = localStorage.getItem('chatBackground') || 'none';
-            const bgOpacity = localStorage.getItem('bgOpacity') || '10';
-            const bgBlur = localStorage.getItem('bgBlur') || '4';
-            
-            if (chatBackground === 'none') {
-                return; // No background
-            }
-            
-            const mainChatArea = document.querySelector('main.flex-1');
-            if (!mainChatArea) return;
-            
-            // Create background element
-            const bgElement = document.createElement('div');
-            bgElement.id = 'chatBackground';
-            bgElement.style.cssText = `
-                position: absolute;
-                inset: 0;
-                z-index: 0;
-                pointer-events: none;
-                opacity: ${bgOpacity / 100};
-                filter: blur(${bgBlur}px);
-            `;
-            
-            // Map background types to image files
-            const backgroundImages = {
-                'bg1': '/backgrounds/1769528516.png',
-                'bg2': '/backgrounds/1769528550.png',
-                'bg3': '/backgrounds/1769528632.png',
-                'bg4': '/backgrounds/1769528667.png',
-                'bg5': '/backgrounds/1769528899.png',
-                'bg6': '/backgrounds/1769529072.png'
-            };
-            
-            // Apply background based on type
-            if (backgroundImages[chatBackground]) {
-                // Use actual background image
-                bgElement.style.cssText += `
-                    background-image: url('${backgroundImages[chatBackground]}');
-                    background-size: cover;
-                    background-position: center;
-                    background-repeat: no-repeat;
-                `;
-            } else if (chatBackground === 'custom') {
-                // Use custom uploaded image from Supabase
-                const customImageUrl = localStorage.getItem('customBackgroundUrl');
-                if (customImageUrl) {
-                    bgElement.style.cssText += `
-                        background-image: url('${customImageUrl}');
-                        background-size: cover;
-                        background-position: center;
-                        background-repeat: no-repeat;
-                    `;
-                }
-            }
-            
-            // Insert background as first child of main chat area
-            mainChatArea.insertBefore(bgElement, mainChatArea.firstChild);
-            
-            // Ensure existing abstract background is removed or adjusted
-            const existingAbstract = mainChatArea.querySelector('.absolute.inset-0.z-0');
-            if (existingAbstract) {
-                existingAbstract.style.display = 'none';
-            }
-        })();
-    </script>
-    
-    <!-- Room Modal UI -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const modal = document.getElementById('createJoinRoomModal');
-            const closeBtn = document.getElementById('closeCreateJoinModal');
-            const createRoomTab = document.getElementById('createRoomTab');
-            const joinRoomTab = document.getElementById('joinRoomTab');
-            const createRoomContent = document.getElementById('createRoomContent');
-            const joinRoomContent = document.getElementById('joinRoomContent');
-            const tempRoomBtn = document.getElementById('tempRoomBtn');
-            const foreverRoomBtn = document.getElementById('foreverRoomBtn');
-            const createRoomBtn = document.getElementById('createRoomBtn');
-            const joinRoomBtn = document.getElementById('joinRoomBtn');
-            const roomCodeInput = document.getElementById('roomCodeInput');
-            
-            let selectedRoomType = 'temp'; // default
-            
-            // Close button
-            closeBtn?.addEventListener('click', () => {
-                modal?.classList.add('hidden');
-                modal?.classList.remove('flex');
-            });
-            
-            // Click outside to close
-            modal?.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                }
-            });
-            
-            // Tab switching
-            createRoomTab?.addEventListener('click', () => {
-                createRoomTab.classList.add('bg-primary', 'text-white');
-                createRoomTab.classList.remove('text-slate-400');
-                joinRoomTab.classList.remove('bg-primary', 'text-white');
-                joinRoomTab.classList.add('text-slate-400');
-                createRoomContent.classList.remove('hidden');
-                joinRoomContent.classList.add('hidden');
-            });
-            
-            joinRoomTab?.addEventListener('click', () => {
-                joinRoomTab.classList.add('bg-primary', 'text-white');
-                joinRoomTab.classList.remove('text-slate-400');
-                createRoomTab.classList.remove('bg-primary', 'text-white');
-                createRoomTab.classList.add('text-slate-400');
-                joinRoomContent.classList.remove('hidden');
-                createRoomContent.classList.add('hidden');
-            });
-            
-            // Room type selection
-            tempRoomBtn?.addEventListener('click', () => {
-                selectedRoomType = 'temp';
-                tempRoomBtn.classList.add('border-primary', 'bg-primary/10', 'text-white');
-                tempRoomBtn.classList.remove('border-slate-700', 'bg-surface-lighter', 'text-slate-400');
-                foreverRoomBtn.classList.remove('border-primary', 'bg-primary/10', 'text-white');
-                foreverRoomBtn.classList.add('border-slate-700', 'bg-surface-lighter', 'text-slate-400');
-            });
-            
-            foreverRoomBtn?.addEventListener('click', () => {
-                selectedRoomType = 'forever';
-                foreverRoomBtn.classList.add('border-primary', 'bg-primary/10', 'text-white');
-                foreverRoomBtn.classList.remove('border-slate-700', 'bg-surface-lighter', 'text-slate-400');
-                tempRoomBtn.classList.remove('border-primary', 'bg-primary/10', 'text-white');
-                tempRoomBtn.classList.add('border-slate-700', 'bg-surface-lighter', 'text-slate-400');
-            });
-            
-            // Create room button
-            createRoomBtn?.addEventListener('click', () => {
-                if (window.app && window.app.handleCreateNewRoomWithOptions) {
-                    window.app.handleCreateNewRoomWithOptions();
-                    modal?.classList.add('hidden');
-                    modal?.classList.remove('flex');
-                }
-            });
-            
-            // Join room button
-            joinRoomBtn?.addEventListener('click', () => {
-                const roomCode = roomCodeInput?.value.trim();
-                if (roomCode && window.socketManager) {
-                    const nickname = window.state?.get('user.nickname');
-                    if (nickname) {
-                        window.socketManager.joinRoom(roomCode, nickname);
-                        modal?.classList.add('hidden');
-                        modal?.classList.remove('flex');
-                        roomCodeInput.value = '';
-                    } else {
-                        alert('Please login first');
-                    }
-                } else {
-                    alert('Please enter a room code');
-                }
-            });
-            
-            // Store selected type for app.js to access
-            window.getSelectedRoomType = () => selectedRoomType;
-        });
-    </script>
 </body>
 </html>
-
