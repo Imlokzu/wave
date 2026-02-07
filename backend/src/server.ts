@@ -204,6 +204,8 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const isPassenger = process.env.PASSENGER_APP_ENV === 'true' || typeof (global as any).PhusionPassenger !== 'undefined';
 
 // Check if running under Passenger (production only)
+let cleanupInterval: NodeJS.Timeout | null = null;
+
 if (isPassenger && !isDevelopment) {
   console.log('🚀 WaveChat Server starting in Passenger mode');
   console.log('🔌 Passenger will provide port binding');
@@ -217,7 +219,7 @@ if (isPassenger && !isDevelopment) {
     console.log('✅ Server ready for Passenger');
     
     // Schedule cleanup of expired rooms every 5 minutes
-    setInterval(() => {
+    cleanupInterval = setInterval(() => {
       roomManager.cleanupExpiredRooms().catch(console.error);
     }, 5 * 60 * 1000);
   });
@@ -232,29 +234,46 @@ if (isPassenger && !isDevelopment) {
     console.log('📝 Frontend should use: http://localhost:' + PORT);
     
     // Schedule cleanup of expired rooms every 5 minutes
-    setInterval(() => {
+    cleanupInterval = setInterval(() => {
       roomManager.cleanupExpiredRooms().catch(console.error);
     }, 5 * 60 * 1000);
   });
 }
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully...');
-  messageManager.cleanup();
-  httpServer.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
-});
+let isShuttingDown = false;
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully...');
+function shutdown(signal: string) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  console.log(`${signal} received, shutting down gracefully...`);
+
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
+
   messageManager.cleanup();
+
+  try {
+    io.close();
+  } catch (e) {
+    console.warn('Socket.IO close error:', e);
+  }
+
+  const forceTimeout = setTimeout(() => {
+    console.warn('Forcing shutdown after 5s...');
+    process.exit(1);
+  }, 5000);
+
   httpServer.close(() => {
+    clearTimeout(forceTimeout);
     console.log('Server closed');
     process.exit(0);
   });
-});
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 export { app, httpServer, io, storage, roomManager, messageManager, imageUploadService, fileUploadService, userManager, dmManager };

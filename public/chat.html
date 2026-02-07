@@ -350,7 +350,9 @@
                     <button id="backToRoomBtn" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </button>
-                    <img src="/nobackweave.png" alt="WaveChat" class="h-8 w-8 object-contain" />
+                    <div class="h-8 w-8 rounded-full bg-surface-lighter overflow-hidden flex items-center justify-center">
+                        <img id="roomAvatar" src="/wavechat.png" alt="Chat avatar" class="h-full w-full object-cover" />
+                    </div>
                     <div class="flex flex-col">
                         <h1 class="text-lg font-bold text-white flex items-center gap-2" id="roomName" data-i18n="chat.selectChat">
                             Select a chat
@@ -856,7 +858,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             let contextMenuTarget = null;
             const contextMenu = document.getElementById('messageContextMenu');
+            const messagesContainer = document.getElementById('messages');
+            const contextMenuRoot = messagesContainer || document;
             const menuPadding = 8;
+            let lastMenuAction = { action: null, messageId: null, time: 0 };
+
+            // Block browser menu if our menu is open
+            document.addEventListener('contextmenu', function(e) {
+                if (contextMenu?.classList.contains('show')) {
+                    e.preventDefault();
+                }
+            }, true);
             
             if (!contextMenu) {
                 console.error('[Context Menu] Menu element not found!');
@@ -877,8 +889,9 @@
                 const editBtn = contextMenu.querySelector('[data-action="edit"]');
                 const deleteBtn = contextMenu.querySelector('[data-action="delete"]');
                 const downloadBtn = contextMenu.querySelector('[data-action="download"]');
+                const isTempMessage = /^msg_|^uploading_/i.test(messageEl.dataset.messageId || '');
 
-                if (senderId === userId) {
+                if (senderId === userId && !isTempMessage) {
                     if (editBtn) editBtn.style.display = 'flex';
                     if (deleteBtn) deleteBtn.style.display = 'flex';
                 } else {
@@ -913,33 +926,41 @@
                 contextMenu.style.top = top + 'px';
             }
 
-            // Show context menu on right-click
-            document.addEventListener('contextmenu', function(e) {
+            // Disable browser context menu and only allow on message bubbles
+            contextMenuRoot.addEventListener('contextmenu', function(e) {
                 console.log('[Context Menu] Right-click detected on:', e.target);
 
-                const messageEl = e.target.closest('[data-message-id]');
+                const bubbleEl = e.target.closest('[data-message-bubble]');
+                const messageEl = bubbleEl ? bubbleEl.closest('[data-message-id]') : null;
                 console.log('[Context Menu] Message element found:', !!messageEl);
 
+                e.preventDefault();
+
                 if (messageEl) {
-                    e.preventDefault();
                     openContextMenuAt(e.clientX, e.clientY, messageEl);
+                } else {
+                    contextMenu.classList.remove('show');
                 }
             }, true);
 
             // Fallback: open on right mouse button down
-            document.addEventListener('mousedown', function(e) {
+            contextMenuRoot.addEventListener('mousedown', function(e) {
                 if (e.button !== 2) return;
-                const messageEl = e.target.closest('[data-message-id]');
+                const bubbleEl = e.target.closest('[data-message-bubble]');
+                const messageEl = bubbleEl ? bubbleEl.closest('[data-message-id]') : null;
+                e.preventDefault();
                 if (messageEl) {
-                    e.preventDefault();
                     openContextMenuAt(e.clientX, e.clientY, messageEl);
+                } else {
+                    contextMenu.classList.remove('show');
                 }
             }, true);
             
             // Long press for mobile
             let longPressTimer;
-            document.addEventListener('touchstart', function(e) {
-                const messageEl = e.target.closest('[data-message-id]');
+            contextMenuRoot.addEventListener('touchstart', function(e) {
+                const bubbleEl = e.target.closest('[data-message-bubble]');
+                const messageEl = bubbleEl ? bubbleEl.closest('[data-message-id]') : null;
                 if (messageEl) {
                     longPressTimer = setTimeout(function() {
                         contextMenuTarget = messageEl;
@@ -989,12 +1010,29 @@
                 
                 console.log('[Context Menu] Action:', action, 'MessageId:', messageId, 'Text:', messageText);
                 
+                const isTempMessage = /^msg_|^uploading_/i.test(messageId || '');
+                const now = Date.now();
+                if (lastMenuAction.action === action && lastMenuAction.messageId === messageId && (now - lastMenuAction.time) < 600) {
+                    return;
+                }
+                lastMenuAction = { action, messageId, time: now };
+
                 switch(action) {
                     case 'reply':
                         console.log('[Context Menu] Reply to message:', messageId);
                         // Set reply mode in the input
                         const messageInput = document.getElementById('messageInput');
-                        if (messageInput && messageText) {
+                        if (messageInput) {
+                            const downloadType = contextMenuTarget?.dataset?.downloadType;
+                            const downloadName = contextMenuTarget?.dataset?.downloadName;
+                            let replyPreviewText = messageText;
+
+                            if (downloadType === 'image') {
+                                replyPreviewText = 'Image';
+                            } else if (downloadType === 'file') {
+                                replyPreviewText = downloadName || 'File';
+                            }
+
                             // Show reply indicator
                             const replyIndicator = document.createElement('div');
                             replyIndicator.id = 'replyIndicator';
@@ -1004,7 +1042,7 @@
                                     <span class="material-symbols-outlined text-primary text-[18px]">reply</span>
                                     <div>
                                         <p class="text-xs text-primary font-medium">Replying to message</p>
-                                        <p class="text-xs text-slate-400 truncate max-w-[300px]">${messageText}</p>
+                                        <p class="text-xs text-slate-400 truncate max-w-[300px]">${replyPreviewText || ''}</p>
                                     </div>
                                 </div>
                                 <button onclick="document.getElementById('replyIndicator').remove()" class="text-slate-400 hover:text-white">
@@ -1016,6 +1054,9 @@
                             const inputContainer = messageInput.parentElement;
                             const existingIndicator = document.getElementById('replyIndicator');
                             if (existingIndicator) existingIndicator.remove();
+                            replyIndicator.dataset.replyToId = messageId;
+                            replyIndicator.dataset.replyToName = contextMenuTarget?.dataset?.senderName || 'User';
+                            replyIndicator.dataset.replyToText = replyPreviewText || '';
                             inputContainer.insertBefore(replyIndicator, inputContainer.firstChild);
                             
                             // Focus input
@@ -1108,15 +1149,22 @@
                                 }
                             }, 100);
                             
-                            // Call AI API
-                            fetch('/api/ai-chat/simple', {
+                            // Call AI API (same backend as AI chat)
+                            fetch('/api/ai-chat', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'
                                 },
                                 body: JSON.stringify({
-                                    message: `Analyze this message: "${messageText.trim()}"`,
-                                    enableSearch: false
+                                    messages: [
+                                        {
+                                            role: 'user',
+                                            content: messageText.trim()
+                                        }
+                                    ],
+                                    enableSearch: false,
+                                    thinking: false,
+                                    model: 'auto'
                                 })
                             })
                             .then(async response => {
@@ -1152,7 +1200,7 @@
                                         id: `ai_response_${Date.now()}`,
                                         type: 'ai',
                                         content: aiResponse,
-                                        senderNickname: 'AI Assistant',
+                                        senderNickname: 'Wave AI',
                                         timestamp: new Date(),
                                         isAI: true
                                     });
@@ -1198,21 +1246,21 @@
                     case 'edit':
                         console.log('[Context Menu] Edit message:', messageId);
                         // Check if user owns the message
-                        if (senderId === userId) {
+                        if (senderId === userId && !isTempMessage) {
                             // Dispatch edit event
                             const editEvent = new CustomEvent('message:edit', {
                                 detail: { messageId, content: messageText }
                             });
                             document.dispatchEvent(editEvent);
                         } else {
-                            alert('You can only edit your own messages');
+                            alert(isTempMessage ? 'Message is still sending. Try again in a moment.' : 'You can only edit your own messages');
                         }
                         break;
                         
                     case 'delete':
                         console.log('[Context Menu] Delete message:', messageId);
                         // Check if user owns the message
-                        if (senderId === userId) {
+                        if (senderId === userId && !isTempMessage) {
                             // Confirm deletion
                             if (confirm('Delete this message?')) {
                                 // Dispatch delete event
@@ -1222,12 +1270,141 @@
                                 document.dispatchEvent(deleteEvent);
                             }
                         } else {
-                            alert('You can only delete your own messages');
+                            alert(isTempMessage ? 'Message is still sending. Try again in a moment.' : 'You can only delete your own messages');
                         }
                         break;
                 }
                 
                 contextMenu.classList.remove('show');
+            });
+        });
+    </script>
+
+    <!-- Member Context Menu -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const memberMenu = document.getElementById('memberContextMenu');
+            const roomMembersList = document.getElementById('roomMembersList');
+            if (!memberMenu || !roomMembersList) return;
+
+            let memberTarget = null;
+            const menuPadding = 8;
+
+            const showToast = (text) => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-surface-dark text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                toast.textContent = text;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            };
+
+            const updateList = (key, value) => {
+                const list = JSON.parse(localStorage.getItem(key) || '[]');
+                if (!list.includes(value)) {
+                    list.push(value);
+                    localStorage.setItem(key, JSON.stringify(list));
+                }
+            };
+
+            const openMemberMenu = (x, y, targetEl) => {
+                const memberName = targetEl?.dataset?.memberName;
+                if (!memberName) return;
+
+                const myNickname = localStorage.getItem('nickname');
+                if (myNickname && memberName === myNickname) return;
+
+                memberTarget = targetEl;
+                memberMenu.classList.add('show');
+
+                const menuRect = memberMenu.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                let left = x;
+                let top = y;
+
+                if (left + menuRect.width + menuPadding > viewportWidth) {
+                    left = Math.max(menuPadding, viewportWidth - menuRect.width - menuPadding);
+                }
+
+                if (top + menuRect.height + menuPadding > viewportHeight) {
+                    top = Math.max(menuPadding, viewportHeight - menuRect.height - menuPadding);
+                }
+
+                memberMenu.style.left = left + 'px';
+                memberMenu.style.top = top + 'px';
+            };
+
+            roomMembersList.addEventListener('contextmenu', function(e) {
+                const memberEl = e.target.closest('[data-member-name]');
+                if (memberEl) {
+                    e.preventDefault();
+                    openMemberMenu(e.clientX, e.clientY, memberEl);
+                }
+            }, true);
+
+            roomMembersList.addEventListener('mousedown', function(e) {
+                if (e.button !== 2) return;
+                const memberEl = e.target.closest('[data-member-name]');
+                if (memberEl) {
+                    e.preventDefault();
+                    openMemberMenu(e.clientX, e.clientY, memberEl);
+                }
+            }, true);
+
+            let longPressTimer;
+            roomMembersList.addEventListener('touchstart', function(e) {
+                const memberEl = e.target.closest('[data-member-name]');
+                if (memberEl) {
+                    longPressTimer = setTimeout(function() {
+                        const touch = e.touches[0];
+                        openMemberMenu(touch.clientX, touch.clientY, memberEl);
+                        if (navigator.vibrate) navigator.vibrate(40);
+                    }, 500);
+                }
+            });
+
+            roomMembersList.addEventListener('touchend', function() {
+                clearTimeout(longPressTimer);
+            });
+
+            roomMembersList.addEventListener('touchmove', function() {
+                clearTimeout(longPressTimer);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!memberMenu.contains(e.target)) {
+                    memberMenu.classList.remove('show');
+                }
+            });
+
+            memberMenu.addEventListener('click', function(e) {
+                const action = e.target.closest('[data-action]')?.dataset.action;
+                if (!action || !memberTarget) return;
+
+                const memberName = memberTarget.dataset.memberName;
+                if (!memberName) return;
+
+                switch (action) {
+                    case 'member-mute':
+                        updateList('mutedUsers', memberName);
+                        showToast(`${memberName} muted`);
+                        break;
+                    case 'member-block':
+                        updateList('blockedUsers', memberName);
+                        showToast(`${memberName} blocked`);
+                        break;
+                    case 'member-add-friend':
+                        updateList('friends', memberName);
+                        showToast(`${memberName} added as friend`);
+                        break;
+                    case 'member-delete':
+                        memberTarget.remove();
+                        showToast(`${memberName} removed`);
+                        break;
+                }
+
+                memberMenu.classList.remove('show');
             });
         });
     </script>
@@ -1378,6 +1555,27 @@
             <span>Edit</span>
         </div>
         <div class="context-menu-item danger" data-action="delete">
+            <span class="material-symbols-outlined text-[20px]">delete</span>
+            <span>Delete</span>
+        </div>
+    </div>
+
+    <!-- Member Context Menu -->
+    <div id="memberContextMenu" class="context-menu">
+        <div class="context-menu-item" data-action="member-mute">
+            <span class="material-symbols-outlined text-[20px]">volume_off</span>
+            <span>Mute</span>
+        </div>
+        <div class="context-menu-item" data-action="member-block">
+            <span class="material-symbols-outlined text-[20px]">block</span>
+            <span>Block</span>
+        </div>
+        <div class="context-menu-item" data-action="member-add-friend">
+            <span class="material-symbols-outlined text-[20px]">person_add</span>
+            <span>Add Friend</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item danger" data-action="member-delete">
             <span class="material-symbols-outlined text-[20px]">delete</span>
             <span>Delete</span>
         </div>

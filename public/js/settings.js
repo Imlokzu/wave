@@ -11,6 +11,8 @@ async function getSubscriptionStatus() {
     console.warn('[Settings] No auth token, using mock data');
     return {
       isPro: false,
+      subscriptionDaysRemaining: null,
+      subscriptionEndsAt: null,
       availableModels: [],
       allModels: [
         { id: 'auto', name: 'Auto Select', tier: 'free', useCase: 'Best model for each task', locked: false },
@@ -114,29 +116,33 @@ function loadUserInfo() {
 // Load subscription status
 async function loadSubscriptionStatus() {
   try {
-    const { isPro } = await getSubscriptionStatus();
+    const status = await getSubscriptionStatus();
+    const { isPro } = status;
 
-    const proTitle = document.getElementById('proTitle');
-    const proDescription = document.getElementById('proDescription');
-    const proBadge = document.getElementById('proBadge');
-    const upgradeProBtn = document.getElementById('upgradeProBtn');
-    const manageProBtn = document.getElementById('manageProBtn');
+    const requestProBtn = document.getElementById('requestProBtn');
+    const proDaysLeft = document.getElementById('proDaysLeft');
+    const proRenewDate = document.getElementById('proRenewDate');
     const t = window.i18n?.t ? window.i18n.t.bind(window.i18n) : (key) => key;
 
     if (isPro) {
-      // Show Pro status
-      if (proTitle) proTitle.textContent = t('pro.activeTitle');
-      if (proDescription) proDescription.textContent = t('pro.activeDescription');
-      if (proBadge) proBadge.classList.remove('hidden');
-      if (upgradeProBtn) upgradeProBtn.classList.add('hidden');
-      if (manageProBtn) manageProBtn.classList.remove('hidden');
+      if (requestProBtn) requestProBtn.classList.add('hidden');
+      if (proDaysLeft) {
+        const days = status.subscriptionDaysRemaining;
+        proDaysLeft.textContent = Number.isFinite(days) ? String(days) : '—';
+      }
+      if (proRenewDate) {
+        const endsAt = status.subscriptionEndsAt;
+        if (endsAt) {
+          const date = new Date(endsAt);
+          proRenewDate.textContent = `${t('pro.renewDateLabel')}: ${date.toLocaleDateString()}`;
+        } else {
+          proRenewDate.textContent = t('pro.renewDate');
+        }
+      }
     } else {
-      // Show Free status
-      if (proTitle) proTitle.textContent = t('pro.title');
-      if (proDescription) proDescription.textContent = t('pro.upgradeDescription');
-      if (proBadge) proBadge.classList.add('hidden');
-      if (upgradeProBtn) upgradeProBtn.classList.remove('hidden');
-      if (manageProBtn) manageProBtn.classList.add('hidden');
+      if (requestProBtn) requestProBtn.classList.remove('hidden');
+      if (proDaysLeft) proDaysLeft.textContent = t('pro.daysLeftNone');
+      if (proRenewDate) proRenewDate.textContent = t('pro.renewDate');
     }
   } catch (error) {
     console.error('Failed to load subscription status:', error);

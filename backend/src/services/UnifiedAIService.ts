@@ -94,7 +94,7 @@ export class UnifiedAIService {
       console.log(`[UnifiedAI] Search enabled: ${enableSearch}, Thinking enabled: ${thinking}`);
 
       // Ensure system message exists
-      this.ensureSystemMessage(messages, enableSearch);
+      this.ensureSystemMessage(messages, enableSearch, model);
 
       // Call API with streaming
       await this.callOpenRouterAPIStream(model, messages, enableSearch, thinking, onChunk, temperature, maxTokens);
@@ -253,7 +253,7 @@ export class UnifiedAIService {
       console.log(`[UnifiedAI] Search enabled: ${enableSearch}, Thinking enabled: ${thinking}`);
 
       // Ensure system message exists
-      this.ensureSystemMessage(messages, enableSearch);
+      this.ensureSystemMessage(messages, enableSearch, model);
 
       // Call API
       const responseMessage = await this.callOpenRouterAPI(model, messages, enableSearch, thinking, temperature, maxTokens);
@@ -287,10 +287,11 @@ export class UnifiedAIService {
   /**
    * Ensure system message exists at the beginning
    */
-  private ensureSystemMessage(messages: AIMessage[], enableSearch: boolean): void {
-    if (messages.length === 0 || messages[0].role !== 'system') {
-      
-      const searchInstructions = `⚠️⚠️⚠️ STOP AND READ THIS FIRST ⚠️⚠️⚠️
+  private ensureSystemMessage(messages: AIMessage[], enableSearch: boolean, model?: AIModel): void {
+    const modelId = model?.openRouterModel || '';
+    const disallowSystem = /google\/gemma/i.test(modelId);
+
+    const searchInstructions = `⚠️⚠️⚠️ STOP AND READ THIS FIRST ⚠️⚠️⚠️
 
 WHEN USER ASKS ABOUT PRICES, SPECS, OR CURRENT INFO:
 
@@ -389,8 +390,6 @@ Additional: Python Telegram scraper, Telethon
 - Report bugs at /report-bug.html
 - Ask you (the AI) for assistance`;
 
-      const basePrompt = enableSearch ? searchInstructions + '\n\n' + appKnowledge : appKnowledge;
-      
       const thinkingRules = `
 
 CRITICAL INSTRUCTION: NEVER include your internal reasoning, thinking process, or analysis in your response to the user. Do NOT write things like:
@@ -421,9 +420,32 @@ GOOD Example:
 
 Respond naturally and directly. No thinking process in the main response.`;
 
+    const basePrompt = enableSearch ? searchInstructions + '\n\n' + appKnowledge : appKnowledge;
+    const prompt = basePrompt + thinkingRules;
+
+    if (disallowSystem) {
+      if (messages.length === 0) {
+        messages.push({ role: 'user', content: prompt });
+        return;
+      }
+
+      if (messages[0].role === 'system') {
+        messages.shift();
+      }
+
+      if (messages[0]?.role === 'user') {
+        messages[0].content = `${prompt}\n\n${messages[0].content || ''}`.trim();
+        return;
+      }
+
+      messages.unshift({ role: 'user', content: prompt });
+      return;
+    }
+
+    if (messages.length === 0 || messages[0].role !== 'system') {
       messages.unshift({
         role: 'system',
-        content: basePrompt + thinkingRules
+        content: prompt
       });
     }
   }
@@ -478,7 +500,13 @@ Respond naturally and directly. No thinking process in the main response.`;
       }
     );
 
-    const message = response.data.choices[0].message;
+    const choices = response?.data?.choices;
+    if (!Array.isArray(choices) || choices.length === 0 || !choices[0]?.message) {
+      const raw = response?.data ? JSON.stringify(response.data).slice(0, 1000) : 'No response data';
+      throw new Error(`AI chat failed: Invalid response from provider. ${raw}`);
+    }
+
+    const message = choices[0].message;
 
     // If reasoning is included, prepend it to content wrapped in a tag for the frontend to handle
     if (message.reasoning) {
@@ -486,7 +514,38 @@ Respond naturally and directly. No thinking process in the main response.`;
       message.content = `<thinking>\n${message.reasoning}\n</thinking>\n\n${message.content || ''}`;
     }
 
+    message.content = this.sanitizeResponse(message.content || '');
+
     return message;
+  }
+
+  /**
+   * Remove common reasoning/meta-planning leakage from model outputs.
+   */
+  private sanitizeResponse(content: string): string {
+    if (!content) return content;
+
+    // Truncate anything after a planning marker
+    const planningIndex = content.indexOf('Response Structure:' );
+    if (planningIndex !== -1) {
+      content = content.slice(0, planningIndex).trim();
+    }
+
+    // Remove paragraphs that look like internal reasoning
+    const leakPatterns = [
+      /this is unusual and could indicate/i,
+      /given the context/i,
+      /i'll acknowledge/i,
+      /i'll respond/i,
+      /i'll use a friendly tone/i,
+      /i'll avoid sounding/i,
+      /response structure/i
+    ];
+
+    const paragraphs = content.split(/\n\s*\n/);
+    const filtered = paragraphs.filter(p => !leakPatterns.some(rx => rx.test(p)));
+
+    return filtered.join('\n\n').trim();
   }
 
   /**

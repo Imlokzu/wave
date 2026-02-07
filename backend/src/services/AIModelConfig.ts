@@ -164,7 +164,8 @@ export const AI_MODELS: AIModel[] = [
     tier: 'free',
     useCase: 'Quick responses',
     reasoning: 'Fast responses for simple questions',
-    openRouterModel: 'qwen/qwen3-4b:free'
+    openRouterModel: 'qwen/qwen3-4b:free',
+    fallbackId: 'wave-flash-1'
   },
   {
     id: 'wave-flash-3',
@@ -172,7 +173,8 @@ export const AI_MODELS: AIModel[] = [
     tier: 'free',
     useCase: 'Lightweight research',
     reasoning: 'Fast & accurate for easy Q&A',
-    openRouterModel: 'google/gemma-3n-e4b-it:free'
+    openRouterModel: 'google/gemma-3n-e4b-it:free',
+    fallbackId: 'wave-flash-2'
   },
   {
     id: 'wave-flash-4',
@@ -180,7 +182,8 @@ export const AI_MODELS: AIModel[] = [
     tier: 'free',
     useCase: 'Efficient dialogue',
     reasoning: 'Balanced speed and quality',
-    openRouterModel: 'google/gemma-3-12b-it:free'
+    openRouterModel: 'google/gemma-3-12b-it:free',
+    fallbackId: 'wave-flash-2'
   },
   
   // Wave - Balanced / Default models
@@ -206,7 +209,8 @@ export const AI_MODELS: AIModel[] = [
     tier: 'free',
     useCase: 'Balanced chat & research',
     reasoning: 'Strong reasoning for general tasks',
-    openRouterModel: 'google/gemma-3-27b-it:free'
+    openRouterModel: 'google/gemma-3-27b-it:free',
+    fallbackId: 'wave-2'
   },
   {
     id: 'wave-4',

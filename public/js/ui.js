@@ -374,14 +374,15 @@ class UIManager {
       const statusColor = isAway ? 'bg-yellow-500' : 'bg-green-500';
       const statusText = isAway ? 'Away' : 'Online';
       
+      const memberName = member.nickname || member.username || 'User';
       return `
-        <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-lighter transition-colors">
+        <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-lighter transition-colors" data-member-name="${memberName}">
           <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 relative">
             <span class="material-symbols-outlined text-primary text-[16px]">person</span>
             <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 ${statusColor} rounded-full border-2 border-surface-dark"></div>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="text-sm font-medium text-white truncate">${member.nickname || member.username || 'User'}</div>
+            <div class="text-sm font-medium text-white truncate">${memberName}</div>
             <div class="text-xs ${isAway ? 'text-yellow-400' : 'text-green-400'} truncate">${statusText}</div>
           </div>
         </div>
@@ -396,7 +397,7 @@ class UIManager {
    */
   renderMessage(message, currentUserId) {
     // Don't show deleted messages
-    if (message.isDeleted) {
+    if (message.isDeleted || this.isDeletedContent(message.content || '')) {
       return;
     }
 
@@ -433,6 +434,9 @@ class UIManager {
     messageEl.dataset.messageId = message.id;
     if (message.senderId) {
       messageEl.dataset.senderId = message.senderId;
+    }
+    if (message.senderNickname) {
+      messageEl.dataset.senderName = message.senderNickname;
     }
 
     // System messages
@@ -481,6 +485,7 @@ class UIManager {
 
     const bubbleEl = document.createElement('div');
     bubbleEl.className = 'bg-gradient-to-r from-primary to-accent-cyan p-4 rounded-2xl rounded-tr-none shadow-md text-white text-sm leading-relaxed';
+    bubbleEl.dataset.messageBubble = 'true';
     
     // Handle different message types
     if (message.type === 'image' && message.imageUrl) {
@@ -749,8 +754,17 @@ class UIManager {
       // UI Component message (translation, code, etc.)
       bubbleEl.appendChild(this.createUIComponent(message.uiComponent));
     } else {
-      // Text message - format markdown
-      bubbleEl.innerHTML = this.formatMarkdown(message.content);
+      // Text message - format markdown (with reply preview)
+      const { content: cleanContent, reply } = this.parseReplyContent(message.content || '');
+      bubbleEl.innerHTML = '';
+      if (reply) {
+        bubbleEl.appendChild(this.createReplyPreview(reply));
+      }
+      if (cleanContent) {
+        const textEl = document.createElement('div');
+        textEl.innerHTML = this.formatMarkdown(cleanContent);
+        bubbleEl.appendChild(textEl);
+      }
     }
 
     // Action buttons
@@ -841,8 +855,8 @@ class UIManager {
     // Check if it's an AI message
     if (message.type === 'ai' || message.isAI) {
       // AI avatar with special styling
-      avatar.className = 'w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent-cyan shrink-0 mt-1 flex items-center justify-center';
-      avatar.innerHTML = '<span class="material-symbols-outlined text-white text-[20px]">psychology</span>';
+      avatar.className = 'w-10 h-10 rounded-full bg-surface-lighter shrink-0 mt-1 flex items-center justify-center overflow-hidden ring-2 ring-primary/30';
+      avatar.innerHTML = '<img src="/wavechat.png" alt="Wave AI" class="w-full h-full object-cover" />';
     } else if (message.senderAvatar || message.avatar) {
       // Check if user has avatar
       const avatarImg = document.createElement('img');
@@ -870,7 +884,7 @@ class UIManager {
     // Special styling for AI messages
     if (message.type === 'ai' || message.isAI) {
       nameSpan.className = 'text-sm font-bold bg-gradient-to-r from-primary to-accent-cyan bg-clip-text text-transparent';
-      nameSpan.textContent = message.senderNickname || 'AI Assistant';
+      nameSpan.textContent = message.senderNickname || 'Wave AI';
     } else {
       nameSpan.className = 'text-sm font-bold text-white';
       nameSpan.textContent = message.senderNickname || 'Unknown';
@@ -894,6 +908,7 @@ class UIManager {
     } else {
       bubbleEl.className = 'bg-surface-dark p-4 rounded-2xl rounded-tl-none shadow-sm text-slate-200 text-sm leading-relaxed border border-slate-800';
     }
+    bubbleEl.dataset.messageBubble = 'true';
     
     // Handle different message types
     if (message.type === 'image' && message.imageUrl) {
@@ -1163,8 +1178,17 @@ class UIManager {
       // UI Component message (translation, code, etc.)
       bubbleEl.appendChild(this.createUIComponent(message.uiComponent));
     } else {
-      // Text message - format markdown
-      bubbleEl.innerHTML = this.formatMarkdown(message.content);
+      // Text message - format markdown (with reply preview)
+      const { content: cleanContent, reply } = this.parseReplyContent(message.content || '');
+      bubbleEl.innerHTML = '';
+      if (reply) {
+        bubbleEl.appendChild(this.createReplyPreview(reply));
+      }
+      if (cleanContent) {
+        const textEl = document.createElement('div');
+        textEl.innerHTML = this.formatMarkdown(cleanContent);
+        bubbleEl.appendChild(textEl);
+      }
     }
 
     // Add action buttons for other users' messages too
@@ -1294,6 +1318,29 @@ class UIManager {
     if (messageEl) {
       messageEl.remove();
       // Re-render will be handled by the app controller
+    }
+  }
+
+  /**
+   * Replace message in place
+   */
+  replaceMessage(message, currentUserId) {
+    if (!message || !message.id) return;
+    if (message.isDeleted || this.isDeletedContent(message.content || '')) {
+      this.removeMessage(message.id);
+      return;
+    }
+    const existing = this.messageContainer?.querySelector(`[data-message-id="${message.id}"]`);
+    const currentNickname = state?.get('user.nickname');
+    const isOwn = message.senderId === currentUserId ||
+                  (currentNickname && message.senderNickname === currentNickname);
+    const newEl = this.createMessageElement(message, isOwn);
+    newEl.classList.add('message-enter');
+
+    if (existing && existing.parentElement) {
+      existing.parentElement.replaceChild(newEl, existing);
+    } else if (this.messageContainer) {
+      this.messageContainer.appendChild(newEl);
     }
   }
 
@@ -1736,6 +1783,63 @@ class UIManager {
     } catch (e) {
       return '';
     }
+  }
+
+  /**
+   * Detect deleted message placeholders
+   */
+  isDeletedContent(content) {
+    return /\[message deleted\]|\{message deleted\}|message deleted/i.test(content || '');
+  }
+
+  /**
+   * Parse reply metadata from message content
+   */
+  parseReplyContent(content) {
+    if (!content) return { content: '', reply: null };
+    const match = content.match(/^\[\[reply\|([^|]+)\|([^|]+)\|([^\]]*)\]\]\s*/);
+    if (!match) return { content, reply: null };
+
+    const replyId = match[1];
+    const replyName = decodeURIComponent(match[2] || '');
+    const replyText = decodeURIComponent(match[3] || '');
+    const cleanContent = content.slice(match[0].length);
+
+    return {
+      content: cleanContent,
+      reply: {
+        id: replyId,
+        name: replyName,
+        text: replyText
+      }
+    };
+  }
+
+  /**
+   * Create reply preview element
+   */
+  createReplyPreview(reply) {
+    const replyEl = document.createElement('div');
+    replyEl.className = 'reply-preview mb-2 px-3 py-2 rounded-lg border-l-4 border-primary/70 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors';
+    replyEl.dataset.replyToId = reply.id;
+
+    replyEl.innerHTML = `
+      <div class="text-[11px] text-primary font-semibold">Reply to ${this.escapeHtml(reply.name || 'User')}</div>
+      <div class="text-xs text-slate-300 truncate">${this.escapeHtml(reply.text || '')}</div>
+    `;
+
+    replyEl.addEventListener('click', () => {
+      const target = this.messageContainer?.querySelector(`[data-message-id="${reply.id}"]`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.classList.add('ring-2', 'ring-primary/60');
+        setTimeout(() => {
+          target.classList.remove('ring-2', 'ring-primary/60');
+        }, 1200);
+      }
+    });
+
+    return replyEl;
   }
 }
 

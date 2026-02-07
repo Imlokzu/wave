@@ -458,6 +458,9 @@ class App {
    * Setup UI event handlers
    */
   setupUIHandlers() {
+    if (this._uiHandlersBound) return;
+    this._uiHandlersBound = true;
+
     // Create/Join Room button (+ button near search)
     const createJoinBtn = document.getElementById('createJoinRoomBtn');
     if (createJoinBtn) {
@@ -491,6 +494,21 @@ class App {
     ui.onEditClick = (messageId, content) => this.handleEditMessage(messageId, content);
     ui.onDeleteClick = (messageId) => this.handleDeleteMessage(messageId);
     ui.onReportClick = (messageId, message) => this.handleReportMessage(messageId, message);
+
+    // Context menu events (from chat.html)
+    document.addEventListener('message:edit', (e) => {
+      const detail = e.detail || {};
+      if (detail.messageId) {
+        this.handleEditMessage(detail.messageId, detail.content || '');
+      }
+    });
+
+    document.addEventListener('message:delete', (e) => {
+      const detail = e.detail || {};
+      if (detail.messageId) {
+        this.handleDeleteMessage(detail.messageId);
+      }
+    });
 
     // Setup all other buttons after DOM is ready
     this.setupChatButtons();
@@ -2678,11 +2696,20 @@ class App {
         // Get existing message IDs to avoid duplicates
         const existingMessages = state.get('messages') || [];
         const existingIds = new Set(existingMessages.map(m => m.id));
+        const existingSignatures = new Set(
+          existingMessages.map(m => `${m.senderId || ''}|${m.content || ''}`)
+        );
         
         // Add only new messages to state
         data.messages.forEach(msg => {
           // Skip if message already exists
           if (existingIds.has(msg.id)) {
+            return;
+          }
+
+          // Skip if same sender+content already exists (dedupe cached optimistic messages)
+          const signature = `${msg.senderId || ''}|${msg.content || ''}`;
+          if (existingSignatures.has(signature)) {
             return;
           }
           
@@ -2841,6 +2868,12 @@ class App {
         ui.updateRoomName(room.name);
         ui.updateRoomsList([room]); // Show current room in sidebar
       }
+
+      // Update room avatar in header (placeholder for user/room avatar)
+      const roomAvatar = document.getElementById('roomAvatar');
+      if (roomAvatar) {
+        roomAvatar.src = room?.avatarUrl || '/wavechat.png';
+      }
     });
 
     // Subscribe to messages
@@ -2876,10 +2909,9 @@ class App {
         ui.renderMessage(msg, state.get('user.id'));
       });
 
-      // Re-render updated messages
+      // Re-render updated messages in place
       updatedMessages.forEach(msg => {
-        ui.removeMessage(msg.id);
-        ui.renderMessage(msg, state.get('user.id'));
+        ui.replaceMessage(msg, state.get('user.id'));
       });
 
       // Remove deleted messages
@@ -3106,27 +3138,132 @@ class App {
 
     const editingMessageId = state.get('ui.editingMessageId');
 
+    const replyIndicator = document.getElementById('replyIndicator');
+    const replyId = replyIndicator?.dataset?.replyToId;
+    const replyName = replyIndicator?.dataset?.replyToName || 'User';
+    const replyText = replyIndicator?.dataset?.replyToText || '';
+    const replyPrefix = replyId
+      ? `[[reply|${replyId}|${encodeURIComponent(replyName)}|${encodeURIComponent(replyText)}]] `
+      : '';
+
     if (editingMessageId) {
       // Edit existing message
       socketManager.editMessage(editingMessageId, content);
       this.handleCancelEdit();
     } else {
+      const trimmedContent = content.trim();
+      if (/^\/ai\b/i.test(trimmedContent)) {
+        const query = trimmedContent.replace(/^\/ai\b/i, '').trim();
+        if (!query) {
+          alert('Please add a question after /ai');
+          return;
+        }
+
+        // Add user message locally
+        state.addMessage({
+          id: `msg_${Date.now()}`,
+          senderId: state.get('user.id'),
+          senderNickname: state.get('user.nickname'),
+          content: trimmedContent,
+          timestamp: new Date(),
+          type: 'text'
+        });
+
+        ui.clearMessageInput();
+        await this.handleAICommand(query);
+        if (replyIndicator) replyIndicator.remove();
+        socketManager.stopTyping();
+        return;
+      }
+
       // Check if in DM (room with isDM flag)
       const currentRoom = state.get('room');
       
+      const finalContent = replyPrefix + content;
+
       if (currentRoom && currentRoom.isDM) {
         // Send DM via socket
-        await this.sendDirectMessage(content);
+        await this.sendDirectMessage(finalContent);
       } else {
         // Send room message via socket
-        socketManager.sendMessage(content);
+        socketManager.sendMessage(finalContent);
       }
       
       ui.clearMessageInput();
+      if (replyIndicator) replyIndicator.remove();
     }
 
     // Stop typing indicator
     socketManager.stopTyping();
+  }
+
+  /**
+   * Handle /ai command in chat
+   */
+  async handleAICommand(query) {
+    const loadingMessageId = `ai_loading_${Date.now()}`;
+
+    state.addMessage({
+      id: loadingMessageId,
+      type: 'system',
+      content: '🤖 AI is thinking...',
+      timestamp: new Date()
+    });
+
+    try {
+      const response = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: query
+            }
+          ],
+          enableSearch: false,
+          thinking: false,
+          model: 'auto'
+        })
+      });
+
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData?.message || errorData?.error || errorMessage;
+        } catch (_) {
+          // ignore JSON parse errors
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      const aiResponse = data.response || data.message || data.content;
+
+      if (aiResponse && aiResponse.trim()) {
+        const cleaned = aiResponse.replace(/^This message is likely.*?(?=\S)/s, '').trim();
+        state.addMessage({
+          id: `ai_response_${Date.now()}`,
+          type: 'ai',
+          content: cleaned || aiResponse,
+          senderNickname: 'Wave AI',
+          timestamp: new Date(),
+          isAI: true
+        });
+      } else {
+        throw new Error('No response from AI');
+      }
+    } catch (error) {
+      console.error('[App] /ai command failed:', error);
+      alert(`AI error: ${error.message || 'Unknown error'}`);
+    } finally {
+      if (typeof state.removeMessage === 'function') {
+        state.removeMessage(loadingMessageId);
+      }
+    }
   }
 
   /**
@@ -3278,7 +3415,9 @@ class App {
       'NETWORK_ERROR': 'Network error. Please check your connection',
       'SERVER_ERROR': 'Server error. Please try again later',
       'INVALID_FILE_TYPE': 'Invalid file type. Please upload a supported file',
-      'UPLOAD_FAILED': 'File upload failed. Please try again'
+      'UPLOAD_FAILED': 'File upload failed. Please try again',
+      'EDIT_FAILED': 'Unable to edit this message. It may be too old or not fully sent yet.',
+      'DELETE_FAILED': 'Unable to delete this message. It may be too old or not fully sent yet.'
     };
     
     const userMessage = errorMessages[error.code] || error.message || 'An error occurred';
@@ -3785,17 +3924,83 @@ class App {
     
     const currentRoom = state.get('room');
 
-    const getLastMessageInfo = (messages = []) => {
-      if (!messages.length) return { text: '', time: '' };
-      const lastMsg = messages[messages.length - 1];
-      let text = lastMsg?.content || lastMsg?.text || '';
-      if (lastMsg?.type === 'system' && !text) {
-        text = 'System message';
+    const escapeHtml = (str = '') => str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    const parseReplyPrefix = (content = '') => {
+      const match = content.match(/^\[\[reply\|([^|]+)\|([^|]+)\|([^\]]*)\]\]\s*/);
+      if (!match) return { replyText: '', cleanContent: content };
+      const replyText = decodeURIComponent(match[3] || '');
+      const cleanContent = content.slice(match[0].length);
+      return { replyText, cleanContent };
+    };
+
+    const isDeletedPreview = (msg) => /\[message deleted\]|\{message deleted\}|message deleted/i.test(msg?.content || msg?.text || '');
+
+    const formatPreview = (lastMsg) => {
+      if (!lastMsg) return '';
+      if (isDeletedPreview(lastMsg)) return '';
+      let content = lastMsg?.content || lastMsg?.text || '';
+
+      // Handle reply marker
+      const replyData = parseReplyPrefix(content);
+      if (replyData.replyText || replyData.cleanContent !== content) {
+        const replyTarget = replyData.replyText || 'Reply';
+        const extra = replyData.cleanContent ? ` · ${escapeHtml(replyData.cleanContent)}` : '';
+        return `<span class="material-symbols-outlined text-[14px] text-slate-500">reply</span><span>Reply: ${escapeHtml(replyTarget)}${extra}</span>`;
       }
+
+      // Image marker
+      if (lastMsg?.type === 'image' || (content && content.startsWith('[Image:') && content.endsWith(']'))) {
+        return `<span class="material-symbols-outlined text-[14px] text-slate-500">image</span><span>Photo</span>`;
+      }
+
+      // File marker
+      if (lastMsg?.type === 'file' || (content && content.startsWith('[File:') && content.endsWith(']'))) {
+        let fileName = '';
+        if (content && content.startsWith('[File:')) {
+          const fileInfo = content.substring(7, content.length - 1).trim();
+          if (fileInfo.startsWith('{')) {
+            try {
+              const parsed = JSON.parse(fileInfo);
+              fileName = parsed.name || parsed.fileName || '';
+            } catch (e) {
+              fileName = fileInfo;
+            }
+          } else {
+            fileName = fileInfo;
+          }
+        }
+        fileName = fileName || lastMsg?.fileName || 'File';
+        return `<span class="material-symbols-outlined text-[14px] text-slate-500">attach_file</span><span>${escapeHtml(fileName)}</span>`;
+      }
+
+      if (lastMsg?.type === 'system' && !content) {
+        content = 'System message';
+      }
+
+      return escapeHtml(content);
+    };
+
+    const getLastMessageInfo = (messages = []) => {
+      if (!messages.length) return { html: '', time: '' };
+      let lastMsg = null;
+      for (let i = messages.length - 1; i >= 0; i -= 1) {
+        if (!isDeletedPreview(messages[i])) {
+          lastMsg = messages[i];
+          break;
+        }
+      }
+      if (!lastMsg) return { html: '', time: '' };
+      const html = formatPreview(lastMsg);
       const time = lastMsg?.timestamp
         ? new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         : '';
-      return { text, time };
+      return { html, time };
     };
     
     // Render DMs first
@@ -3806,10 +4011,10 @@ class App {
       
       const unreadCount = this.unreadCounts.get(cleanUsername) || 0;
       const dmMessages = this.dmMessages.get(cleanUsername) || [];
-      let { text: lastText, time: lastTime } = getLastMessageInfo(dmMessages);
-      if (!lastText && this.dmPreviews.has(cleanUsername)) {
+      let { html: lastHtml, time: lastTime } = getLastMessageInfo(dmMessages);
+      if (!lastHtml && this.dmPreviews.has(cleanUsername)) {
         const preview = this.dmPreviews.get(cleanUsername);
-        lastText = preview?.text || '';
+        lastHtml = preview?.text ? escapeHtml(preview.text) : '';
         lastTime = preview?.time || '';
       }
       
@@ -3825,7 +4030,7 @@ class App {
         <div class="flex-1 min-w-0 text-left">
           <div class="text-base font-semibold truncate">${cleanUsername}</div>
           <div class="flex items-center justify-between gap-2">
-            <div class="text-xs text-slate-500 truncate">${lastText || ''}</div>
+            <div class="text-xs text-slate-500 truncate flex items-center gap-1">${lastHtml || ''}</div>
             <div class="text-[10px] text-slate-500 shrink-0">${lastTime || ''}</div>
           </div>
         </div>
@@ -3847,7 +4052,7 @@ class App {
         currentRoom.code === roomCode;
 
       const roomMessages = this.roomMessages.get(room.id) || [];
-      const { text: lastText, time: lastTime } = getLastMessageInfo(roomMessages);
+      const { html: lastHtml, time: lastTime } = getLastMessageInfo(roomMessages);
       
       const roomEl = document.createElement('button');
       roomEl.className = `w-full flex items-center gap-4 py-5 px-4 border-b border-slate-800/60 transition-colors ${
@@ -3861,7 +4066,7 @@ class App {
         <div class="flex-1 min-w-0 text-left">
           <div class="text-base font-semibold truncate">${room.name}</div>
           <div class="flex items-center justify-between gap-2">
-            <div class="text-xs text-slate-500 truncate">${lastText || ''}</div>
+            <div class="text-xs text-slate-500 truncate flex items-center gap-1">${lastHtml || ''}</div>
             <div class="text-[10px] text-slate-500 shrink-0">${lastTime || ''}</div>
           </div>
         </div>
@@ -3931,7 +4136,7 @@ class App {
           const statusColor = isOnline ? 'bg-green-500' : 'bg-gray-500';
           
           roomMembersList.innerHTML = `
-            <div class="flex items-center gap-3 p-2 rounded-lg bg-surface-lighter">
+            <div class="flex items-center gap-3 p-2 rounded-lg bg-surface-lighter" data-member-name="${myNickname}">
               <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <span class="material-symbols-outlined text-primary text-[16px]">person</span>
               </div>
@@ -3941,7 +4146,7 @@ class App {
               </div>
               <div class="w-2 h-2 bg-green-500 rounded-full"></div>
             </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg bg-surface-lighter">
+            <div class="flex items-center gap-3 p-2 rounded-lg bg-surface-lighter" data-member-name="${otherPerson}">
               <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <span class="material-symbols-outlined text-primary text-[16px]">person</span>
               </div>

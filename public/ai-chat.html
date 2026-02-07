@@ -584,7 +584,7 @@
                                 placeholder="Message or type / for commands..." data-i18n-placeholder="ai.messagePlaceholder" type="text"
                                 onkeypress="handleKeyPress(event)" />
                         </div>
-                        <button onclick="sendMessage()"
+                        <button id="sendMessageBtn" onclick="sendMessage()"
                             class="size-12 shrink-0 flex items-center justify-center rounded-full bg-primary text-white shadow-[0_4px_12px_rgba(14,165,233,0.3)] hover:scale-105 hover:bg-primary-hover transition-all active:scale-95">
                             <span class="material-symbols-outlined text-[24px]">send</span>
                         </button>
@@ -1597,11 +1597,20 @@ Text to translate: ${text}`;
                     await sendToQwenAI(prompt, true); // true = skip adding raw prompt to history UI
                 }
 
+                let isSending = false;
+
                 async function sendMessage() {
                     console.log('sendMessage called');
                     const input = document.getElementById('messageInput');
+                    const sendBtn = document.getElementById('sendMessageBtn');
                     if (!input) {
                         console.error('messageInput element not found!');
+                        return;
+                    }
+                    if (isSending) {
+                        if (typeof showToast === 'function') {
+                            showToast('Please wait for the AI response...', 'info');
+                        }
                         return;
                     }
                     const content = input.value.trim();
@@ -1638,7 +1647,23 @@ Text to translate: ${text}`;
                     input.value = '';
 
                     // Send to AI (with full code)
-                    await sendToQwenAI(aiPrompt, true); // Pass flag to skip adding to history
+                    isSending = true;
+                    input.disabled = true;
+                    if (sendBtn) {
+                        sendBtn.disabled = true;
+                        sendBtn.classList.add('opacity-50', 'pointer-events-none');
+                    }
+                    try {
+                        await sendToQwenAI(aiPrompt, true); // Pass flag to skip adding to history
+                    } finally {
+                        isSending = false;
+                        input.disabled = false;
+                        if (sendBtn) {
+                            sendBtn.disabled = false;
+                            sendBtn.classList.remove('opacity-50', 'pointer-events-none');
+                        }
+                        input.focus();
+                    }
                 }
                 
                 // Make sendMessage globally accessible
@@ -1879,7 +1904,7 @@ You're here to help users with anything they need - from answering questions to 
                         streamingDiv.innerHTML = `
                     <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style='background-image: url("/wavechat.png");'></div>
                     <div class="flex flex-col gap-2 max-w-[85%]">
-                        <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">AI Assistant</p>
+                        <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>
                         ${isSlowModel ? '<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 w-fit"><div class="loader loader-xs"><div class="circle" style="--color: #a855f7;"></div><div class="circle" style="--color: #a855f7;"></div><div class="circle" style="--color: #a855f7;"></div><div class="circle" style="--color: #a855f7;"></div></div><span class="text-[9px] font-bold uppercase tracking-wider text-purple-300">Thinking...</span></div>' : ''}
                         <div class="bg-surface-dark p-3.5 rounded-2xl rounded-bl-none border border-white/5 shadow-sm">
                             <div class="streaming-content text-sm leading-relaxed text-slate-200">
@@ -1908,6 +1933,61 @@ You're here to help users with anything they need - from answering questions to 
                         
                         console.log('Sending AI request:', requestBody);
 
+                        async function runNonStreamingFallback() {
+                            const fallbackResponse = await fetch('/api/ai-chat', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(requestBody)
+                            });
+
+                            if (!fallbackResponse.ok) {
+                                const errorData = await fallbackResponse.json().catch(() => ({}));
+                                const rawError = errorData.error || errorData.message || '';
+                                streamingDiv?.remove();
+                                if (fallbackResponse.status === 429 || /429/.test(rawError)) {
+                                    addMessage('⚠️ Rate limit reached. Please wait a moment and try again.', false);
+                                } else if (fallbackResponse.status === 400 || /400/.test(rawError)) {
+                                    addMessage('⚠️ Request was rejected. Try a shorter message or change the model.', false);
+                                } else {
+                                    addMessage(`Error: ${rawError || 'Something went wrong'}`, false);
+                                }
+                                return true;
+                            }
+
+                            const data = await fallbackResponse.json().catch(() => ({}));
+                            const finalText = data.response || data.message || data.content || '';
+                            if (!finalText) {
+                                streamingDiv?.remove();
+                                addMessage('❌ Something went wrong while processing the information.', false);
+                                return true;
+                            }
+
+                            // Render non-streaming response in the same bubble
+                            const contentDiv = streamingDiv.querySelector('.streaming-content');
+                            if (contentDiv) {
+                                contentDiv.innerHTML = formatAIContent(finalText);
+                            }
+
+                            // Add speech and stop buttons
+                            const buttonContainer = document.createElement('div');
+                            buttonContainer.className = 'flex items-center gap-2 justify-start ml-1 mt-1';
+                            buttonContainer.innerHTML = `
+                    <button onclick="speakText(this.closest('.flex-col').querySelector('.text-sm').innerText, this)" class="speak-btn p-1 text-slate-500 hover:text-primary transition-colors opacity-0 group-hover:opacity-100" title="Read Aloud">
+                        <span class="material-symbols-outlined text-[16px]">volume_up</span>
+                    </button>
+                    <button onclick="stopSpeaking()" class="p-1 text-slate-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100" title="Stop Reading">
+                        <span class="material-symbols-outlined text-[16px]">stop_circle</span>
+                    </button>
+                `;
+                            streamingDiv.querySelector('.flex-col').appendChild(buttonContainer);
+
+                            conversationHistory.push({ role: 'model', parts: [{ text: finalText }] });
+                            saveConversation();
+                            return true;
+                        }
+
                         // Use streaming for better UX
                         const response = await fetch('/api/ai-chat?stream=true', {
                             method: 'POST',
@@ -1921,11 +2001,19 @@ You're here to help users with anything they need - from answering questions to 
 
                         if (!response.ok) {
                             const errorData = await response.json().catch(() => ({}));
+                            const rawError = errorData.error || errorData.message || '';
                             streamingDiv?.remove();
-                            if (response.status === 429) {
+                            if (response.status === 429 || /429/.test(rawError)) {
                                 addMessage('⚠️ Rate limit reached. Please wait a moment and try again.', false);
+                            } else if (response.status === 400 || /400/.test(rawError)) {
+                                addMessage('⚠️ Request was rejected. Try a shorter message or change the model.', false);
                             } else {
-                                addMessage(`Error: ${errorData.error || errorData.message || 'Something went wrong'}`, false);
+                                const isStreamingError = /stream|streaming|openinference|upstream/i.test(rawError);
+                                if (isStreamingError) {
+                                    await runNonStreamingFallback();
+                                    return;
+                                }
+                                addMessage(`Error: ${rawError || 'Something went wrong'}`, false);
                             }
                             return;
                         }
@@ -1976,8 +2064,20 @@ You're here to help users with anything they need - from answering questions to 
                                             const parsed = JSON.parse(data);
                                             
                                             if (parsed.error) {
+                                                const errText = String(parsed.error || 'Unknown error');
+                                                const isStreamingError = /stream|streaming|openinference|upstream|provider returned error/i.test(errText);
+                                                if (isStreamingError) {
+                                                    const handled = await runNonStreamingFallback();
+                                                    if (handled) return;
+                                                }
                                                 streamingDiv?.remove();
-                                                addMessage(`Error: ${parsed.error}`, false);
+                                                if (/429/.test(errText)) {
+                                                    addMessage('⚠️ Rate limit reached. Please wait a moment and try again.', false);
+                                                } else if (/400/.test(errText)) {
+                                                    addMessage('⚠️ Request was rejected. Try a shorter message or change the model.', false);
+                                                } else {
+                                                    addMessage(`Error: ${errText}`, false);
+                                                }
                                                 return;
                                             }
 
@@ -2023,8 +2123,11 @@ You're here to help users with anything they need - from answering questions to 
                             console.error('Stream reading error:', streamError);
                             // Don't show error to user if we got some content
                             if (!hasReceivedContent) {
-                                streamingDiv?.remove();
-                                addMessage('Connection interrupted. Please try again.', false);
+                                const handled = await runNonStreamingFallback();
+                                if (!handled) {
+                                    streamingDiv?.remove();
+                                    addMessage('Connection interrupted. Please try again.', false);
+                                }
                                 return;
                             }
                         } finally {
@@ -2385,7 +2488,7 @@ You're here to help users with anything they need - from answering questions to 
                     messageDiv.innerHTML = `
                 ${avatar}
                 <div class="flex flex-col gap-1 max-w-[85%]">
-                    ${!isUser ? '<p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">AI Assistant</p>' : ''}
+                    ${!isUser ? '<p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>' : ''}
                     <div class="${bubbleClass}">
                         <div class="text-sm leading-relaxed ${textClass}">${formattedContent}</div>
                     </div>
