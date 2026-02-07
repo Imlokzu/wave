@@ -19,6 +19,9 @@ class App {
     // Separate message stores for context isolation
     this.roomMessages = new Map(); // Map of roomId -> messages[]
     this.dmMessages = new Map();   // Map of dmUsername -> messages[]
+
+    // Conversation preview cache (from server)
+    this.dmPreviews = new Map();
     
     // Unread message counts
     this.unreadCounts = new Map(); // Map of roomId/dmUsername -> count
@@ -32,6 +35,10 @@ class App {
     // Setup flags to prevent duplicates
     this.chatButtonsSetup = false;
     this.socketHandlersSetup = false;
+
+    // Message cache config
+    this.maxCachedMessagesPerThread = 200;
+    this.maxCachedThreads = 50;
   }
 
   /**
@@ -57,6 +64,9 @@ class App {
     // User is authenticated, show chat screen immediately
     console.log('[App] User authenticated, showing chat...');
     state.setScreen('chat');
+
+    // Restore cached messages for this user
+    this.loadMessageCache();
     
     // Ensure loading screen is hidden
     const loadingScreen = document.getElementById('loginScreen');
@@ -75,14 +85,18 @@ class App {
     // Initialize UI state (show create room button if no room)
     this.updateRoomUIState(false);
 
-    // Try to restore session from localStorage
-    await this.restoreSession();
-
-    // Setup UI event handlers
+    // Setup UI event handlers FIRST for immediate interaction
     this.setupUIHandlers();
 
-    // Connect socket
-    socketManager.connect();
+    // Load everything else in parallel for faster startup
+    Promise.all([
+      this.restoreSession(),
+      this.loadUserConversations(), // Load DM conversations from server
+      new Promise(resolve => {
+        socketManager.connect();
+        resolve();
+      })
+    ]).catch(err => console.error('[App] Parallel init error:', err));
 
     // Setup socket event handlers (username will be registered on connection)
     this.setupSocketHandlers();
@@ -114,6 +128,35 @@ class App {
       return false;
     }
 
+    // Check sessionStorage cache first (faster than localStorage, valid for browser session)
+    const sessionCache = sessionStorage.getItem('auth_cached');
+    if (sessionCache) {
+      console.log('[App] Using session auth cache');
+      const data = JSON.parse(sessionCache);
+      state.setUser({
+        id: data.user.id,
+        username: data.user.username,
+        nickname: data.user.nickname
+      });
+      return true;
+    }
+
+    // Check localStorage cache (valid for 10 minutes)
+    const cachedAuth = localStorage.getItem('auth_cached');
+    const cacheTime = localStorage.getItem('auth_cache_time');
+    
+    if (cachedAuth && cacheTime && (Date.now() - parseInt(cacheTime)) < 600000) {
+      console.log('[App] Using localStorage auth cache');
+      const data = JSON.parse(cachedAuth);
+      sessionStorage.setItem('auth_cached', cachedAuth); // Also cache in session
+      state.setUser({
+        id: data.user.id,
+        username: data.user.username,
+        nickname: data.user.nickname
+      });
+      return true;
+    }
+
     try {
       const response = await fetch('/api/auth/session', {
         headers: {
@@ -125,6 +168,12 @@ class App {
         const data = await response.json();
         console.log('[App] Session valid:', data.user);
         
+        // Cache in both sessionStorage and localStorage
+        const cacheData = JSON.stringify(data);
+        sessionStorage.setItem('auth_cached', cacheData);
+        localStorage.setItem('auth_cached', cacheData);
+        localStorage.setItem('auth_cache_time', Date.now().toString());
+        
         // Store user info in state
         state.setUser({
           id: data.user.id,
@@ -135,11 +184,14 @@ class App {
         return true;
       } else {
         console.log('[App] Session invalid');
-        // Clear invalid tokens
+        // Clear invalid tokens and cache
         localStorage.removeItem('authToken');
         localStorage.removeItem('userId');
         localStorage.removeItem('username');
         localStorage.removeItem('nickname');
+        localStorage.removeItem('auth_cached');
+        localStorage.removeItem('auth_cache_time');
+        sessionStorage.removeItem('auth_cached');
         return false;
       }
     } catch (error) {
@@ -165,6 +217,45 @@ class App {
         }
       }
     });
+  }
+
+  /**
+   * Load user's DM conversations from server
+   */
+  async loadUserConversations() {
+    try {
+      console.log('[App] Loading user conversations from server...');
+      const result = await api.getMyConversations();
+      
+      if (result && result.success && result.data && Array.isArray(result.data)) {
+        console.log('[App] Loaded', result.data.length, 'conversations');
+        
+        // Add each conversation to the list
+        result.data.forEach(conv => {
+          const username = conv.otherUser?.username;
+          if (username) {
+            this.dmConversations.add(username);
+            const lastMessage = conv.lastMessage;
+            if (lastMessage) {
+              const previewText = lastMessage.content || '';
+              const previewTime = lastMessage.timestamp || lastMessage.created_at || lastMessage.time;
+              this.dmPreviews.set(username, {
+                text: previewText,
+                time: previewTime ? new Date(previewTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+              });
+            }
+          }
+        });
+        
+        // Render the updated list
+        this.renderDMList();
+        
+        console.log('[App] DM conversations loaded:', Array.from(this.dmConversations));
+      }
+    } catch (error) {
+      console.error('[App] Failed to load conversations:', error);
+      // Fallback to session restore if API fails
+    }
   }
 
   /**
@@ -295,6 +386,71 @@ class App {
       localStorage.setItem('wave_session', JSON.stringify(session));
     } catch (error) {
       console.error('[App] Failed to save session:', error);
+    }
+  }
+
+  /**
+   * Message cache helpers
+   */
+  getMessageCacheKey() {
+    const userId = localStorage.getItem('userId') || 'guest';
+    return `wave_message_cache_${userId}`;
+  }
+
+  loadMessageCache() {
+    try {
+      const cacheKey = this.getMessageCacheKey();
+      const raw = localStorage.getItem(cacheKey);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      const roomEntries = Object.entries(parsed.rooms || {});
+      const dmEntries = Object.entries(parsed.dms || {});
+
+      this.roomMessages = new Map(roomEntries.map(([roomId, messages]) => [roomId, messages]));
+      this.dmMessages = new Map(dmEntries.map(([username, messages]) => [username, messages]));
+    } catch (error) {
+      console.warn('[App] Failed to load message cache:', error);
+    }
+  }
+
+  persistMessageCache() {
+    try {
+      const cacheKey = this.getMessageCacheKey();
+
+      // Update current thread cache
+      const currentRoom = state.get('room');
+      const currentMessages = state.get('messages') || [];
+
+      if (currentRoom) {
+        const trimmed = currentMessages.slice(-this.maxCachedMessagesPerThread);
+        if (currentRoom.isDM) {
+          if (currentRoom.dmUsername) {
+            this.dmMessages.set(currentRoom.dmUsername, trimmed);
+          }
+        } else if (currentRoom.id) {
+          this.roomMessages.set(currentRoom.id, trimmed);
+        }
+      }
+
+      // Enforce max thread counts
+      while (this.dmMessages.size > this.maxCachedThreads) {
+        const oldestKey = this.dmMessages.keys().next().value;
+        this.dmMessages.delete(oldestKey);
+      }
+      while (this.roomMessages.size > this.maxCachedThreads) {
+        const oldestKey = this.roomMessages.keys().next().value;
+        this.roomMessages.delete(oldestKey);
+      }
+
+      const cachePayload = {
+        rooms: Object.fromEntries(this.roomMessages),
+        dms: Object.fromEntries(this.dmMessages)
+      };
+
+      localStorage.setItem(cacheKey, JSON.stringify(cachePayload));
+    } catch (error) {
+      console.warn('[App] Failed to persist message cache:', error);
     }
   }
 
@@ -873,6 +1029,7 @@ class App {
       let imageUrl = null;
       let fileUrl = null;
       let fileName = null;
+      let fileSize = null;
       let content = message.content;
       
       // Check if it's an image message
@@ -885,10 +1042,26 @@ class App {
       else if (content && content.startsWith('[File:') && content.endsWith(']')) {
         messageType = 'file';
         const fileInfo = content.substring(7, content.length - 1).trim();
-        fileName = fileInfo;
-        fileUrl = fileInfo; // Assuming the file name is the URL
+        if (fileInfo.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(fileInfo);
+            fileUrl = parsed.url || parsed.fileUrl || '';
+            fileName = parsed.name || parsed.fileName || '';
+            fileSize = parsed.size || parsed.fileSize || null;
+          } catch (e) {
+            fileName = fileInfo;
+            fileUrl = fileInfo;
+          }
+        } else {
+          fileName = fileInfo;
+          fileUrl = fileInfo; // Fallback
+        }
         content = '';
       }
+
+      if (message.fileUrl && !fileUrl) fileUrl = message.fileUrl;
+      if (message.fileName && !fileName) fileName = message.fileName;
+      if (message.fileSize && !fileSize) fileSize = message.fileSize;
       
       state.addMessage({
         id: message.id,
@@ -899,7 +1072,8 @@ class App {
         type: messageType,
         imageUrl: imageUrl,
         fileUrl: fileUrl,
-        fileName: fileName
+        fileName: fileName,
+        fileSize: fileSize
       });
       
       // Mark the message as read immediately since we're viewing it
@@ -1885,7 +2059,11 @@ class App {
             // The recipient will parse this and display the image/file properly
             const dmContent = isImage 
               ? `[Image: ${data.data.imageUrl}]`
-              : `[File: ${data.data.fileUrl || data.data.fileName}]`;
+              : `[File: ${JSON.stringify({
+                  url: data.data.fileUrl || data.data.fileName,
+                  name: data.data.fileName || null,
+                  size: data.data.fileSize || null
+                })}]`;
             
             console.log('[App] 📤 Sending DM marker:', dmContent);
             
@@ -2513,6 +2691,7 @@ class App {
           let imageUrl = null;
           let fileUrl = null;
           let fileName = null;
+          let fileSize = null;
           let content = msg.content;
           
           // Check if it's an image message
@@ -2525,10 +2704,26 @@ class App {
           else if (content && content.startsWith('[File:') && content.endsWith(']')) {
             messageType = 'file';
             const fileInfo = content.substring(7, content.length - 1).trim();
-            fileName = fileInfo;
-            fileUrl = fileInfo;
+            if (fileInfo.startsWith('{')) {
+              try {
+                const parsed = JSON.parse(fileInfo);
+                fileUrl = parsed.url || parsed.fileUrl || '';
+                fileName = parsed.name || parsed.fileName || '';
+                fileSize = parsed.size || parsed.fileSize || null;
+              } catch (e) {
+                fileName = fileInfo;
+                fileUrl = fileInfo;
+              }
+            } else {
+              fileName = fileInfo;
+              fileUrl = fileInfo;
+            }
             content = '';
           }
+
+          if (msg.fileUrl && !fileUrl) fileUrl = msg.fileUrl;
+          if (msg.fileName && !fileName) fileName = msg.fileName;
+          if (msg.fileSize && !fileSize) fileSize = msg.fileSize;
           
           state.addMessage({
             id: msg.id,
@@ -2539,7 +2734,8 @@ class App {
             type: messageType,
             imageUrl: imageUrl,
             fileUrl: fileUrl,
-            fileName: fileName
+            fileName: fileName,
+            fileSize: fileSize
           });
         });
         
@@ -2690,6 +2886,9 @@ class App {
       deletedMessageIds.forEach(id => {
         ui.removeMessage(id);
       });
+
+      // Persist message cache
+      this.persistMessageCache();
     });
 
     // Subscribe to editing state
@@ -3567,12 +3766,37 @@ class App {
    * Render combined chats list (DMs + Rooms together)
    */
   renderDMList() {
+    const dmsList = document.getElementById('dmsListContainer');
+    const roomsList = document.getElementById('roomsListContainer');
     const chatsList = document.getElementById('chatsList');
-    if (!chatsList) return;
-    
-    chatsList.innerHTML = '';
+
+    // Prefer visible containers on desktop chat
+    const dmTarget = dmsList || chatsList;
+    const roomTarget = roomsList || chatsList;
+
+    if (!dmTarget) return;
+
+    dmTarget.innerHTML = '';
+    if (roomTarget && roomTarget !== dmTarget) {
+      roomTarget.innerHTML = '';
+    } else if (roomTarget) {
+      roomTarget.innerHTML = '';
+    }
     
     const currentRoom = state.get('room');
+
+    const getLastMessageInfo = (messages = []) => {
+      if (!messages.length) return { text: '', time: '' };
+      const lastMsg = messages[messages.length - 1];
+      let text = lastMsg?.content || lastMsg?.text || '';
+      if (lastMsg?.type === 'system' && !text) {
+        text = 'System message';
+      }
+      const time = lastMsg?.timestamp
+        ? new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '';
+      return { text, time };
+    };
     
     // Render DMs first
     for (const username of this.dmConversations) {
@@ -3581,17 +3805,30 @@ class App {
         currentRoom.name.replace('@', '').toLowerCase() === cleanUsername.toLowerCase();
       
       const unreadCount = this.unreadCounts.get(cleanUsername) || 0;
+      const dmMessages = this.dmMessages.get(cleanUsername) || [];
+      let { text: lastText, time: lastTime } = getLastMessageInfo(dmMessages);
+      if (!lastText && this.dmPreviews.has(cleanUsername)) {
+        const preview = this.dmPreviews.get(cleanUsername);
+        lastText = preview?.text || '';
+        lastTime = preview?.time || '';
+      }
       
       const dmEl = document.createElement('button');
-      dmEl.className = `w-full flex items-center gap-3 p-2 rounded-lg transition-colors relative ${
-        isActive ? 'bg-primary/20 text-white' : 'text-slate-400 hover:bg-surface-lighter hover:text-white'
+      dmEl.className = `w-full flex items-center gap-4 py-5 px-4 border-b border-slate-800/60 transition-colors relative ${
+        isActive ? 'bg-primary/10 text-white' : 'text-slate-300 hover:bg-surface-lighter hover:text-white'
       }`;
       
       dmEl.innerHTML = `
         <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
           <span class="material-symbols-outlined text-primary text-[16px]">person</span>
         </div>
-        <span class="text-sm truncate flex-1">${cleanUsername}</span>
+        <div class="flex-1 min-w-0 text-left">
+          <div class="text-base font-semibold truncate">${cleanUsername}</div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-xs text-slate-500 truncate">${lastText || ''}</div>
+            <div class="text-[10px] text-slate-500 shrink-0">${lastTime || ''}</div>
+          </div>
+        </div>
         ${unreadCount > 0 ? `
           <span class="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
             ${unreadCount > 9 ? '9+' : unreadCount}
@@ -3601,24 +3838,33 @@ class App {
       
       dmEl.addEventListener('click', () => this.handleStartChat(null, username));
       
-      chatsList.appendChild(dmEl);
+      dmTarget.appendChild(dmEl);
     }
     
     // Render rooms
     for (const [roomCode, room] of this.rooms) {
       const isActive = currentRoom && !currentRoom.isDM && 
         currentRoom.code === roomCode;
+
+      const roomMessages = this.roomMessages.get(room.id) || [];
+      const { text: lastText, time: lastTime } = getLastMessageInfo(roomMessages);
       
       const roomEl = document.createElement('button');
-      roomEl.className = `w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
-        isActive ? 'bg-primary/20 text-white' : 'text-slate-400 hover:bg-surface-lighter hover:text-white'
+      roomEl.className = `w-full flex items-center gap-4 py-5 px-4 border-b border-slate-800/60 transition-colors ${
+        isActive ? 'bg-primary/10 text-white' : 'text-slate-300 hover:bg-surface-lighter hover:text-white'
       }`;
       
       roomEl.innerHTML = `
         <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
           <span class="material-symbols-outlined text-primary text-[16px]">group</span>
         </div>
-        <span class="text-sm truncate">${room.name}</span>
+        <div class="flex-1 min-w-0 text-left">
+          <div class="text-base font-semibold truncate">${room.name}</div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-xs text-slate-500 truncate">${lastText || ''}</div>
+            <div class="text-[10px] text-slate-500 shrink-0">${lastTime || ''}</div>
+          </div>
+        </div>
       `;
       
       roomEl.addEventListener('click', () => {
@@ -3628,7 +3874,7 @@ class App {
         }
       });
       
-      chatsList.appendChild(roomEl);
+      roomTarget.appendChild(roomEl);
     }
     
     // Update right panel based on if in DM or room

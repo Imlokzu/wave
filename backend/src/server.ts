@@ -18,13 +18,11 @@ import { createChatRouter } from './routes/chats';
 import { createInvitesRouter } from './routes/invites';
 import { createAuthRouter } from './routes/auth';
 import { createProfileRouter } from './routes/profile';
-import { createMusicRouter } from './routes/music';
 import { createAIRouter } from './routes/ai';
 import { setupSocketIO } from './socket/socketHandler';
 import { initializeEnhancedAIService } from './services/EnhancedAIService';
 import { initializeUnifiedAIService } from './services/UnifiedAIService';
 import { initializeProfileManager } from './managers/ProfileManager';
-import { initializeMusicManager } from './managers/MusicManager';
 import { initializeSubscriptionManager } from './managers/SubscriptionManager';
 import { createSubscriptionRouter } from './routes/subscription';
 import feedRouter from './routes/feed';
@@ -90,11 +88,6 @@ if (process.env.OPENAI_API_KEY) {
 // Initialize profile manager
 if (config.supabaseUrl && config.supabaseKey) {
   initializeProfileManager(config.supabaseUrl, config.supabaseKey);
-}
-
-// Initialize music manager
-if (config.supabaseUrl && config.supabaseKey) {
-  initializeMusicManager(config.supabaseUrl, config.supabaseKey);
 }
 
 // Initialize subscription manager
@@ -187,7 +180,6 @@ app.use('/api/dms', createDMRouter(dmManager, userManager));
 app.use('/api/chats', createChatRouter(userManager, dmManager, roomManager, messageManager));
 app.use('/api/invites', createInvitesRouter());
 app.use('/api/profile', createProfileRouter(userManager));
-app.use('/api/music', createMusicRouter(userManager));
 app.use('/api/ai', createAIRouter(userManager));
 app.use('/api/subscription', createSubscriptionRouter(userManager));
 app.use('/api/feed', feedRouter);

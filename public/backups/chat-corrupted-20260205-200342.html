@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <link rel="icon" type="image/png" href="/wavechat.png"/>
     <title>Wave Messenger - Chat</title>
     <script>
         (function() {
@@ -202,44 +201,132 @@
         @media (max-width: 1023px) {
             .desktop-sidebar { display: none !important; }
             .desktop-chatlist { display: none !important; }
-        }
-        /* Tablet room info overlay */
-        #roomInfoOverlay {
-            display: none;
-        }
-        .tablet-only { display: none; }
-        @media (min-width: 768px) and (max-width: 1279px) {
-            #roomInfoOverlay {
-                display: block;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.3s ease;
-                background: rgba(0, 0, 0, 0.55);
+            #roomInfoPanel { display: none !important; }
+            
+            /* Mobile-specific utilities */
+            .mobile-only { display: block !important; }
+            .mobile-hidden { display: none !important; }
+            .desktop-only { display: none !important; }
+            
+            /* Add bottom padding to prevent nav covering input */
+            .chat-screen {
+                padding-bottom: 100px;
             }
-            #roomInfoOverlay.show {
-                opacity: 1;
-                pointer-events: auto;
-            }
-            #roomInfoPanel {
-                display: flex !important;
-                position: fixed;
-                top: 0;
-                right: 0;
-                height: 100vh;
-                z-index: 60;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-                box-shadow: -12px 0 24px rgba(0, 0, 0, 0.4);
-            }
-            #roomInfoPanel.tablet-open {
-                transform: translateX(0);
-            }
-            .tablet-only {
-                display: flex;
+            
+            /* Make sure input area is above bottom nav */
+            main > div:last-child {
+                margin-bottom: 0;
+                padding-bottom: 1.5rem;
             }
         }
         @media (min-width: 1024px) {
             #mobileBottomNav { display: none !important; }
+            .mobile-overlay { display: none !important; }
+            .mobile-left-panel { display: none !important; }
+            .mobile-right-panel { display: none !important; }
+            
+            /* Desktop-specific utilities */
+            .mobile-only { display: none !important; }
+            .mobile-hidden { display: block !important; }
+            .desktop-only { display: block !important; }
+        }
+
+        /* Mobile Swipe Panels */
+        @media (max-width: 1023px) {
+            body { touch-action: pan-x; }
+            
+            .mobile-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.5);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+                z-index: 60;
+            }
+            .mobile-overlay.show {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            /* Left Panel - Members & Settings - Overlay from left */
+            .mobile-left-panel {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: linear-gradient(135deg, #0f1419 0%, #151b21 100%);
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 70;
+                overflow-y: auto;
+            }
+            .mobile-left-panel.show {
+                transform: translateX(0);
+            }
+            
+            /* Right Panel - Chats List - Overlay from right */
+            .mobile-right-panel {
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 100vw;
+                height: 100vh;
+                background: linear-gradient(135deg, #0f1419 0%, #1a2128 100%);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                z-index: 70;
+                overflow-y: auto;
+            }
+            .mobile-right-panel.show {
+                transform: translateX(0);
+            }
+            
+            /* Chat screen stays in place - no transforms */
+            .chat-screen {
+                /* No transforms needed - panels overlay on top */
+            }
+            
+            /* Swipe indicators */
+            .swipe-indicator {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 40px;
+                height: 40px;
+                background: rgba(13, 185, 242, 0.3);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                pointer-events: none;
+                z-index: 30;
+            }
+            .swipe-indicator.left {
+                left: 20px;
+            }
+            .swipe-indicator.right {
+                right: 20px;
+            }
+            .swipe-indicator.show {
+                opacity: 1;
+            }
+            
+            /* Better touch targets */
+            button { min-height: 44px; }
+            input[type="text"] { font-size: 16px; }
+            
+            /* Prevent zoom on input focus */
+            input[type="text"], textarea {
+                -webkit-appearance: none;
+                border-radius: 0;
+            }
         }
     </style>
 </head>
@@ -255,7 +342,7 @@
                 <div class="text-center">
                     <img src="/nobackweave.png" alt="WaveChat" class="h-16 w-16 mx-auto mb-4 object-contain" />
                     <h1 class="text-white text-4xl font-bold mb-2">WAVE</h1>
-                    <p class="text-slate-400 text-sm" data-i18n="chat.checkingAuth">Checking authentication...</p>
+                    <p class="text-slate-400 text-sm">Checking authentication...</p>
                 </div>
                 <div class="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
             </div>
@@ -271,13 +358,16 @@
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <img src="/wavechat.png" alt="Wave" class="size-9 rounded-xl object-contain" />
-                        <h1 class="text-xl font-bold tracking-tight text-white" data-i18n="chat.wave">Wave</h1>
+                        <h1 class="text-xl font-bold tracking-tight text-white">Wave</h1>
                     </div>
+                    <button id="logoutBtn" class="size-8 rounded-lg bg-background-dark hover:bg-red-500/10 text-slate-400 hover:text-red-400 flex items-center justify-center transition-colors border border-slate-700/50 hover:border-red-500/30" title="Sign Out">
+                        <span class="material-symbols-outlined text-[18px]">logout</span>
+                    </button>
                 </div>
                 
                 <div class="flex justify-between items-end mb-5">
                     <div class="flex items-center gap-2">
-                        <h2 class="text-3xl font-black text-white tracking-tight" data-i18n="chat.chats">Chats</h2>
+                        <h2 class="text-3xl font-black text-white tracking-tight">Chats</h2>
                         <span class="bg-primary text-background-dark text-[10px] font-bold px-1.5 py-0.5 rounded-full" id="unreadChatsCount" style="display: none;">0</span>
                     </div>
                     <div class="flex gap-2">
@@ -292,7 +382,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <span class="material-symbols-outlined text-slate-500 group-focus-within:text-primary transition-colors text-[20px]">search</span>
                     </div>
-                    <input id="sidebarSearchInput" class="block w-full pl-10 pr-3 py-2.5 rounded-xl bg-background-dark border border-transparent focus:border-primary/50 focus:ring-0 focus:bg-background-dark/60 placeholder-slate-500 text-slate-200 text-sm transition-all shadow-inner" data-i18n-placeholder="chat.searchConversations" placeholder="Search conversations..." type="text"/>
+                    <input id="sidebarSearchInput" class="block w-full pl-10 pr-3 py-2.5 rounded-xl bg-background-dark border border-transparent focus:border-primary/50 focus:ring-0 focus:bg-background-dark/60 placeholder-slate-500 text-slate-200 text-sm transition-all shadow-inner" placeholder="Search conversations..." type="text"/>
                     <div id="sidebarSearchResults" class="absolute top-full left-0 right-0 mt-2 bg-surface-dark border border-slate-700 rounded-lg shadow-xl max-h-64 overflow-y-auto hidden z-50"></div>
                 </div>
             </div>
@@ -314,23 +404,27 @@
                 <nav class="flex justify-around items-center rounded-xl bg-background-dark p-1">
                     <a class="flex flex-col items-center justify-center p-2 rounded-lg text-primary bg-primary/10 flex-1" href="#">
                         <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
-                        <span class="text-[10px] font-medium mt-1" data-i18n="nav.chats">Chats</span>
+                        <span class="text-[10px] font-medium mt-1">Chats</span>
                     </a>
                     <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/ai-chat.html">
                         <span class="material-symbols-outlined text-[24px]">smart_toy</span>
-                        <span class="text-[10px] font-medium mt-1" data-i18n="nav.ai">AI</span>
+                        <span class="text-[10px] font-medium mt-1">AI</span>
                     </a>
                     <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/feed.html">
                         <span class="material-symbols-outlined text-[24px]">newspaper</span>
-                        <span class="text-[10px] font-medium mt-1" data-i18n="nav.feed">Feed</span>
+                        <span class="text-[10px] font-medium mt-1">Feed</span>
+                    </a>
+                    <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/music.html" id="musicBtn">
+                        <span class="material-symbols-outlined text-[24px]">music_note</span>
+                        <span class="text-[10px] font-medium mt-1">Music</span>
                     </a>
                     <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/profile.html">
                         <span class="material-symbols-outlined text-[24px]">person</span>
-                        <span class="text-[10px] font-medium mt-1" id="userNickname" data-i18n="nav.profile">Profile</span>
+                        <span class="text-[10px] font-medium mt-1" id="userNickname">Profile</span>
                     </a>
                     <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/settings.html" id="settingsNavLink">
                         <span class="material-symbols-outlined text-[24px]">settings</span>
-                        <span class="text-[10px] font-medium mt-1" data-i18n="nav.settings">Settings</span>
+                        <span class="text-[10px] font-medium mt-1">Settings</span>
                     </a>
                 </nav>
             </div>
@@ -338,6 +432,14 @@
         
         <!-- MAIN CHAT AREA (flex) -->
         <main class="flex-1 flex flex-col bg-[#0f181c] relative overflow-hidden">
+            <!-- Swipe Indicators (Mobile Only) -->
+            <div class="swipe-indicator left" id="leftSwipeIndicator">
+                <span class="material-symbols-outlined text-primary">people</span>
+            </div>
+            <div class="swipe-indicator right" id="rightSwipeIndicator">
+                <span class="material-symbols-outlined text-primary">chat_bubble</span>
+            </div>
+            
             <!-- Abstract Background -->
             <div class="absolute inset-0 z-0 opacity-30 pointer-events-none">
                 <div class="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-primary/20 blur-[130px] rounded-full mix-blend-screen animate-pulse"></div>
@@ -347,31 +449,25 @@
             <!-- Top Bar -->
             <header class="glass-panel h-16 px-6 flex items-center justify-between z-10 bg-surface-dark/50 backdrop-blur-md border-b border-slate-800/40 sticky top-0">
                 <div class="flex items-center gap-4">
-                    <button id="backToRoomBtn" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden">
+                    <button id="showMobileChatsList" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <button id="backToRoomBtn" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden hidden">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </button>
                     <img src="/nobackweave.png" alt="WaveChat" class="h-8 w-8 object-contain" />
                     <div class="flex flex-col">
-                        <h1 class="text-lg font-bold text-white flex items-center gap-2" id="roomName" data-i18n="chat.selectChat">
+                        <h1 class="text-lg font-bold text-white flex items-center gap-2" id="roomName">
                             Select a chat
                         </h1>
                         <p id="roomStatus" class="text-xs text-primary font-medium"></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="toggleRoomInfoBtn" class="w-10 h-10 items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors tablet-only" data-i18n-title="chat.roomInfo" title="Room Info">
-                        <span class="material-symbols-outlined">info</span>
+                    <button id="showMobileRoomInfo" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden">
+                        <span class="material-symbols-outlined">people</span>
                     </button>
-                    <a href="/feed.html" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden">
-                        <span class="material-symbols-outlined">newspaper</span>
-                    </a>
-                    <a href="/ai-chat.html" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden">
-                        <span class="material-symbols-outlined">smart_toy</span>
-                    </a>
-                    <a href="/profile.html" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden">
-                        <span class="material-symbols-outlined">person</span>
-                    </a>
-                    <a href="/settings.html" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-lighter text-slate-400 hover:text-primary transition-colors lg:hidden">
+                </div>
                         <span class="material-symbols-outlined">settings</span>
                     </a>
                 </div>
@@ -386,7 +482,7 @@
                         <div class="flex items-center justify-between mb-2">
                             <div class="flex items-center gap-2">
                                 <span class="material-symbols-outlined text-primary text-[20px]">push_pin</span>
-                                <span class="text-sm font-bold text-white" data-i18n="chat.pinnedMessages">Pinned Messages</span>
+                                <span class="text-sm font-bold text-white">Pinned Messages</span>
                             </div>
                             <button id="closePinnedBtn" class="text-slate-400 hover:text-white">
                                 <span class="material-symbols-outlined text-[18px]">close</span>
@@ -418,7 +514,7 @@
                         <span class="material-symbols-outlined">add_circle</span>
                     </button>
                     <div class="flex-1 py-2">
-                        <input id="messageInput" class="w-full bg-transparent border-none text-sm text-white placeholder-slate-400 focus:ring-0 p-0 outline-none" data-i18n-placeholder="chat.typeMessage" placeholder="Type a message..." type="text"/>
+                        <input id="messageInput" class="w-full bg-transparent border-none text-sm text-white placeholder-slate-400 focus:ring-0 p-0 outline-none" placeholder="Type a message..." type="text"/>
                     </div>
                     <div class="flex items-center gap-1">
                         <button id="emojiBtn" class="p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-surface-lighter">
@@ -437,75 +533,72 @@
                 </div>
             </div>
         </main>
-
-        <!-- Tablet Room Info Overlay -->
-        <div id="roomInfoOverlay" class="fixed inset-0 z-50"></div>
         
         <!-- RIGHT PANEL (320px, XL only) - Room Info -->
         <aside id="roomInfoPanel" class="w-80 bg-surface-dark border-l border-slate-800 shrink-0 hidden xl:flex flex-col overflow-y-auto">
             <div class="p-6 flex flex-col items-center border-b border-slate-800">
                 <img src="/wavechat.png" alt="Room" class="w-24 h-24 rounded-full shadow-lg ring-4 ring-background-dark mb-4 object-cover" />
-                <h2 class="text-xl font-bold text-white mb-1" id="roomNameRight" data-i18n="chat.room">Room</h2>
-                <p class="text-sm text-slate-400 text-center mb-4" data-i18n="chat.wavechatRoom">WaveChat room</p>
+                <h2 class="text-xl font-bold text-white mb-1" id="roomNameRight">Room</h2>
+                <p class="text-sm text-slate-400 text-center mb-4">WaveChat room</p>
                 <div class="flex gap-4 w-full">
                     <button class="flex-1 py-2 rounded-lg bg-surface-lighter hover:bg-slate-700 text-sm font-medium text-white transition-colors flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">notifications_off</span>
-                        <span data-i18n="chat.mute">Mute</span>
+                        Mute
                     </button>
                     <button class="flex-1 py-2 rounded-lg bg-surface-lighter hover:bg-slate-700 text-sm font-medium text-white transition-colors flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">group_add</span>
-                        <span data-i18n="chat.add">Add</span>
+                        Add
                     </button>
                 </div>
             </div>
             
             <div class="p-4 flex-1">
-                <h3 class="text-sm font-bold text-white mb-3" data-i18n="chat.roomSettings">Room Settings</h3>
+                <h3 class="text-sm font-bold text-white mb-3">Room Settings</h3>
                 
                 <div class="mb-4 p-3 bg-surface-lighter rounded-lg">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm text-white" data-i18n="chat.notifications">Notifications</span>
+                        <span class="text-sm text-white">Notifications</span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="notificationToggle" class="sr-only peer">
                             <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                         </label>
                     </div>
-                    <p class="text-xs text-slate-400" data-i18n="chat.getNotified">Get notified for new messages</p>
+                    <p class="text-xs text-slate-400">Get notified for new messages</p>
                 </div>
                 
                 <div class="mb-4" id="roomActionContainer">
                     <button id="createNewRoomBtn" class="hidden w-full py-2 px-4 bg-primary hover:bg-primary/90 border border-primary rounded-lg text-sm font-medium text-white transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                        <span data-i18n="chat.createNewRoom">Create New Room</span>
+                        Create New Room
                     </button>
                     
                     <button id="regenerateCodeBtn" class="hidden w-full py-2 px-4 bg-surface-lighter hover:bg-slate-700 border border-slate-700 rounded-lg text-sm font-medium text-white transition-colors flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">refresh</span>
-                        <span data-i18n="chat.regenerateRoomCode">Regenerate Room Code</span>
+                        Regenerate Room Code
                     </button>
                 </div>
                 
-                <h3 class="text-sm font-bold text-white mb-3 mt-6" data-i18n="chat.roomMembers">Room Members</h3>
+                <h3 class="text-sm font-bold text-white mb-3 mt-6">Room Members</h3>
                 <div id="roomMembersList" class="space-y-2 mb-6">
-                    <div class="text-xs text-slate-400 text-center py-2" data-i18n="chat.noRoomJoined">No room joined</div>
+                    <div class="text-xs text-slate-400 text-center py-2">No room joined</div>
                 </div>
                 
-                <h3 class="text-sm font-bold text-white mb-3 mt-6" data-i18n="chat.roomInfo">Room Info</h3>
+                <h3 class="text-sm font-bold text-white mb-3 mt-6">Room Info</h3>
                 <div id="roomInfoContainer" class="space-y-2">
                     <div id="noRoomState" class="p-4 bg-surface-lighter rounded-lg text-center">
                         <span class="material-symbols-outlined text-slate-500 text-4xl mb-2">meeting_room</span>
-                        <p class="text-xs text-slate-400 mb-3" data-i18n="chat.notInRoomYet">Not in a room yet</p>
-                        <button id="quickCreateRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-xs font-medium text-white transition-colors" data-i18n="chat.createRoom">
+                        <p class="text-xs text-slate-400 mb-3">Not in a room yet</p>
+                        <button id="quickCreateRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-xs font-medium text-white transition-colors">
                             Create Room
                         </button>
                     </div>
                     
                     <div id="roomCodeContainer" class="hidden p-3 bg-surface-lighter rounded-lg">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs text-slate-400" data-i18n="chat.roomCode">Room Code</span>
+                            <span class="text-xs text-slate-400">Room Code</span>
                             <button id="copyRoomCodeBtn" class="text-xs text-primary hover:text-primary/90 transition-colors flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[14px]">content_copy</span>
-                                <span data-i18n="chat.copy">Copy</span>
+                                Copy
                             </button>
                         </div>
                         <p id="roomCodeDisplay" class="text-sm font-mono font-bold text-white mt-1">-</p>
@@ -515,6 +608,172 @@
         </aside>
     </div>
     
+    <!-- MOBILE LEFT PANEL - Members & Settings -->
+    <div class="mobile-left-panel" id="mobileLeftPanel">
+        <div class="flex flex-col h-full">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-800/40">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-white">Room Info</h2>
+                    <button id="closeMobileLeftPanel" class="w-8 h-8 rounded-lg bg-surface-lighter text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                </div>
+                
+                <!-- Room Header -->
+                <div class="text-center mb-4">
+                    <img src="/wavechat.png" alt="Room" class="w-16 h-16 rounded-full mx-auto mb-2 object-cover" />
+                    <h3 class="text-lg font-semibold text-white" id="mobileRoomName">Select a room</h3>
+                    <p class="text-sm text-slate-400" id="mobileRoomStatus">No room selected</p>
+                </div>
+
+                <!-- Room Actions -->
+                <div class="flex gap-2">
+                    <button class="flex-1 py-2 px-3 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">notifications</span>
+                        Notify
+                    </button>
+                    <button class="flex-1 py-2 px-3 bg-surface-lighter hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">group_add</span>
+                        Invite
+                    </button>
+                </div>
+            </div>
+
+            <!-- Room Members -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-4">
+                    <h4 class="text-sm font-bold text-white mb-3">Members</h4>
+                    <div id="mobileRoomMembers" class="space-y-2">
+                        <div class="text-xs text-slate-400 text-center py-4">No room selected</div>
+                    </div>
+
+                    <!-- Room Settings -->
+                    <div class="mt-6">
+                        <h4 class="text-sm font-bold text-white mb-3">Settings</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-slate-300">Notifications</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-slate-300">Sound Effects</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="mt-6">
+                        <h4 class="text-sm font-bold text-white mb-3">Quick Actions</h4>
+                        <div class="space-y-2">
+                            <button class="w-full py-2 px-3 bg-surface-lighter hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                                Copy Room Code
+                            </button>
+                            <button class="w-full py-2 px-3 bg-surface-lighter hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[18px]">share</span>
+                                Share Room
+                            </button>
+                            <button class="w-full py-2 px-3 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[18px]">logout</span>
+                                Leave Room
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MOBILE RIGHT PANEL - Chats List -->
+    <div class="mobile-right-panel" id="mobileRightPanel">
+        <div class="flex flex-col h-full">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-800/40">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <img src="/wavechat.png" alt="Wave" class="w-8 h-8 rounded-lg object-contain" />
+                        <h2 class="text-lg font-bold text-white">Wave</h2>
+                    </div>
+                    <button id="closeMobileRightPanel" class="w-8 h-8 rounded-lg bg-surface-lighter text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="relative mb-4">
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <span class="material-symbols-outlined text-slate-500 text-[20px]">search</span>
+                    </div>
+                    <input 
+                        id="mobileChatSearch" 
+                        type="text" 
+                        placeholder="Search chats..."
+                        class="w-full pl-10 pr-4 py-2.5 bg-surface-lighter border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                    />
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="flex gap-2">
+                    <button id="mobileNewChatBtn" class="flex-1 py-2 px-3 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                        New Chat
+                    </button>
+                    <button id="mobileJoinRoomBtn" class="flex-1 py-2 px-3 bg-surface-lighter hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">group_add</span>
+                        Join
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chats List -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-4">
+                    <div id="mobileChatsList">
+                        <!-- Mobile chats list will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="p-4 bg-[#0b1418] border-t border-slate-800/40">
+                <nav class="flex justify-around items-center rounded-xl bg-surface-dark p-1">
+                    <a class="flex flex-col items-center p-2 rounded-lg text-primary bg-primary/10 flex-1" href="#">
+                        <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+                        <span class="text-[10px] font-medium mt-1">Chats</span>
+                    </a>
+                    <a class="flex flex-col items-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/ai-chat.html">
+                        <span class="material-symbols-outlined text-[20px]">smart_toy</span>
+                        <span class="text-[10px] font-medium mt-1">AI</span>
+                    </a>
+                    <a class="flex flex-col items-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/feed.html">
+                        <span class="material-symbols-outlined text-[20px]">newspaper</span>
+                        <span class="text-[10px] font-medium mt-1">Feed</span>
+                    </a>
+                    <a class="flex flex-col items-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/music.html">
+                        <span class="material-symbols-outlined text-[20px]">music_note</span>
+                        <span class="text-[10px] font-medium mt-1">Music</span>
+                    </a>
+                    <a class="flex flex-col items-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/profile.html">
+                        <span class="material-symbols-outlined text-[20px]">person</span>
+                        <span class="text-[10px] font-medium mt-1">Profile</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
     <!-- MOBILE BOTTOM NAVIGATION -->
     <nav id="mobileBottomNav" class="fixed bottom-0 left-0 right-0 z-50 bg-surface-dark/95 backdrop-blur-lg border-t border-slate-800">
         <div class="flex justify-between items-center h-20 px-6 pb-2">
@@ -522,8 +781,13 @@
                 <div class="w-10 h-8 flex items-center justify-center bg-primary/10 rounded-full">
                     <span class="material-symbols-outlined fill-current" style="font-size: 24px;">chat_bubble</span>
                 </div>
-                <span class="text-[10px] font-semibold" data-i18n="nav.chats">Chats</span>
+                <span class="text-[10px] font-semibold">Chats</span>
             </button>
+            
+            <a href="/music.html" class="mobile-tab-btn flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 24px;">music_note</span>
+                <span class="text-[10px] font-medium">Music</span>
+            </a>
             
             <a href="/feed.html" class="mobile-tab-btn flex flex-col items-center justify-center -mt-6">
                 <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-blue-400 shadow-[0_8px_16px_rgba(43,140,238,0.3)] flex items-center justify-center text-white transform active:scale-95 transition-transform">
@@ -533,14 +797,14 @@
             
             <a href="/ai-chat.html" class="mobile-tab-btn flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
                 <span class="material-symbols-outlined" style="font-size: 24px;">smart_toy</span>
-                <span class="text-[10px] font-medium" data-i18n="nav.ai">AI</span>
+                <span class="text-[10px] font-medium">AI</span>
             </a>
             
             <a href="/profile.html" class="mobile-tab-btn flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors">
                 <div class="w-6 h-6 rounded-full overflow-hidden bg-slate-700 ring-2 ring-transparent hover:ring-primary transition-all">
                     <span class="material-symbols-outlined text-slate-400 text-[20px]">person</span>
                 </div>
-                <span class="text-[10px] font-medium" data-i18n="nav.profile">Profile</span>
+                <span class="text-[10px] font-medium">Profile</span>
             </a>
         </div>
     </nav>
@@ -637,10 +901,10 @@
             
             <!-- Tabs -->
             <div class="flex gap-2 bg-background-dark rounded-lg p-1 mb-4">
-                <button id="createRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all bg-primary text-white" data-i18n="chat.createRoom">
+                <button id="createRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all bg-primary text-white">
                     Create Room
                 </button>
-                <button id="joinRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white" data-i18n="chat.joinRoom">
+                <button id="joinRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white">
                     Join Room
                 </button>
             </div>
@@ -648,25 +912,25 @@
             <!-- Create Room Content -->
             <div id="createRoomContent" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="chat.roomNameOptional">Room Name (Optional)</label>
-                    <input id="roomNameInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="My Awesome Room" data-i18n-placeholder="chat.myAwesomeRoom" type="text"/>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Name (Optional)</label>
+                    <input id="roomNameInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="My Awesome Room" type="text"/>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="chat.roomType">Room Type</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Type</label>
                     <div class="grid grid-cols-2 gap-2">
                         <button id="tempRoomBtn" class="p-3 rounded-lg border-2 border-primary bg-primary/10 text-white transition-all">
                             <div class="flex flex-col items-center gap-1">
                                 <span class="material-symbols-outlined text-2xl">schedule</span>
-                                <span class="text-sm font-medium" data-i18n="chat.temporary">Temporary</span>
-                                <span class="text-xs text-slate-400" data-i18n="chat.expiresWhenEmpty">Expires when empty</span>
+                                <span class="text-sm font-medium">Temporary</span>
+                                <span class="text-xs text-slate-400">Expires when empty</span>
                             </div>
                         </button>
                         <button id="foreverRoomBtn" class="p-3 rounded-lg border-2 border-slate-700 bg-surface-lighter text-slate-400 hover:text-white hover:border-slate-600 transition-all">
                             <div class="flex flex-col items-center gap-1">
                                 <span class="material-symbols-outlined text-2xl">all_inclusive</span>
-                                <span class="text-sm font-medium" data-i18n="chat.forever">Forever</span>
-                                <span class="text-xs text-slate-400" data-i18n="chat.permanentRoom">Permanent room</span>
+                                <span class="text-sm font-medium">Forever</span>
+                                <span class="text-xs text-slate-400">Permanent room</span>
                             </div>
                         </button>
                     </div>
@@ -674,28 +938,28 @@
                 
                 <!-- Settings -->
                 <div class="border-t border-slate-700 pt-3">
-                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="chat.roomSettingsLabel">Room Settings</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Settings</label>
                     <div class="space-y-2">
                         <label class="flex items-center justify-between text-sm text-slate-300">
-                            <span data-i18n="chat.allowPolls">Allow Polls</span>
+                            <span>Allow Polls</span>
                             <input type="checkbox" id="allowPolls" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
                         </label>
                         <label class="flex items-center justify-between text-sm text-slate-300">
-                            <span data-i18n="chat.allowVoiceMessages">Allow Voice Messages</span>
+                            <span>Allow Voice Messages</span>
                             <input type="checkbox" id="allowVoice" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
                         </label>
                         <label class="flex items-center justify-between text-sm text-slate-300">
-                            <span data-i18n="chat.allowFiles">Allow Files</span>
+                            <span>Allow Files</span>
                             <input type="checkbox" id="allowFiles" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
                         </label>
                         <label class="flex items-center justify-between text-sm text-slate-300">
-                            <span data-i18n="chat.allowImages">Allow Images</span>
+                            <span>Allow Images</span>
                             <input type="checkbox" id="allowImages" checked class="w-4 h-4 text-primary bg-surface-lighter border-slate-600 rounded focus:ring-primary">
                         </label>
                     </div>
                 </div>
                 
-                <button id="createRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors" data-i18n="chat.createRoom">
+                <button id="createRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors">
                     Create Room
                 </button>
             </div>
@@ -703,10 +967,10 @@
             <!-- Join Room Content -->
             <div id="joinRoomContent" class="space-y-4 hidden">
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="chat.roomCode">Room Code</label>
-                    <input id="roomCodeInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="Enter 6-character room code..." data-i18n-placeholder="chat.enterRoomCode" type="text" maxlength="6"/>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Room Code</label>
+                    <input id="roomCodeInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="Enter 6-character room code..." type="text" maxlength="6"/>
                 </div>
-                <button id="joinRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors" data-i18n="chat.joinRoom">
+                <button id="joinRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors">
                     Join Room
                 </button>
             </div>
@@ -794,9 +1058,6 @@
     <!-- Socket.IO -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     
-    <!-- i18n System -->
-    <script src="/js/i18n.js"></script>
-    
     <!-- Application Scripts -->
     <script src="/js/config.js"></script>
     <script src="/js/utils.js"></script>
@@ -806,57 +1067,12 @@
     <script src="/js/ui.js"></script>
     <script src="/js/app.js"></script>
     
-    <script>
-        // Initialize i18n on page load
-        window.addEventListener('DOMContentLoaded', async () => {
-            if (window.i18n) {
-                await window.i18n.init();
-            }
-        });
-    </script>
-
-    <script>
-        // Tablet Room Info Overlay (chat.html)
-        document.addEventListener('DOMContentLoaded', () => {
-            const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1279px)');
-            const panel = document.getElementById('roomInfoPanel');
-            const overlay = document.getElementById('roomInfoOverlay');
-            const toggleBtn = document.getElementById('toggleRoomInfoBtn');
-
-            if (!panel || !overlay || !toggleBtn) return;
-
-            const openPanel = () => {
-                if (!isTablet.matches) return;
-                panel.classList.add('tablet-open');
-                overlay.classList.add('show');
-            };
-
-            const closePanel = () => {
-                panel.classList.remove('tablet-open');
-                overlay.classList.remove('show');
-            };
-
-            toggleBtn.addEventListener('click', () => {
-                if (panel.classList.contains('tablet-open')) {
-                    closePanel();
-                } else {
-                    openPanel();
-                }
-            });
-
-            overlay.addEventListener('click', closePanel);
-
-            // Swipe disabled on desktop/tablet (button + overlay only)
-        });
-    </script>
-    
     <!-- Context Menu -->
     <script>
         // Context Menu - Wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', function() {
             let contextMenuTarget = null;
             const contextMenu = document.getElementById('messageContextMenu');
-            const menuPadding = 8;
             
             if (!contextMenu) {
                 console.error('[Context Menu] Menu element not found!');
@@ -865,76 +1081,45 @@
             
             console.log('[Context Menu] Menu element found:', contextMenu);
             
-            function openContextMenuAt(x, y, messageEl) {
-                if (!contextMenu || !messageEl) return;
-
-                contextMenuTarget = messageEl;
-
-                // Check if user owns the message to show/hide edit/delete
-                const userId = localStorage.getItem('userId');
-                const senderId = messageEl.dataset.senderId;
-
-                const editBtn = contextMenu.querySelector('[data-action="edit"]');
-                const deleteBtn = contextMenu.querySelector('[data-action="delete"]');
-                const downloadBtn = contextMenu.querySelector('[data-action="download"]');
-
-                if (senderId === userId) {
-                    if (editBtn) editBtn.style.display = 'flex';
-                    if (deleteBtn) deleteBtn.style.display = 'flex';
-                } else {
-                    if (editBtn) editBtn.style.display = 'none';
-                    if (deleteBtn) deleteBtn.style.display = 'none';
-                }
-
-                if (downloadBtn) {
-                    const downloadUrl = messageEl.dataset.downloadUrl;
-                    downloadBtn.style.display = downloadUrl ? 'flex' : 'none';
-                }
-
-                contextMenu.classList.add('show');
-
-                // Position menu within viewport
-                const menuRect = contextMenu.getBoundingClientRect();
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
-
-                let left = x;
-                let top = y;
-
-                if (left + menuRect.width + menuPadding > viewportWidth) {
-                    left = Math.max(menuPadding, viewportWidth - menuRect.width - menuPadding);
-                }
-
-                if (top + menuRect.height + menuPadding > viewportHeight) {
-                    top = Math.max(menuPadding, viewportHeight - menuRect.height - menuPadding);
-                }
-
-                contextMenu.style.left = left + 'px';
-                contextMenu.style.top = top + 'px';
-            }
-
             // Show context menu on right-click
             document.addEventListener('contextmenu', function(e) {
                 console.log('[Context Menu] Right-click detected on:', e.target);
-
+                
                 const messageEl = e.target.closest('[data-message-id]');
                 console.log('[Context Menu] Message element found:', !!messageEl);
-
+                
                 if (messageEl) {
                     e.preventDefault();
-                    openContextMenuAt(e.clientX, e.clientY, messageEl);
+                    contextMenuTarget = messageEl;
+                    
+                    console.log('[Context Menu] Opening menu at:', e.pageX, e.pageY);
+                    
+                    // Position menu
+                    contextMenu.style.left = e.pageX + 'px';
+                    contextMenu.style.top = e.pageY + 'px';
+                    contextMenu.classList.add('show');
+                    
+                    console.log('[Context Menu] Menu classes:', contextMenu.className);
+                    console.log('[Context Menu] Menu display:', window.getComputedStyle(contextMenu).display);
+                    
+                    // Check if user owns the message to show/hide edit/delete
+                    const messageId = messageEl.dataset.messageId;
+                    const userId = localStorage.getItem('userId');
+                    const senderId = messageEl.dataset.senderId;
+                    
+                    const editBtn = contextMenu.querySelector('[data-action="edit"]');
+                    const deleteBtn = contextMenu.querySelector('[data-action="delete"]');
+                    
+                    // Show edit/delete only for own messages
+                    if (senderId === userId) {
+                        if (editBtn) editBtn.style.display = 'flex';
+                        if (deleteBtn) deleteBtn.style.display = 'flex';
+                    } else {
+                        if (editBtn) editBtn.style.display = 'none';
+                        if (deleteBtn) deleteBtn.style.display = 'none';
+                    }
                 }
-            }, true);
-
-            // Fallback: open on right mouse button down
-            document.addEventListener('mousedown', function(e) {
-                if (e.button !== 2) return;
-                const messageEl = e.target.closest('[data-message-id]');
-                if (messageEl) {
-                    e.preventDefault();
-                    openContextMenuAt(e.clientX, e.clientY, messageEl);
-                }
-            }, true);
+            });
             
             // Long press for mobile
             let longPressTimer;
@@ -944,7 +1129,9 @@
                     longPressTimer = setTimeout(function() {
                         contextMenuTarget = messageEl;
                         const touch = e.touches[0];
-                        openContextMenuAt(touch.clientX, touch.clientY, messageEl);
+                        contextMenu.style.left = touch.pageX + 'px';
+                        contextMenu.style.top = touch.pageY + 'px';
+                        contextMenu.classList.add('show');
                         
                         // Vibrate on mobile
                         if (navigator.vibrate) {
@@ -1053,30 +1240,6 @@
                             alert('No text to copy');
                         }
                         break;
-
-                    case 'download':
-                        console.log('[Context Menu] Download message:', messageId);
-                        const downloadUrl = contextMenuTarget.dataset.downloadUrl;
-                        const downloadName = contextMenuTarget.dataset.downloadName || 'download';
-                        if (downloadUrl) {
-                            fetch(downloadUrl)
-                                .then(response => response.blob())
-                                .then(blob => {
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = downloadName;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    window.URL.revokeObjectURL(url);
-                                    document.body.removeChild(a);
-                                })
-                                .catch(err => {
-                                    console.error('[Context Menu] Download failed:', err);
-                                    window.open(downloadUrl, '_blank');
-                                });
-                        }
-                        break;
                         
                     case 'ask-ai':
                         console.log('[Context Menu] Ask AI about message:', messageText);
@@ -1119,16 +1282,9 @@
                                     enableSearch: false
                                 })
                             })
-                            .then(async response => {
+                            .then(response => {
                                 if (!response.ok) {
-                                    let errorMessage = `HTTP error! status: ${response.status}`;
-                                    try {
-                                        const errorData = await response.json();
-                                        errorMessage = errorData?.message || errorData?.error || errorMessage;
-                                    } catch (_) {
-                                        // ignore JSON parse errors
-                                    }
-                                    throw new Error(errorMessage);
+                                    throw new Error(`HTTP error! status: ${response.status}`);
                                 }
                                 return response.json();
                             })
@@ -1364,10 +1520,6 @@
             <span class="material-symbols-outlined text-[20px]">content_copy</span>
             <span>Copy</span>
         </div>
-        <div class="context-menu-item" data-action="download" style="display: none;">
-            <span class="material-symbols-outlined text-[20px]">download</span>
-            <span>Download</span>
-        </div>
         <div class="context-menu-item" data-action="ask-ai">
             <span class="material-symbols-outlined text-[20px]">psychology</span>
             <span>Ask AI</span>
@@ -1593,7 +1745,141 @@
             // Store selected type for app.js to access
             window.getSelectedRoomType = () => selectedRoomType;
         });
-    </script>
+
+        // Mobile Swipe Functionality
+        class MobileSwipe {
+            constructor() {
+                this.init();
+            }
+            
+            init() {
+                if (window.innerWidth > 1023) return; // Desktop only
+                
+                this.chatScreen = document.getElementById('chatScreen');
+                this.leftPanel = document.getElementById('mobileLeftPanel');
+                this.rightPanel = document.getElementById('mobileRightPanel');
+                this.overlay = document.getElementById('mobileOverlay');
+                this.leftIndicator = document.getElementById('leftSwipeIndicator');
+                this.rightIndicator = document.getElementById('rightSwipeIndicator');
+                
+                this.currentPanel = 'main';
+                this.touchStartX = 0;
+                this.touchStartY = 0;
+                this.touchCurrentX = 0;
+                this.isDragging = false;
+                this.swipeThreshold = 50;
+                
+                this.bindEvents();
+            }
+            
+            bindEvents() {
+                // Touch events for main chat area and messages container
+                const mainChat = document.querySelector('main');
+                const messagesContainer = document.getElementById('messagesFeed');
+                
+                // Add touch events to both main chat and messages
+                [mainChat, messagesContainer].forEach(element => {
+                    if (element) {
+                        element.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+                        element.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+                        element.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+                    }
+                });
+                
+                // Button events
+                document.getElementById('showMobileChatsList')?.addEventListener('click', () => this.showPanel('right'));
+                document.getElementById('showMobileRoomInfo')?.addEventListener('click', () => this.showPanel('left'));
+                document.getElementById('closeMobileLeftPanel')?.addEventListener('click', () => this.showPanel('main'));
+                document.getElementById('closeMobileRightPanel')?.addEventListener('click', () => this.showPanel('main'));
+                
+                // Overlay click
+                this.overlay?.addEventListener('click', () => this.showPanel('main'));
+                
+                // Prevent panel scrolling from interfering
+                this.leftPanel?.addEventListener('touchmove', (e) => e.stopPropagation());
+                this.rightPanel?.addEventListener('touchmove', (e) => e.stopPropagation());
+                
+                // Sync with desktop messages when mobile initializes
+                this.syncMobileWithDesktop();
+            }
+            
+            syncMobileWithDesktop() {
+                // Sync room info
+                const desktopRoomName = document.getElementById('roomName');
+                const desktopRoomStatus = document.getElementById('roomStatus');
+                if (desktopRoomName && desktopRoomStatus) {
+                    this.updateRoomInfo(
+                        desktopRoomName.textContent || 'Select a chat',
+                        desktopRoomStatus.textContent || '',
+                        []
+                    );
+                }
+                
+                // Force sync chat lists on mobile init
+                this.syncChatsList();
+            }
+            
+            handleTouchStart(e) {
+                const touch = e.touches[0];
+                this.touchStartX = touch.clientX;
+                this.touchStartY = touch.clientY;
+                this.touchCurrentX = touch.clientX;
+                this.isDragging = false;
+                
+                // Reset any existing transforms
+                this.leftPanel.style.transform = '';
+                this.rightPanel.style.transform = '';
+                this.overlay.style.opacity = '';
+                this.overlay.style.visibility = '';
+            }
+            
+            handleTouchMove(e) {
+                const touch = e.touches[0];
+                this.touchCurrentX = touch.clientX;
+                
+                const deltaX = this.touchCurrentX - this.touchStartX;
+                const deltaY = touch.clientY - this.touchStartY;
+                const absDeltaX = Math.abs(deltaX);
+                const absDeltaY = Math.abs(deltaY);
+                
+                // Start dragging if horizontal movement is greater than vertical
+                if (!this.isDragging && absDeltaX > 10 && absDeltaX > absDeltaY) {
+                    this.isDragging = true;
+                    e.preventDefault();
+                }
+                
+                if (!this.isDragging) return;
+                e.preventDefault();
+                
+                // Show indicators based on swipe direction
+                if (deltaX > 30 && this.currentPanel === 'main') {
+                    this.leftIndicator.classList.add('show');
+                    this.rightIndicator.classList.remove('show');
+                } else if (deltaX < -30 && this.currentPanel === 'main') {
+                    this.rightIndicator.classList.add('show');
+                    this.leftIndicator.classList.remove('show');
+                } else {
+                    this.leftIndicator.classList.remove('show');
+                    this.rightIndicator.classList.remove('show');
+                }
+                
+                // Apply transform for visual feedback - overlay style
+                if (this.currentPanel === 'main') {
+                    if (deltaX > 0) {
+                        // Swiping right - show left panel
+                        const progress = Math.min(deltaX / (window.innerWidth * 0.5), 1);
+                        this.leftPanel.style.transform = `translateX(${-100 + (progress * 100)}%)`;
+                        this.overlay.style.opacity = progress * 0.5;
+                        this.overlay.style.visibility = 'visible';
+                    } else {
+                        // Swiping left - show right panel
+                        const progress = Math.min(Math.abs(deltaX) / (window.innerWidth * 0.5), 1);
+                        this.rightPanel.style.transform = `translateX(${100 - (progress * 100)}%)`;
+                        this.overlay.style.opacity = progress * 0.5;
+                        this.overlay.style.visibility = 'visible';
+                    }
+                }
+            }\n            \n            handleTouchEnd(e) {\n                if (!this.isDragging) return;\n                \n                const deltaX = this.touchCurrentX - this.touchStartX;\n                const shouldSwipe = Math.abs(deltaX) > this.swipeThreshold;\n                \n                // Hide indicators\n                this.leftIndicator.classList.remove('show');\n                this.rightIndicator.classList.remove('show');\n                \n                if (shouldSwipe && this.currentPanel === 'main') {\n                    if (deltaX > 0) {\n                        this.showPanel('left');\n                    } else {\n                        this.showPanel('right');\n                    }\n                } else {\n                    this.showPanel(this.currentPanel);\n                }\n                \n                this.isDragging = false;\n            }\n            \n            showPanel(panel) {\n                this.currentPanel = panel;\n                \n                // Clear transform styles\n                this.leftPanel.style.transform = '';\n                this.rightPanel.style.transform = '';\n                this.overlay.style.opacity = '';\n                this.overlay.style.visibility = '';\n                \n                // Remove all panel classes\n                this.leftPanel.classList.remove('show');\n                this.rightPanel.classList.remove('show');\n                this.overlay.classList.remove('show');\n                \n                // Apply new panel state\n                const mobileBottomNav = document.getElementById('mobileBottomNav');\n                \n                switch (panel) {\n                    case 'left':\n                        this.leftPanel.classList.add('show');\n                        this.overlay.classList.add('show');\n                        if (mobileBottomNav) mobileBottomNav.style.transform = 'translateY(100%)';\n                        break;\n                    case 'right':\n                        this.rightPanel.classList.add('show');\n                        this.overlay.classList.add('show');\n                        if (mobileBottomNav) mobileBottomNav.style.transform = 'translateY(100%)';\n                        break;\n                    case 'main':\n                        // Default state\n                        if (mobileBottomNav) mobileBottomNav.style.transform = '';\n                        break;\n                }\n                \n                // Sync mobile chats list with desktop\n                if (panel === 'right') {\n                    this.syncChatsList();\n                }\n            }\n            \n            syncChatsList() {\n                const mobileChatsList = document.getElementById('mobileChatsList');\n                const desktopChatsList = document.getElementById('dmsListContainer');\n                \n                if (mobileChatsList && desktopChatsList) {\n                    mobileChatsList.innerHTML = desktopChatsList.innerHTML;\n                    \n                    // Add click handlers to mobile chat items\n                    mobileChatsList.querySelectorAll('.cursor-pointer').forEach(item => {\n                        item.addEventListener('click', (e) => {\n                            // Trigger the same click on desktop version\n                            const correspondingItem = desktopChatsList.querySelector(`[data-user-id=\"${item.dataset.userId}\"], [data-room-id=\"${item.dataset.roomId}\"]`);\n                            if (correspondingItem) {\n                                correspondingItem.click();\n                            }\n                            this.showPanel('main');\n                        });\n                    });\n                }\n            }\n            \n            updateRoomInfo(roomName, roomStatus, members) {\n                const mobileRoomName = document.getElementById('mobileRoomName');\n                const mobileRoomStatus = document.getElementById('mobileRoomStatus');\n                const mobileRoomMembers = document.getElementById('mobileRoomMembers');\n                \n                if (mobileRoomName) mobileRoomName.textContent = roomName;\n                if (mobileRoomStatus) mobileRoomStatus.textContent = roomStatus;\n                \n                if (mobileRoomMembers && members) {\n                    mobileRoomMembers.innerHTML = '';\n                    members.forEach(member => {\n                        const memberEl = document.createElement('div');\n                        memberEl.className = 'flex items-center gap-3 p-2 rounded-lg hover:bg-surface-hover transition-colors';\n                        memberEl.innerHTML = `\n                            <div class=\"w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center\">\n                                <span class=\"material-symbols-outlined text-primary text-[16px]\">person</span>\n                            </div>\n                            <div class=\"flex-1\">\n                                <div class=\"text-sm font-medium text-white\">${member}</div>\n                                <div class=\"text-xs text-green-400\">online</div>\n                            </div>\n                            <div class=\"w-2 h-2 bg-green-400 rounded-full\"></div>\n                        `;\n                        mobileRoomMembers.appendChild(memberEl);\n                    });\n                }\n            }\n        }\n        \n        // Initialize mobile swipe on mobile devices\n        if (window.innerWidth <= 1023) {\n            window.mobileSwipe = new MobileSwipe();\n            \n            // Listen for room changes to update mobile panels\n            window.addEventListener('roomChanged', (e) => {\n                if (window.mobileSwipe) {\n                    window.mobileSwipe.updateRoomInfo(e.detail.name, e.detail.status, e.detail.members);\n                }\n            });\n        }\n        \n        // Reinitialize on resize\n        window.addEventListener('resize', () => {\n            if (window.innerWidth <= 1023 && !window.mobileSwipe) {\n                window.mobileSwipe = new MobileSwipe();\n            } else if (window.innerWidth > 1023 && window.mobileSwipe) {\n                window.mobileSwipe = null;\n            }\n        });\n    </script>
 </body>
 </html>
 

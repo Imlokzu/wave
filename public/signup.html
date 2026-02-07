@@ -87,7 +87,7 @@
                             <img src="/nobackwave.png" alt="Wave" class="h-24 w-24 object-contain relative z-10 drop-shadow-2xl" />
                         </div>
                         <h1 class="text-5xl font-black text-white tracking-tighter font-outfit">WAVE</h1>
-                        <p class="text-slate-400 text-sm font-medium tracking-wide uppercase">Create your account</p>
+                        <p class="text-slate-400 text-sm font-medium tracking-wide uppercase" data-i18n="auth.createAccount">Create your account</p>
                     </div>
                     
                     <!-- Error Message -->
@@ -98,7 +98,7 @@
                         <!-- Username Field -->
                         <div class="group/input">
                             <label class="flex flex-col w-full">
-                                <span class="sr-only">Username</span>
+                                <span class="sr-only" data-i18n="auth.username">Username</span>
                                 <div class="relative flex items-center">
                                     <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors">
                                         <span class="material-symbols-outlined">person</span>
@@ -107,7 +107,7 @@
                                         id="username" 
                                         name="username"
                                         class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none" 
-                                        placeholder="Username" 
+                                        placeholder="Username" data-i18n-placeholder="auth.username"
                                         type="text" 
                                         required
                                         autocomplete="username"
@@ -143,7 +143,7 @@
                         <!-- Password Field -->
                         <div class="group/input">
                             <label class="flex flex-col w-full">
-                                <span class="sr-only">Password</span>
+                                <span class="sr-only" data-i18n="auth.password">Password</span>
                                 <div class="relative flex items-center">
                                     <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors">
                                         <span class="material-symbols-outlined">lock</span>
@@ -152,7 +152,7 @@
                                         id="password" 
                                         name="password"
                                         class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none" 
-                                        placeholder="Password (min 8 characters)" 
+                                        placeholder="Password (min 8 characters)" data-i18n-placeholder="auth.passwordMin"
                                         type="password" 
                                         required
                                         autocomplete="new-password"
@@ -176,13 +176,13 @@
                         <!-- Confirm Password Field -->
                         <div class="group/input">
                             <label class="flex flex-col w-full">
-                                <span class="sr-only">Confirm Password</span>
+                                <span class="sr-only" data-i18n="auth.confirmPassword">Confirm Password</span>
                                 <div class="relative flex items-center">
                                     <input 
                                         id="confirm-password" 
                                         name="confirm-password"
                                         class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-5 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none relative z-0" 
-                                        placeholder="Confirm Password" 
+                                        placeholder="Confirm Password" data-i18n-placeholder="auth.confirmPassword"
                                         type="password" 
                                         required
                                         autocomplete="new-password"
@@ -201,7 +201,7 @@
                             id="signup-btn"
                             class="group/btn relative mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 bg-primary hover:bg-[#2563eb] active:scale-[0.98] transition-all duration-200 text-white shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <span class="text-lg font-bold leading-normal tracking-[0.015em] mr-2">Create Account</span>
+                            <span class="text-lg font-bold leading-normal tracking-[0.015em] mr-2" data-i18n="auth.signUpButton">Create Account</span>
                             <span class="material-symbols-outlined text-[20px] transition-transform group-hover/btn:translate-x-1 font-bold">arrow_forward</span>
                             <div class="absolute inset-0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10"></div>
                         </button>
@@ -210,8 +210,8 @@
                     <!-- Footer Link -->
                     <div class="mt-8 text-center">
                         <p class="text-flux-muted text-sm font-normal">
-                            Already have an account? 
-                            <a class="text-primary hover:text-white font-medium hover:underline transition-colors decoration-primary/50 underline-offset-4" href="/login.html">Login</a>
+                            <span data-i18n="auth.alreadyHaveAccount">Already have an account?</span> 
+                            <a class="text-primary hover:text-white font-medium hover:underline transition-colors decoration-primary/50 underline-offset-4" href="/login.html" data-i18n="auth.login">Login</a>
                         </p>
                     </div>
                 </div>
@@ -443,5 +443,6 @@
         `;
         document.head.appendChild(style);
     </script>
-</body>
-</html>
+    
+    <!-- i18n Support -->
+    <script src="/js/i18n.js"></script>

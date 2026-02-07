@@ -14,17 +14,20 @@ async function getSubscriptionStatus() {
       availableModels: [],
       allModels: [
         { id: 'auto', name: 'Auto Select', tier: 'free', useCase: 'Best model for each task', locked: false },
+        { id: 'wave-flash-1', name: 'Wave Flash 1', tier: 'free', useCase: 'Ultra-fast responses', locked: false },
         { id: 'wave-flash-2', name: 'Wave Flash 2', tier: 'free', useCase: 'Quick responses', locked: false },
         { id: 'wave-flash-3', name: 'Wave Flash 3', tier: 'free', useCase: 'Lightweight research', locked: false },
         { id: 'wave-flash-4', name: 'Wave Flash 4', tier: 'free', useCase: 'Efficient dialogue', locked: false },
-        { id: 'wave-flash-5', name: 'Wave Flash 5', tier: 'pro', useCase: 'Advanced quick reasoning', locked: true },
+        { id: 'wave-1', name: 'Wave 1', tier: 'free', useCase: 'Fast balanced model', locked: false },
         { id: 'wave-2', name: 'Wave 2', tier: 'free', useCase: 'General intelligence', locked: false },
         { id: 'wave-3', name: 'Wave 3', tier: 'free', useCase: 'Balanced chat & research', locked: false },
         { id: 'wave-4', name: 'Wave 4', tier: 'pro', useCase: 'High-intelligence tasks', locked: true },
+        { id: 'wave-5', name: 'Wave 5', tier: 'pro', useCase: 'Advanced reasoning', locked: true },
+        { id: 'wave-o1', name: 'Wave O1', tier: 'free', useCase: 'Fast thinking mode', locked: false },
+        { id: 'wave-o2', name: 'Wave O2', tier: 'pro', useCase: 'Reasoning & research', locked: true },
         { id: 'wave-o3', name: 'Wave O3', tier: 'pro', useCase: 'Deep logic (Slow - Deep Thinking)', locked: true },
         { id: 'wave-o4', name: 'Wave O4', tier: 'pro', useCase: 'Expert research (Slow - Deep Thinking)', locked: true },
-        { id: 'wave-o5', name: 'Wave O5', tier: 'pro', useCase: 'Premium analysis (Slow - Deep Thinking)', locked: true },
-        { id: 'wave-coder-4', name: 'Wave Coder 4', tier: 'pro', useCase: 'Advanced coding', locked: true }
+        { id: 'wave-o5', name: 'Wave O5', tier: 'pro', useCase: 'Premium analysis (Slow - Deep Thinking)', locked: true }
       ]
     };
   }
@@ -118,18 +121,19 @@ async function loadSubscriptionStatus() {
     const proBadge = document.getElementById('proBadge');
     const upgradeProBtn = document.getElementById('upgradeProBtn');
     const manageProBtn = document.getElementById('manageProBtn');
+    const t = window.i18n?.t ? window.i18n.t.bind(window.i18n) : (key) => key;
 
     if (isPro) {
       // Show Pro status
-      if (proTitle) proTitle.textContent = 'Wave Pro Active';
-      if (proDescription) proDescription.textContent = 'You have unlocked the full potential of Wave AI, including unlimited context windows and priority generation speed.';
+      if (proTitle) proTitle.textContent = t('pro.activeTitle');
+      if (proDescription) proDescription.textContent = t('pro.activeDescription');
       if (proBadge) proBadge.classList.remove('hidden');
       if (upgradeProBtn) upgradeProBtn.classList.add('hidden');
       if (manageProBtn) manageProBtn.classList.remove('hidden');
     } else {
       // Show Free status
-      if (proTitle) proTitle.textContent = 'Wave Pro';
-      if (proDescription) proDescription.textContent = 'Upgrade to unlock unlimited AI conversations, priority support, and exclusive features.';
+      if (proTitle) proTitle.textContent = t('pro.title');
+      if (proDescription) proDescription.textContent = t('pro.upgradeDescription');
       if (proBadge) proBadge.classList.add('hidden');
       if (upgradeProBtn) upgradeProBtn.classList.remove('hidden');
       if (manageProBtn) manageProBtn.classList.add('hidden');
@@ -182,52 +186,21 @@ async function loadAIModels() {
       </label>
     `;
 
-    // Separate free and pro models
-    const freeModels = allModels.filter(m => m.tier === 'free' && m.id !== 'auto');
-    const proModels = allModels.filter(m => m.tier === 'pro' && m.id !== 'auto');
+    // Group models by type
+    const flashModels = allModels.filter(m => m.id.startsWith('wave-flash-'));
+    const standardModels = allModels.filter(m => m.id.startsWith('wave-') && !m.id.startsWith('wave-flash-') && !m.id.startsWith('wave-o'));
+    const oModels = allModels.filter(m => m.id.startsWith('wave-o'));
 
-    // Free models section
-    if (freeModels.length > 0) {
+    // Wave Flash section
+    if (flashModels.length > 0) {
       html += `
         <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Free Models</div>
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Wave Flash (Speed / Low Latency)</div>
       `;
 
-      freeModels.forEach(model => {
+      flashModels.forEach(model => {
         const isSelected = savedModel === model.id;
-
-        html += `
-          <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/50 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(91,141,239,0.1)]' : 'border-slate-700'} cursor-pointer hover:bg-slate-800 hover:border-slate-600 transition-all mb-2 group">
-            <div class="flex items-center gap-3 flex-1">
-              <input type="radio" name="aiModel" value="${model.id}" ${isSelected ? 'checked' : ''} onchange="selectAIModel('${model.id}')" class="w-4 h-4 text-primary"/>
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold text-white">${model.name}</span>
-                </div>
-                <div class="text-xs text-slate-400 mt-0.5">${model.useCase || model.reasoning || 'AI model'}</div>
-              </div>
-            </div>
-            ${isSelected ? '<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>' : ''}
-          </label>
-        `;
-      });
-
-      html += `</div>`;
-    }
-
-    // Pro models section
-    if (proModels.length > 0) {
-      html += `
-        <div class="pt-2">
-          <div class="flex items-center justify-between mb-2 px-1">
-            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pro Models</div>
-            ${!isPro ? '<span class="text-[9px] font-bold px-2 py-1 rounded-full bg-primary/20 text-primary">UPGRADE TO UNLOCK</span>' : ''}
-          </div>
-      `;
-
-      proModels.forEach(model => {
-        const isLocked = !isPro;
-        const isSelected = savedModel === model.id;
+        const isLocked = model.tier === 'pro' && !isPro;
 
         html += `
           <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/50 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(91,141,239,0.1)]' : 'border-slate-700'} ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-800 hover:border-slate-600'} transition-all mb-2 group">
@@ -236,7 +209,7 @@ async function loadAIModels() {
               <div class="flex-1">
                 <div class="flex items-center gap-2">
                   <span class="text-sm font-semibold text-white">${model.name}</span>
-                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary">PRO</span>
+                  ${model.tier === 'pro' ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary">PRO</span>' : ''}
                 </div>
                 <div class="text-xs text-slate-400 mt-0.5">${model.useCase || model.reasoning || 'AI model'}</div>
               </div>
@@ -249,7 +222,69 @@ async function loadAIModels() {
       html += `</div>`;
     }
 
-    if (freeModels.length === 0 && proModels.length === 0) {
+    // Wave (Standard) section
+    if (standardModels.length > 0) {
+      html += `
+        <div class="pt-2">
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Wave (Balanced / Default)</div>
+      `;
+
+      standardModels.forEach(model => {
+        const isSelected = savedModel === model.id;
+        const isLocked = model.tier === 'pro' && !isPro;
+
+        html += `
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/50 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(91,141,239,0.1)]' : 'border-slate-700'} ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-800 hover:border-slate-600'} transition-all mb-2 group">
+            <div class="flex items-center gap-3 flex-1">
+              <input type="radio" name="aiModel" value="${model.id}" ${isSelected ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="selectAIModel('${model.id}')" class="w-4 h-4 text-primary"/>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold text-white">${model.name}</span>
+                  ${model.tier === 'pro' ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary">PRO</span>' : ''}
+                </div>
+                <div class="text-xs text-slate-400 mt-0.5">${model.useCase || model.reasoning || 'AI model'}</div>
+              </div>
+            </div>
+            ${isLocked ? '<span class="material-symbols-outlined text-slate-600 text-[18px]">lock</span>' : isSelected ? '<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>' : ''}
+          </label>
+        `;
+      });
+
+      html += `</div>`;
+    }
+
+    // Wave O (Reasoning) section
+    if (oModels.length > 0) {
+      html += `
+        <div class="pt-2">
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Wave O (Thinking / Reasoning)</div>
+      `;
+
+      oModels.forEach(model => {
+        const isSelected = savedModel === model.id;
+        const isLocked = model.tier === 'pro' && !isPro;
+
+        html += `
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/50 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(91,141,239,0.1)]' : 'border-slate-700'} ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-800 hover:border-slate-600'} transition-all mb-2 group">
+            <div class="flex items-center gap-3 flex-1">
+              <input type="radio" name="aiModel" value="${model.id}" ${isSelected ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="selectAIModel('${model.id}')" class="w-4 h-4 text-primary"/>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold text-white">${model.name}</span>
+                  ${model.tier === 'pro' ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary">PRO</span>' : ''}
+                </div>
+                <div class="text-xs text-slate-400 mt-0.5">${model.useCase || model.reasoning || 'AI model'}</div>
+              </div>
+            </div>
+            ${isLocked ? '<span class="material-symbols-outlined text-slate-600 text-[18px]">lock</span>' : isSelected ? '<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>' : ''}
+          </label>
+        `;
+      });
+
+      html += `</div>`;
+    }
+
+    if (flashModels.length === 0 && standardModels.length === 0 && oModels.length === 0) {
       html += `
         <div class="p-4 text-center text-slate-400 text-sm">
           <p>No AI models available</p>

@@ -3,8 +3,10 @@
     <head>
         <meta charset="utf-8" />
         <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <link rel="icon" type="image/png" href="/nobackwave.png" />
         <title>WaveFeed - Channels</title>
         <script src="/js/theme-init.js"></script>
+        <script src="/js/i18n.js"></script>
         <link href="/css/theme.css" rel="stylesheet" />
         <link href="/css/theme-config.css" rel="stylesheet" />
         <link
@@ -143,19 +145,12 @@
                         </a>
                         <h1
                             class="text-white text-xl font-bold leading-tight tracking-tight"
+                            data-i18n="feed.waveFeed"
                         >
                             WaveFeed
                         </h1>
                     </div>
                     <div class="flex items-center gap-3">
-                        <a
-                            href="/music.html"
-                            class="flex items-center justify-center size-10 rounded-full bg-[#1e293b] text-white hover:bg-[#334155] transition-colors border border-border-dark"
-                        >
-                            <span class="material-symbols-outlined"
-                                >music_note</span
-                            >
-                        </a>
                         <a
                             href="/ai-chat.html"
                             class="flex items-center justify-center size-10 rounded-full bg-[#1e293b] text-white hover:bg-[#334155] transition-colors border border-border-dark"
@@ -205,7 +200,7 @@
                             class="material-symbols-outlined text-gray-400 text-[18px]"
                             >translate</span
                         >
-                        <p class="text-gray-200 text-sm font-medium mr-1">
+                        <p class="text-gray-200 text-sm font-medium mr-1" data-i18n="feed.autoTranslate">
                             Auto-Translate
                         </p>
                         <div
@@ -225,7 +220,7 @@
                             class="material-symbols-outlined text-white text-[18px]"
                             >auto_awesome</span
                         >
-                        <p class="text-white text-sm font-bold">Summarize</p>
+                        <p class="text-white text-sm font-bold" data-i18n="feed.summarize">Summarize</p>
                         <span
                             class="text-white/80 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/20"
                             >PRO</span
@@ -238,7 +233,7 @@
                         <span class="material-symbols-outlined text-[18px]"
                             >refresh</span
                         >
-                        <p class="text-sm font-medium">Refresh</p>
+                        <p class="text-sm font-medium" data-i18n="feed.refresh">Refresh</p>
                     </button>
                 </div>
             </div>
@@ -1018,15 +1013,6 @@
                     </a>
                     <a
                         class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors"
-                        href="/music.html"
-                    >
-                        <span class="material-symbols-outlined text-[24px]"
-                            >music_note</span
-                        >
-                        <span class="text-[10px] font-medium mt-1">Music</span>
-                    </a>
-                    <a
-                        class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors"
                         href="/profile.html"
                     >
                         <span class="material-symbols-outlined text-[24px]"
@@ -1066,18 +1052,6 @@
                         >chat_bubble</span
                     >
                     <span class="text-[10px] font-medium">Chats</span>
-                </a>
-
-                <a
-                    href="/music.html"
-                    class="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-200 transition-colors"
-                >
-                    <span
-                        class="material-symbols-outlined"
-                        style="font-size: 24px"
-                        >music_note</span
-                    >
-                    <span class="text-[10px] font-medium">Music</span>
                 </a>
 
                 <a

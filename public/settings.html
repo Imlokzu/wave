@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link rel="icon" type="image/png" href="/nobackwave.png" />
     <title>Wave - Settings & Pro</title>
     <!-- Theme System -->
     <link href="/css/theme.css" rel="stylesheet" />
@@ -336,109 +337,68 @@
                     <aside id="chatListSidebar"
                         class="mobile-sidebar flex flex-col lg:col-span-4 col-span-12 gap-4 lg:sticky lg:top-24 self-start h-fit">
                         <div class="bg-surface-dark rounded-2xl p-4 border border-[#223f49] shadow-xl">
-                            <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mb-3">Account
+                            <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mb-3" data-i18n="settings.account">Account
                             </h3>
                             <div class="space-y-1">
                                 <button
                                     class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white bg-surface-dark-hover font-medium text-sm transition-colors"
                                     data-tab="general">
                                     <span class="material-symbols-outlined text-primary">person</span>
-                                    <span>General</span>
+                                    <span data-i18n="settings.general">General</span>
                                 </button>
                                 <button
                                     class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
                                     data-tab="privacy">
                                     <span class="material-symbols-outlined">lock</span>
-                                    <span>Privacy</span>
+                                    <span data-i18n="settings.privacy">Privacy</span>
                                 </button>
                                 <button
                                     class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
                                     data-tab="notifications">
                                     <span class="material-symbols-outlined">notifications</span>
-                                    <span>Notifications</span>
+                                    <span data-i18n="settings.notifications">Notifications</span>
                                 </button>
                             </div>
 
-                            <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mt-6 mb-3">
+                            <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mt-6 mb-3" data-i18n="settings.preferences">
                                 Preferences</h3>
                             <div class="space-y-1">
                                 <button
                                     class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
                                     data-tab="accessibility">
                                     <span class="material-symbols-outlined">accessibility</span>
-                                    <span>Accessibility</span>
+                                    <span data-i18n="settings.accessibility">Accessibility</span>
                                 </button>
                                 <button
                                     class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
                                     data-tab="appearance">
                                     <span class="material-symbols-outlined">palette</span>
-                                    <span>Appearance</span>
+                                    <span data-i18n="settings.appearance">Appearance</span>
                                 </button>
                                 <button
                                     class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
                                     data-tab="language">
                                     <span class="material-symbols-outlined">language</span>
-                                    <span>Language</span>
+                                    <span data-i18n="settings.language">Language</span>
                                 </button>
                             </div>
 
-                            <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mt-6 mb-3">
+                            <h3 class="text-[#90bccb] text-xs font-bold uppercase tracking-wider px-3 mt-6 mb-3" data-i18n="settings.advanced">
                                 Advanced</h3>
                             <div class="space-y-1">
                                 <button
                                     class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
                                     data-tab="api">
                                     <span class="material-symbols-outlined">api</span>
-                                    <span>API Keys</span>
-                                </button>
-                                <button
-                                    class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
-                                    data-tab="data">
-                                    <span class="material-symbols-outlined">storage</span>
-                                    <span>Storage</span>
+                                    <span data-i18n="settings.apiKeys">API Keys</span>
                                 </button>
                                 <button
                                     class="settings-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
                                     data-tab="about">
                                     <span class="material-symbols-outlined">info</span>
-                                    <span>About</span>
+                                    <span data-i18n="settings.about">About</span>
                                 </button>
                             </div>
-                        </div>
-
-                        <div class="bg-surface-dark rounded-2xl p-2 border border-[#223f49] shadow-xl mt-4 shrink-0">
-                            <nav class="flex justify-around items-center rounded-xl bg-background-dark p-1">
-                                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-dark-hover transition-colors flex-1 min-w-0"
-                                    href="/chat.html">
-                                    <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
-                                    <span
-                                        class="text-[9px] font-medium mt-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full">Chats</span>
-                                </a>
-                                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
-                                    href="/ai-chat.html">
-                                    <span class="material-symbols-outlined text-[20px]">smart_toy</span>
-                                    <span
-                                        class="text-[9px] font-medium mt-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full">AI</span>
-                                </a>
-                                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
-                                    href="/feed.html">
-                                    <span class="material-symbols-outlined text-[20px]">newspaper</span>
-                                    <span
-                                        class="text-[9px] font-medium mt-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full">Feed</span>
-                                </a>
-                                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-[#90bccb] hover:bg-white/5 hover:text-white font-medium text-sm transition-colors"
-                                    href="/profile.html">
-                                    <span class="material-symbols-outlined text-[20px]">person</span>
-                                    <span
-                                        class="text-[9px] font-medium mt-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full">Profile</span>
-                                </a>
-                                <a class="flex flex-col items-center justify-center p-2 rounded-lg text-primary bg-primary/10 flex-1 min-w-0"
-                                    href="/settings.html">
-                                    <span class="material-symbols-outlined text-[20px]">settings</span>
-                                    <span
-                                        class="text-[9px] font-medium mt-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full">Settings</span>
-                                </a>
-                            </nav>
                         </div>
                     </aside>
 
@@ -452,15 +412,15 @@
                             <div class="relative z-10 flex flex-col md:flex-row items-center justify-between p-6 gap-6">
                                 <div class="flex flex-col gap-2">
                                     <div class="flex items-center gap-3">
-                                        <h2 id="proTitle" class="text-white text-2xl font-bold tracking-tight">Wave
+                                        <h2 id="proTitle" class="text-white text-2xl font-bold tracking-tight" data-i18n="pro.title">Wave
                                             Pro
                                         </h2>
                                         <span id="proBadge"
                                             class="hidden inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary text-black shadow-[0_0_10px_rgba(13,185,242,0.5)]">
-                                            PREMIUM
+                                            <span data-i18n="pro.premiumBadge">PREMIUM</span>
                                         </span>
                                     </div>
-                                    <p id="proDescription" class="text-[#90bccb] text-sm max-w-md leading-relaxed">
+                                    <p id="proDescription" class="text-[#90bccb] text-sm max-w-md leading-relaxed" data-i18n="pro.upgradeDescription">
                                         Upgrade to unlock unlimited AI conversations, priority support, and
                                         exclusive
                                         features.
@@ -469,13 +429,13 @@
                                 <div class="flex-shrink-0 flex gap-3">
                                     <a href="/gift-pro.html" id="upgradeProBtn"
                                         class="group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-5 py-2.5 text-black font-bold text-sm transition-all hover:bg-[#34caff] active:scale-95">
-                                        <span>Upgrade to Pro</span>
+                                        <span data-i18n="pro.upgrade">Upgrade to Pro</span>
                                         <span
                                             class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                     </a>
                                     <button id="manageProBtn" onclick="window.location.href='/gift-pro.html'"
                                         class="hidden group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-5 py-2.5 text-black font-bold text-sm transition-all hover:bg-[#34caff] active:scale-95">
-                                        <span>Manage Subscription</span>
+                                        <span data-i18n="pro.manageSubscription">Manage Subscription</span>
                                         <span class="material-symbols-outlined text-lg">settings</span>
                                     </button>
                                 </div>
@@ -489,8 +449,8 @@
                         <section id="generalTab" class="settings-content flex flex-col gap-6 pt-2">
                             <div class="flex items-center justify-between border-b border-[#223f49] pb-4">
                                 <div>
-                                    <h3 class="text-white text-lg font-bold">General Settings</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Manage your profile and account
+                                    <h3 class="text-white text-lg font-bold" data-i18n="settings.generalSettings">General Settings</h3>
+                                    <p class="text-[#90bccb] text-sm mt-1" data-i18n="settings.manageProfile">Manage your profile and account
                                         preferences.
                                     </p>
                                 </div>
@@ -498,33 +458,33 @@
 
                             <!-- Profile Section -->
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">Profile Information</h4>
+                                <h4 class="text-white font-bold mb-4" data-i18n="settings.profileInfo">Profile Information</h4>
                                 <div class="flex flex-col gap-4">
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-white text-sm font-medium" for="displayName">Display
+                                        <label class="text-white text-sm font-medium" for="displayName" data-i18n="settings.displayName">Display
                                             Name</label>
                                         <input id="displayName"
                                             class="block w-full rounded-lg border-[#223f49] bg-[#101e23] px-4 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm transition-all shadow-sm"
-                                            placeholder="Your display name" type="text" />
+                                            data-i18n-placeholder="settings.yourDisplayName" placeholder="Your display name" type="text" />
                                     </div>
 
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-white text-sm font-medium" for="username">Username</label>
+                                        <label class="text-white text-sm font-medium" for="username" data-i18n="settings.username">Username</label>
                                         <input id="username"
                                             class="block w-full rounded-lg border-[#223f49] bg-[#101e23] px-4 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm transition-all shadow-sm"
                                             placeholder="@username" type="text" />
                                     </div>
 
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-white text-sm font-medium" for="bio">Bio</label>
+                                        <label class="text-white text-sm font-medium" for="bio" data-i18n="settings.bio">Bio</label>
                                         <textarea id="bio"
                                             class="block w-full rounded-lg border-[#223f49] bg-[#101e23] px-4 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm transition-all shadow-sm resize-none"
-                                            placeholder="Tell us about yourself..." rows="3"></textarea>
+                                            data-i18n-placeholder="settings.tellAboutYou" placeholder="Tell us about yourself..." rows="3"></textarea>
                                     </div>
 
                                     <div class="flex justify-end pt-2">
                                         <button id="saveProfile"
-                                            class="bg-primary text-black px-6 py-2 rounded-lg text-sm font-bold hover:bg-[#34caff] shadow-lg shadow-primary/20 transition-all active:scale-95">Save
+                                            class="bg-primary text-black px-6 py-2 rounded-lg text-sm font-bold hover:bg-[#34caff] shadow-lg shadow-primary/20 transition-all active:scale-95" data-i18n="settings.saveChanges">Save
                                             Changes</button>
                                     </div>
                                 </div>
@@ -535,20 +495,20 @@
                         <section id="privacyTab" class="settings-content hidden flex-col gap-6 pt-2">
                             <div class="flex items-center justify-between border-b border-[#223f49] pb-4">
                                 <div>
-                                    <h3 class="text-white text-lg font-bold">Privacy & Security</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Control your privacy and security
+                                    <h3 class="text-white text-lg font-bold" data-i18n="settings.privacySecurity">Privacy & Security</h3>
+                                    <p class="text-[#90bccb] text-sm mt-1" data-i18n="settings.controlPrivacy">Control your privacy and security
                                         settings.
                                     </p>
                                 </div>
                             </div>
 
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">Privacy Settings</h4>
+                                <h4 class="text-white font-bold mb-4" data-i18n="settings.privacySettings">Privacy Settings</h4>
                                 <div class="flex flex-col gap-4">
                                     <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
                                         <div>
-                                            <p class="text-white font-medium">Profile Visibility</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Who can see your profile</p>
+                                            <p class="text-white font-medium" data-i18n="settings.profileVisibility">Profile Visibility</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.whoCanSeeProfile">Who can see your profile</p>
                                         </div>
                                         <select id="profileVisibility"
                                             class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
@@ -560,8 +520,8 @@
 
                                     <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
                                         <div>
-                                            <p class="text-white font-medium">Online Status</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Show when you're online</p>
+                                            <p class="text-white font-medium" data-i18n="settings.onlineStatus">Online Status</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.showOnline">Show when you're online</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="onlineStatus" class="sr-only peer" checked>
@@ -573,8 +533,8 @@
 
                                     <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
                                         <div>
-                                            <p class="text-white font-medium">Read Receipts</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Let others know when you've read
+                                            <p class="text-white font-medium" data-i18n="settings.readReceipts">Read Receipts</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.readReceiptsDesc">Let others know when you've read
                                                 their messages</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
@@ -587,8 +547,8 @@
 
                                     <div class="flex items-center justify-between py-3">
                                         <div>
-                                            <p class="text-white font-medium">Typing Indicators</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Show when you're typing</p>
+                                            <p class="text-white font-medium" data-i18n="settings.typingIndicators">Typing Indicators</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.showTyping">Show when you're typing</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="typingIndicators" class="sr-only peer" checked>
@@ -601,15 +561,15 @@
                             </div>
 
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">Security</h4>
+                                <h4 class="text-white font-bold mb-4" data-i18n="settings.security">Security</h4>
                                 <div class="flex flex-col gap-3">
                                     <button
                                         class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">password</span>
                                             <div>
-                                                <p class="text-white font-medium text-sm">Change Password</p>
-                                                <p class="text-[#90bccb] text-xs">Update your password</p>
+                                                <p class="text-white font-medium text-sm" data-i18n="settings.changePasswordAction">Change Password</p>
+                                                <p class="text-[#90bccb] text-xs" data-i18n="settings.updatePassword">Update your password</p>
                                             </div>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
@@ -620,9 +580,9 @@
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">shield</span>
                                             <div>
-                                                <p class="text-white font-medium text-sm">Two-Factor Authentication
+                                                <p class="text-white font-medium text-sm" data-i18n="settings.twoFactorAuth">Two-Factor Authentication
                                                 </p>
-                                                <p class="text-[#90bccb] text-xs">Add an extra layer of security</p>
+                                                <p class="text-[#90bccb] text-xs" data-i18n="settings.extraSecurity">Add an extra layer of security</p>
                                             </div>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
@@ -633,8 +593,8 @@
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">devices</span>
                                             <div>
-                                                <p class="text-white font-medium text-sm">Active Sessions</p>
-                                                <p class="text-[#90bccb] text-xs">Manage your logged-in devices</p>
+                                                <p class="text-white font-medium text-sm" data-i18n="settings.activeSessions">Active Sessions</p>
+                                                <p class="text-[#90bccb] text-xs" data-i18n="settings.manageDevices">Manage your logged-in devices</p>
                                             </div>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
@@ -647,8 +607,8 @@
                         <section id="notificationsTab" class="settings-content hidden flex-col gap-6 pt-2">
                             <div class="flex items-center justify-between border-b border-[#223f49] pb-4">
                                 <div>
-                                    <h3 class="text-white text-lg font-bold">Notification Preferences</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Control how you receive notifications.
+                                    <h3 class="text-white text-lg font-bold" data-i18n="settings.notificationPreferences">Notification Preferences</h3>
+                                    <p class="text-[#90bccb] text-sm mt-1" data-i18n="settings.controlNotifications">Control how you receive notifications.
                                     </p>
                                 </div>
                             </div>
@@ -657,8 +617,8 @@
                                 <div class="flex flex-col gap-4">
                                     <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
                                         <div>
-                                            <p class="text-white font-medium">Desktop Notifications</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Receive notifications on your
+                                            <p class="text-white font-medium" data-i18n="settings.desktopNotifications">Desktop Notifications</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.desktopNotificationsDesc">Receive notifications on your
                                                 desktop
                                             </p>
                                         </div>
@@ -672,8 +632,8 @@
 
                                     <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
                                         <div>
-                                            <p class="text-white font-medium">Sound Notifications</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Play sound for new messages</p>
+                                            <p class="text-white font-medium" data-i18n="settings.soundNotifications">Sound Notifications</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.soundNotificationsDesc">Play sound for new messages</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="soundNotifications" class="sr-only peer">
@@ -685,8 +645,8 @@
 
                                     <div class="flex items-center justify-between py-3">
                                         <div>
-                                            <p class="text-white font-medium">Message Previews</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Show message content in
+                                            <p class="text-white font-medium" data-i18n="settings.messagePreviews">Message Previews</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.messagePreviewsDesc">Show message content in
                                                 notifications
                                             </p>
                                         </div>
@@ -705,8 +665,8 @@
                         <section id="languageTab" class="settings-content hidden flex-col gap-6 pt-2">
                             <div class="flex items-center justify-between border-b border-[#223f49] pb-4">
                                 <div>
-                                    <h3 class="text-white text-lg font-bold">Language & Region</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Customize language and regional settings.
+                                    <h3 class="text-white text-lg font-bold" data-i18n="settings.languageRegion">Language & Region</h3>
+                                    <p class="text-[#90bccb] text-sm mt-1" data-i18n="settings.customizeLanguage">Customize language and regional settings.
                                     </p>
                                 </div>
                             </div>
@@ -714,22 +674,18 @@
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
                                 <div class="flex flex-col gap-4">
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-white text-sm font-medium">Display Language</label>
+                                        <label class="text-white text-sm font-medium" data-i18n="settings.displayLanguage">Display Language</label>
                                         <select id="displayLanguage"
                                             class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
-                                            <option value="en-US">English (US)</option>
-                                            <option value="en-GB">English (UK)</option>
-                                            <option value="es">Español</option>
-                                            <option value="fr">Français</option>
-                                            <option value="de">Deutsch</option>
-                                            <option value="ja">日本語</option>
-                                            <option value="ko">한국어</option>
-                                            <option value="zh">中文</option>
+                                            <option value="en">English</option>
+                                            <option value="de">Deutsch (German)</option>
+                                            <option value="uk">Українська (Ukrainian)</option>
                                         </select>
+                                        <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.changesApplyImmediately">Changes will apply immediately</p>
                                     </div>
 
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-white text-sm font-medium">Time Zone</label>
+                                        <label class="text-white text-sm font-medium" data-i18n="settings.timeZone">Time Zone</label>
                                         <select id="timeZone"
                                             class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
                                             <option value="auto">Auto-detect</option>
@@ -742,7 +698,7 @@
                                     </div>
 
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-white text-sm font-medium">Date Format</label>
+                                        <label class="text-white text-sm font-medium" data-i18n="settings.dateFormat">Date Format</label>
                                         <select id="dateFormat"
                                             class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
                                             <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -752,7 +708,7 @@
                                     </div>
 
                                     <div class="flex flex-col gap-2">
-                                        <label class="text-white text-sm font-medium">Time Format</label>
+                                        <label class="text-white text-sm font-medium" data-i18n="settings.timeFormat">Time Format</label>
                                         <select id="timeFormat"
                                             class="bg-[#101e23] border border-[#223f49] text-white rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary">
                                             <option value="12">12-hour (AM/PM)</option>
@@ -767,14 +723,14 @@
                         <section id="accessibilityTab" class="settings-content hidden flex-col gap-4 pt-0">
                             <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
                                 <div>
-                                    <h3 class="text-white text-lg font-bold">Accessibility</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Make Wave more accessible for you.</p>
+                                    <h3 class="text-white text-lg font-bold" data-i18n="settings.accessibilityTitle">Accessibility</h3>
+                                    <p class="text-[#90bccb] text-sm mt-1" data-i18n="settings.accessibilityDesc">Make Wave more accessible for you.</p>
                                 </div>
                             </div>
 
                             <!-- Text Size - Most Important -->
                             <div class="bg-surface-dark rounded-xl p-4 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-3">Text Size</h4>
+                                <h4 class="text-white font-bold mb-3" data-i18n="settings.textSize">Text Size</h4>
                                 <div class="flex flex-col gap-2">
                                     <div class="flex items-center gap-4">
                                         <span class="text-[#90bccb] text-xs">A</span>
@@ -788,12 +744,12 @@
 
                             <!-- Visual Settings -->
                             <div class="bg-surface-dark rounded-xl p-4 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-3">Visual</h4>
+                                <h4 class="text-white font-bold mb-3" data-i18n="settings.visual">Visual</h4>
                                 <div class="flex flex-col gap-3">
                                     <div class="flex items-center justify-between py-2 border-b border-[#223f49]">
                                         <div>
-                                            <p class="text-white font-medium">Reduce Motion</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Minimize animations</p>
+                                            <p class="text-white font-medium" data-i18n="settings.reduceMotion">Reduce Motion</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.minimizeAnimations">Minimize animations</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="reduceMotion" class="sr-only peer">
@@ -805,8 +761,8 @@
 
                                     <div class="flex items-center justify-between py-2">
                                         <div>
-                                            <p class="text-white font-medium">High Contrast</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Better visibility</p>
+                                            <p class="text-white font-medium" data-i18n="settings.highContrast">High Contrast</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.betterVisibility">Better visibility</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="highContrast" class="sr-only peer">
@@ -820,12 +776,12 @@
 
                             <!-- Keyboard Settings -->
                             <div class="bg-surface-dark rounded-xl p-4 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-3">Keyboard</h4>
+                                <h4 class="text-white font-bold mb-3" data-i18n="settings.keyboard">Keyboard</h4>
                                 <div class="flex flex-col gap-4">
                                     <div class="flex items-center justify-between py-3">
                                         <div>
-                                            <p class="text-white font-medium">Keyboard Shortcuts</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Enable keyboard navigation</p>
+                                            <p class="text-white font-medium" data-i18n="settings.keyboardShortcuts">Keyboard Shortcuts</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.enableKeyboardNav">Enable keyboard navigation</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="keyboardShortcuts" class="sr-only peer" checked>
@@ -842,13 +798,13 @@
                         <section id="appearanceTab" class="settings-content hidden flex-col gap-4 pt-0">
                             <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
                                 <div>
-                                    <h3 class="text-white text-lg font-bold">Appearance</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Customize how Wave looks.</p>
+                                    <h3 class="text-white text-lg font-bold" data-i18n="settings.appearanceTitle">Appearance</h3>
+                                    <p class="text-[#90bccb] text-sm mt-1" data-i18n="settings.appearanceDesc">Customize how Wave looks.</p>
                                 </div>
                             </div>
 
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">Theme</h4>
+                                <h4 class="text-white font-bold mb-4" data-i18n="settings.themeTitle">Theme</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <button
                                         class="theme-option flex flex-col items-center gap-3 p-4 rounded-lg border-2 border-primary bg-surface-dark-hover transition-all"
@@ -856,7 +812,7 @@
                                         <div
                                             class="w-full h-24 rounded-lg bg-gradient-to-br from-[#101e23] to-[#16262c] border border-[#223f49]">
                                         </div>
-                                        <span class="text-white font-medium">Dark</span>
+                                        <span class="text-white font-medium" data-i18n="settings.dark">Dark</span>
                                         <span class="material-symbols-outlined text-primary">check_circle</span>
                                     </button>
 
@@ -866,7 +822,7 @@
                                         <div
                                             class="w-full h-24 rounded-lg bg-gradient-to-br from-[#f5f8f8] to-white border border-slate-300">
                                         </div>
-                                        <span class="text-white font-medium">Light</span>
+                                        <span class="text-white font-medium" data-i18n="settings.light">Light</span>
                                     </button>
 
                                     <button
@@ -875,7 +831,7 @@
                                         <div
                                             class="w-full h-24 rounded-lg bg-gradient-to-r from-[#101e23] via-[#16262c] to-[#f5f8f8] border border-[#223f49]">
                                         </div>
-                                        <span class="text-white font-medium">Auto</span>
+                                        <span class="text-white font-medium" data-i18n="settings.auto">Auto</span>
                                     </button>
                                 </div>
 
@@ -883,8 +839,8 @@
                                 <div class="mt-6 pt-6 border-t border-[#223f49]">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <p class="text-white font-medium">Transparency Mode</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Enable glass morphism effects</p>
+                                            <p class="text-white font-medium" data-i18n="settings.transparencyMode">Transparency Mode</p>
+                                            <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.glassEffects">Enable glass morphism effects</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="transparencyMode" class="sr-only peer">
@@ -898,8 +854,8 @@
 
                             <!-- Chat Background -->
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-2">Chat Background</h4>
-                                <p class="text-[#90bccb] text-sm mb-4">Choose a background for your chat interface
+                                <h4 class="text-white font-bold mb-2" data-i18n="settings.chatBackground">Chat Background</h4>
+                                <p class="text-[#90bccb] text-sm mb-4" data-i18n="settings.chooseChatBg">Choose a background for your chat interface
                                 </p>
 
                                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -911,7 +867,7 @@
                                             class="w-full aspect-video rounded-lg bg-gradient-to-br from-[#0a0f12] to-[#0f1419] border border-[#1f2830] flex items-center justify-center">
                                             <span class="material-symbols-outlined text-[#1f2830] text-4xl">block</span>
                                         </div>
-                                        <span class="text-white text-xs font-medium">None</span>
+                                        <span class="text-white text-xs font-medium" data-i18n="settings.none">None</span>
                                         <span
                                             class="material-symbols-outlined text-primary text-sm absolute top-1 right-1">check_circle</span>
                                     </button>
@@ -1009,7 +965,7 @@
                                             <span
                                                 class="material-symbols-outlined text-primary text-3xl">add_photo_alternate</span>
                                         </div>
-                                        <span class="text-white text-xs font-medium">Custom</span>
+                                        <span class="text-white text-xs font-medium" data-i18n="settings.custom">Custom</span>
                                         <span
                                             class="material-symbols-outlined text-primary text-sm absolute top-1 right-1 hidden">check_circle</span>
                                     </label>
@@ -1018,12 +974,12 @@
                                 <!-- Background Opacity Slider -->
                                 <div class="mt-6 pt-6 border-t border-[#223f49]">
                                     <div class="flex items-center justify-between mb-3">
-                                        <label class="text-white text-sm font-medium">Background Opacity</label>
+                                        <label class="text-white text-sm font-medium" data-i18n="settings.bgOpacity">Background Opacity</label>
                                         <span id="bgOpacityValue" class="text-[#90bccb] text-sm">10%</span>
                                     </div>
                                     <input id="bgOpacitySlider" type="range" min="0" max="30" value="10"
                                         class="w-full h-2 bg-[#223f49] rounded-lg appearance-none cursor-pointer accent-primary">
-                                    <p class="text-[#90bccb] text-xs mt-2">Adjust how visible the background is
+                                    <p class="text-[#90bccb] text-xs mt-2" data-i18n="settings.bgOpacityDesc">Adjust how visible the background is
                                         behind
                                         your messages</p>
                                 </div>
@@ -1031,12 +987,12 @@
                                 <!-- Background Blur Slider -->
                                 <div class="mt-4">
                                     <div class="flex items-center justify-between mb-3">
-                                        <label class="text-white text-sm font-medium">Background Blur</label>
+                                        <label class="text-white text-sm font-medium" data-i18n="settings.bgBlur">Background Blur</label>
                                         <span id="bgBlurValue" class="text-[#90bccb] text-sm">4px</span>
                                     </div>
                                     <input id="bgBlurSlider" type="range" min="0" max="10" value="4"
                                         class="w-full h-2 bg-[#223f49] rounded-lg appearance-none cursor-pointer accent-primary">
-                                    <p class="text-[#90bccb] text-xs mt-2">Add blur to reduce distraction from the
+                                    <p class="text-[#90bccb] text-xs mt-2" data-i18n="settings.bgBlurDesc">Add blur to reduce distraction from the
                                         background</p>
                                 </div>
                             </div>
@@ -1420,12 +1376,12 @@
                         <section id="apiTab" class="settings-content hidden flex-col gap-4 pt-0">
                             <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
                                 <div>
-                                    <h3 class="text-white text-lg font-bold">API Configuration</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Manage your LLM connections and usage
+                                    <h3 class="text-white text-lg font-bold" data-i18n="settings.apiConfiguration">API Configuration</h3>
+                                    <p class="text-[#90bccb] text-sm mt-1" data-i18n="settings.manageLLM">Manage your LLM connections and usage
                                         limits.
                                     </p>
                                 </div>
-                                <button class="text-primary text-sm font-medium hover:underline">View
+                                <button class="text-primary text-sm font-medium hover:underline" data-i18n="settings.viewDocs">View
                                     Documentation</button>
                             </div>
 
@@ -1434,9 +1390,9 @@
                                 <div class="px-6 py-4 border-b border-[#223f49]">
                                     <h4 class="text-white font-bold flex items-center gap-2">
                                         <span class="material-symbols-outlined text-primary">psychology</span>
-                                        AI Model Selection
+                                        <span data-i18n="settings.aiModelSelection">AI Model Selection</span>
                                     </h4>
-                                    <p class="text-[#90bccb] text-xs mt-1">Choose your preferred AI model for chat
+                                    <p class="text-[#90bccb] text-xs mt-1" data-i18n="settings.chooseModel">Choose your preferred AI model for chat
                                     </p>
                                 </div>
                                 <div id="aiModelsContainer">
@@ -1448,7 +1404,7 @@
                                                 <div class="circle"></div>
                                                 <div class="circle"></div>
                                             </div>
-                                            <span class="text-sm">Loading AI models...</span>
+                                            <span class="text-sm" data-i18n="settings.loadingModels">Loading AI models...</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1460,9 +1416,9 @@
                                     <div class="flex flex-col gap-2">
                                         <label class="text-white text-sm font-medium flex items-center gap-2"
                                             for="apikey">
-                                            OpenRouter API Key
+                                            <span data-i18n="settings.openrouterKey">OpenRouter API Key</span>
                                             <span class="material-symbols-outlined text-[#5a7d8a] text-sm cursor-help"
-                                                title="Your key is encrypted locally">info</span>
+                                                data-i18n-title="settings.keyEncrypted" title="Your key is encrypted locally">info</span>
                                         </label>
                                         <div class="relative group">
                                             <div
@@ -1487,8 +1443,8 @@
                                         class="bg-primary/5 rounded-lg p-4 border border-primary/10 flex items-start gap-3">
                                         <span class="material-symbols-outlined text-primary mt-0.5">lightbulb</span>
                                         <div class="flex flex-col gap-1">
-                                            <p class="text-white text-sm font-medium">Need an API Key?</p>
-                                            <p class="text-[#90bccb] text-xs leading-normal">
+                                            <p class="text-white text-sm font-medium" data-i18n="settings.needKey">Need an API Key?</p>
+                                            <p class="text-[#90bccb] text-xs leading-normal" data-i18n="settings.needKeyDesc">
                                                 Generate your key from the OpenRouter dashboard. This allows Wave to
                                                 connect directly to models like GPT-4, Claude 3, and Llama 3.
                                             </p>
@@ -1511,150 +1467,33 @@
                             </div>
                         </section>
 
-                        <!-- Data & Storage Tab -->
-                        <section id="dataTab" class="settings-content hidden flex-col gap-4 pt-0">
-                            <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
-                                <div>
-                                    <h3 class="text-white text-lg font-bold">Data & Storage</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Manage your data and storage preferences.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">Storage Usage</h4>
-                                <div class="flex flex-col gap-4" id="storageBreakdown">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[#90bccb] text-sm">Images</span>
-                                        <span class="text-white font-medium" id="storageImages">Calculating...</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[#90bccb] text-sm">Videos</span>
-                                        <span class="text-white font-medium" id="storageVideos">Calculating...</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[#90bccb] text-sm">Files</span>
-                                        <span class="text-white font-medium" id="storageFiles">Calculating...</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[#90bccb] text-sm">Cache</span>
-                                        <span class="text-white font-medium" id="storageCache">Calculating...</span>
-                                    </div>
-                                    <div class="h-px bg-[#223f49] my-2"></div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-white font-bold">Total</span>
-                                        <span class="text-primary font-bold" id="storageTotal">Calculating...</span>
-                                    </div>
-                                    <div class="w-full bg-[#223f49] rounded-full h-2 mt-2">
-                                        <div id="storageProgress" class="bg-primary h-2 rounded-full transition-all"
-                                            style="width: 0%"></div>
-                                    </div>
-                                    <p class="text-xs text-[#90bccb] text-center" id="storageLimit">0 GB / 5 GB used
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">Data Management</h4>
-                                <div class="flex flex-col gap-3">
-                                    <button onclick="clearCacheData()"
-                                        class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
-                                        <div class="flex items-center gap-3">
-                                            <span class="material-symbols-outlined text-primary">delete_sweep</span>
-                                            <div>
-                                                <p class="text-white font-medium text-sm">Clear Cache</p>
-                                                <p class="text-[#90bccb] text-xs">Free up space</p>
-                                            </div>
-                                        </div>
-                                        <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
-                                    </button>
-
-                                    <button onclick="exportData()"
-                                        class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
-                                        <div class="flex items-center gap-3">
-                                            <span class="material-symbols-outlined text-primary">download</span>
-                                            <div>
-                                                <p class="text-white font-medium text-sm">Export Data</p>
-                                                <p class="text-[#90bccb] text-xs">Download your data</p>
-                                            </div>
-                                        </div>
-                                        <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
-                                    </button>
-
-                                    <button onclick="deleteAllData()"
-                                        class="flex items-center justify-between p-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors border border-red-500/20">
-                                        <div class="flex items-center gap-3">
-                                            <span class="material-symbols-outlined text-red-400">delete_forever</span>
-                                            <div>
-                                                <p class="text-red-400 font-medium text-sm">Delete All Data</p>
-                                                <p class="text-red-400/70 text-xs">Permanently delete all your data
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <span class="material-symbols-outlined text-red-400">chevron_right</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">Auto-Download</h4>
-                                <div class="flex flex-col gap-4">
-                                    <div class="flex items-center justify-between py-3 border-b border-[#223f49]">
-                                        <div>
-                                            <p class="text-white font-medium">Photos</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Automatically download photos</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" id="autoDownloadPhotos" class="sr-only peer" checked>
-                                            <div
-                                                class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <div class="flex items-center justify-between py-3">
-                                        <div>
-                                            <p class="text-white font-medium">Videos</p>
-                                            <p class="text-[#90bccb] text-xs mt-1">Automatically download videos</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" id="autoDownloadVideos" class="sr-only peer">
-                                            <div
-                                                class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
                         <!-- About Tab -->
                         <section id="aboutTab" class="settings-content hidden flex-col gap-4 pt-0">
                             <div class="flex items-center justify-between border-b border-[#223f49] pb-3">
                                 <div>
-                                    <h3 class="text-white text-lg font-bold">About Wave</h3>
-                                    <p class="text-[#90bccb] text-sm mt-1">Information about Wave Messenger.</p>
+                                    <h3 class="text-white text-lg font-bold" data-i18n="settings.aboutWave">About Wave</h3>
+                                    <p class="text-[#90bccb] text-sm mt-1" data-i18n="settings.aboutWaveDesc">Information about Wave Messenger.</p>
                                 </div>
                             </div>
 
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49] text-center">
                                 <img src="/nobackwave.png" alt="Wave" class="h-32 w-32 mx-auto mb-4 object-contain" />
                                 <h4 class="text-white text-2xl font-bold mb-2">Wave Messenger</h4>
-                                <p class="text-primary font-medium mb-4">Version 1.1.0 • February 2026</p>
-                                <p class="text-[#90bccb] text-sm max-w-md mx-auto leading-relaxed">
+                                <p class="text-primary font-medium mb-4" data-i18n="settings.version">Version 1.1.0 • February 2026</p>
+                                <p class="text-[#90bccb] text-sm max-w-md mx-auto leading-relaxed" data-i18n="settings.appDescription">
                                     A modern, feature-rich messaging platform with AI capabilities, designed for
                                     seamless communication.
                                 </p>
                             </div>
 
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">Links</h4>
+                                <h4 class="text-white font-bold mb-4" data-i18n="settings.links">Links</h4>
                                 <div class="flex flex-col gap-3">
                                     <a href="/changelog.html" target="_blank"
                                         class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">history</span>
-                                            <p class="text-white font-medium text-sm">Changelog</p>
+                                            <p class="text-white font-medium text-sm" data-i18n="settings.changelog">Changelog</p>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
                                     </a>
@@ -1663,7 +1502,7 @@
                                         class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">description</span>
-                                            <p class="text-white font-medium text-sm">Terms of Service</p>
+                                            <p class="text-white font-medium text-sm" data-i18n="settings.termsOfService">Terms of Service</p>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
                                     </a>
@@ -1672,7 +1511,7 @@
                                         class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">privacy_tip</span>
-                                            <p class="text-white font-medium text-sm">Privacy Policy</p>
+                                            <p class="text-white font-medium text-sm" data-i18n="settings.privacyPolicy">Privacy Policy</p>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
                                     </a>
@@ -1788,9 +1627,36 @@
         </nav>
 
         <!-- All JavaScript is in settings.js -->
+        <script src="/js/i18n.js"></script>
         <script src="/js/settings.js"></script>
 
         <script>
+            // Initialize i18n
+            window.addEventListener('DOMContentLoaded', async () => {
+                await window.i18n.init();
+            });
+
+            // Language selector
+            const languageSelect = document.getElementById('displayLanguage');
+            if (languageSelect) {
+                // Set current language
+                languageSelect.value = window.i18n?.getCurrentLanguage() || 'en';
+                
+                // Handle language change
+                languageSelect.addEventListener('change', async (e) => {
+                    const newLang = e.target.value;
+                    const success = await window.i18n.setLanguage(newLang);
+                    
+                    if (success) {
+                        showToast('Language changed successfully', 'success');
+                        // Reload page to apply translations fully
+                        setTimeout(() => window.location.reload(), 500);
+                    } else {
+                        showToast('Failed to change language', 'error');
+                    }
+                });
+            }
+
             // Tab switching
             document.querySelectorAll('.settings-tab').forEach(tab => {
                 tab.addEventListener('click', () => {

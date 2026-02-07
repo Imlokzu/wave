@@ -96,11 +96,19 @@
     // Validate token with server
     try {
       console.log('[AuthGuard] Validating session with server...');
+      
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      
       const response = await fetch('/api/auth/session', {
+        signal: controller.signal,
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         const data = await response.json();
@@ -116,6 +124,16 @@
       }
     } catch (error) {
       console.error('[AuthGuard] Auth validation failed:', error);
+      
+      // If it's a timeout or network error, try to use cache or allow access
+      if (error.name === 'AbortError') {
+        console.log('[AuthGuard] Auth timeout, checking for valid cache...');
+        if (hasValidCache()) {
+          console.log('[AuthGuard] Using cached session due to timeout');
+          return true;
+        }
+      }
+      
       clearAuth();
       clearCache();
       redirectToLogin();
@@ -137,6 +155,14 @@
   (async function() {
     if (requiresAuth()) {
       console.log('[AuthGuard] Checking authentication...');
+      
+      // Quick bypass for development - check for stored auth
+      const authToken = localStorage.getItem('authToken');
+      if (authToken && hasValidCache()) {
+        console.log('[AuthGuard] Using cached authentication');
+        return;
+      }
+      
       const isValid = await validateAuth();
       
       if (!isValid) {

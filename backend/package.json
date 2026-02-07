@@ -4,7 +4,7 @@
   "description": "WAVE - Modern communication platform with real-time chat, polls, and ephemeral messaging",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "node ./node_modules/typescript/bin/tsc",
     "start": "node dist/server.js",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:bot\"",
     "dev:server": "ts-node src/server.ts",

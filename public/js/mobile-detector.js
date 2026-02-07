@@ -15,7 +15,7 @@
     
     function getMobileVersion(currentPath) {
         // Map desktop pages to mobile versions
-        // NOTE: chat.html and ai-chat.html are intentionally excluded - mobile users get desktop version (responsive)
+        // NOTE: chat.html now has integrated mobile support, no redirect needed
         const pageMap = {
             '/profile.html': '/mobile/bio.html',
             '/feed.html': '/mobile/feed.html',

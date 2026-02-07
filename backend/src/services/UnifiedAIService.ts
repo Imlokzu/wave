@@ -343,7 +343,6 @@ IF YOU WRITE TEXT INSTEAD OF JSON FOR A PRICE QUESTION, YOU FAILED.
 - 💬 Real-time messaging with Socket.io (DMs, groups, read receipts)
 - 🤖 AI Chat - 20+ models including Wave Flash, Wave, Wave O (reasoning), Wave Coder
 - 📰 Feed - Curated content from Telegram channels
-- 🎵 Music Player - Built-in streaming while chatting
 - 👤 User Profiles - Avatars, bios, customization
 - 🌓 Themes - Dark/Light mode with transparency and custom backgrounds
 - 📱 Mobile-optimized - Swipe gestures, responsive design
@@ -363,7 +362,7 @@ New in this release:
 - Performance improvements
 
 **Navigation:**
-- Bottom nav: Chat, Feed, AI Chat, Music, Profile
+- Bottom nav: Chat, Feed, AI Chat, Profile
 - Settings: Account, Appearance, Privacy, AI, Notifications, About
 - Help pages: /help.html, /changelog.html, /report-bug.html
 

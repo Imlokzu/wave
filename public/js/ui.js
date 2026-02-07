@@ -431,6 +431,9 @@ class UIManager {
   createMessageElement(message, isOwn) {
     const messageEl = document.createElement('div');
     messageEl.dataset.messageId = message.id;
+    if (message.senderId) {
+      messageEl.dataset.senderId = message.senderId;
+    }
 
     // System messages
     if (message.type === 'system') {
@@ -443,6 +446,16 @@ class UIManager {
     }
 
     // Regular messages
+    messageEl.dataset.messageType = message.type || 'text';
+    if (message.type === 'image' && message.imageUrl) {
+      messageEl.dataset.downloadUrl = message.imageUrl;
+      messageEl.dataset.downloadName = message.fileName || this.getFileNameFromUrl(message.imageUrl) || 'image.jpg';
+      messageEl.dataset.downloadType = 'image';
+    } else if (message.type === 'file' && message.fileUrl) {
+      messageEl.dataset.downloadUrl = message.fileUrl;
+      messageEl.dataset.downloadName = message.fileName || this.getFileNameFromUrl(message.fileUrl) || 'file';
+      messageEl.dataset.downloadType = 'file';
+    }
     if (isOwn) {
       messageEl.className = 'flex flex-row-reverse gap-4 max-w-3xl ml-auto group/msg';
       messageEl.appendChild(this.createOwnMessageContent(message));
@@ -660,7 +673,7 @@ class UIManager {
         
         const audioName = document.createElement('span');
         audioName.className = 'truncate flex-1';
-        audioName.textContent = message.fileName || 'Audio';
+        audioName.textContent = message.fileName || this.getFileNameFromUrl(message.fileUrl) || 'Audio';
         
         const fileSize = document.createElement('span');
         fileSize.className = 'text-xs opacity-60';
@@ -687,7 +700,7 @@ class UIManager {
         
         const fileName = document.createElement('div');
         fileName.className = 'font-medium truncate';
-        fileName.textContent = message.fileName || 'File';
+        fileName.textContent = message.fileName || this.getFileNameFromUrl(message.fileUrl) || 'File';
         
         const fileSize = document.createElement('div');
         fileSize.className = 'text-xs opacity-80';
@@ -1709,6 +1722,20 @@ class UIManager {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  /**
+   * Get file name from URL
+   */
+  getFileNameFromUrl(url) {
+    if (!url) return '';
+    try {
+      const cleanUrl = url.split('?')[0];
+      const parts = cleanUrl.split('/');
+      return decodeURIComponent(parts[parts.length - 1] || '');
+    } catch (e) {
+      return '';
+    }
   }
 }
 

@@ -101,7 +101,7 @@
                 <img src="/nobackwave.png" alt="Wave" class="h-24 w-24 object-contain relative z-10 drop-shadow-2xl" />
             </div>
             <h1 class="text-5xl font-black text-white tracking-tighter font-outfit">WAVE</h1>
-            <p class="text-slate-400 text-sm font-medium tracking-wide uppercase">Experience the next generation</p>
+            <p class="text-slate-400 text-sm font-medium tracking-wide uppercase" data-i18n="auth.experienceNextGen">Experience the next generation</p>
         </div>
 
         <!-- Error Message -->
@@ -116,7 +116,7 @@
             <!-- Username -->
             <div class="group/input">
                 <label class="flex flex-col w-full">
-                    <span class="text-gray-400 text-sm font-medium mb-2 ml-1">Username</span>
+                    <span class="text-gray-400 text-sm font-medium mb-2 ml-1" data-i18n="auth.username">Username</span>
                     <div class="relative flex items-center">
                         <div
                             class="absolute left-4 flex items-center justify-center text-gray-500 group-focus-within/input:text-primary transition-colors">
@@ -124,7 +124,7 @@
                         </div>
                         <input id="username" name="username"
                             class="form-input flex w-full h-14 rounded-xl bg-card-dark text-white placeholder:text-gray-500 pl-12 pr-4 text-base font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-primary-soft transition-all duration-200 outline-none"
-                            placeholder="Enter your username" type="text" required autocomplete="username" />
+                            placeholder="Enter your username" data-i18n-placeholder="auth.enterUsername" type="text" required autocomplete="username" />
                     </div>
                 </label>
             </div>
@@ -132,7 +132,7 @@
             <!-- Password -->
             <div class="group/input">
                 <label class="flex flex-col w-full">
-                    <span class="text-gray-400 text-sm font-medium mb-2 ml-1">Password</span>
+                    <span class="text-gray-400 text-sm font-medium mb-2 ml-1" data-i18n="auth.password">Password</span>
                     <div class="relative flex items-center">
                         <div
                             class="absolute left-4 flex items-center justify-center text-gray-500 group-focus-within/input:text-primary transition-colors">
@@ -140,7 +140,7 @@
                         </div>
                         <input id="password" name="password"
                             class="form-input flex w-full h-14 rounded-xl bg-card-dark text-white placeholder:text-gray-500 pl-12 pr-4 text-base font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-primary-soft transition-all duration-200 outline-none"
-                            placeholder="Enter your password" type="password" required
+                            placeholder="Enter your password" data-i18n-placeholder="auth.enterPassword" type="password" required
                             autocomplete="current-password" />
                     </div>
                 </label>
@@ -149,7 +149,7 @@
             <!-- Login Button -->
             <button type="submit" id="login-btn"
                 class="mt-4 flex items-center justify-center gap-2 h-14 w-full rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
-                <span id="login-text">Sign In</span>
+                <span id="login-text" data-i18n="auth.signIn">Sign In</span>
                 <span id="login-spinner" class="hidden">
                     <div class="loader loader-xs">
                         <div class="circle"></div>
@@ -164,15 +164,15 @@
         <!-- Divider -->
         <div class="flex items-center gap-3 my-6">
             <div class="flex-1 h-px bg-border-dark"></div>
-            <span class="text-gray-500 text-xs uppercase tracking-wider">or</span>
+            <span class="text-gray-500 text-xs uppercase tracking-wider" data-i18n="auth.or">or</span>
             <div class="flex-1 h-px bg-border-dark"></div>
         </div>
 
         <!-- Sign Up Link -->
         <div class="text-center">
             <p class="text-gray-400 text-sm">
-                Don't have an account?
-                <a href="/signup.html" class="text-primary hover:text-blue-400 font-semibold transition-colors">Sign
+                <span data-i18n="auth.dontHaveAccount">Don't have an account?</span>
+                <a href="/signup.html" class="text-primary hover:text-blue-400 font-semibold transition-colors" data-i18n="common.signup">Sign
                     up</a>
             </p>
         </div>
@@ -272,6 +272,9 @@
             }
         })();
     </script>
+    
+    <!-- i18n Support -->
+    <script src="/js/i18n.js"></script>
 </body>
 
 </html>

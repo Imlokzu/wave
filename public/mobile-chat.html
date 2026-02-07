@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Wave Messenger - Mobile Chat</title>
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else if (theme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else if (theme === 'auto') {
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+        })();
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <!-- Theme System -->
+    <link href="/css/theme.css" rel="stylesheet"/>
+    <link href="/css/theme-config.css" rel="stylesheet"/>
+    <link href="/css/mobile-chat.css" rel="stylesheet"/>
+    <script src="/js/auth-guard.js"></script>
+    <script src="/js/update-checker.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0db9f2",
+                        "primary-dark": "#0a8fc4",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#0a0f12",
+                        "surface-dark": "#0f1419",
+                        "surface-hover": "#151b21",
+                        "surface-lighter": "#1a2128",
+                        "border-dark": "#1f2830",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Mobile Chat Specific Styles */
+        body {
+            overflow: hidden;
+            touch-action: pan-x;
+        }
+
+        .mobile-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .mobile-panel {
+            position: absolute;
+            top: 0;
+            height: 100vh;
+            width: 100vw;
+            background: #0f1419;
+            transition: transform 0.3s ease-out;
+        }
+
+        /* Left Panel - Room Members & Settings */
+        .left-panel {
+            left: -100vw;
+            background: linear-gradient(135deg, #0f1419 0%, #151b21 100%);
+            z-index: 20;
+        }
+
+        .left-panel.show {
+            transform: translateX(100vw);
+        }
+
+        /* Main Chat Panel */
+        .main-panel {
+            left: 0;
+            z-index: 10;
+        }
+
+        .main-panel.show-left {
+            transform: translateX(280px);
+        }
+
+        .main-panel.show-right {
+            transform: translateX(-280px);
+        }
+
+        /* Right Panel - Chats List */
+        .right-panel {
+            left: 100vw;
+            background: linear-gradient(135deg, #0f1419 0%, #1a2128 100%);
+            z-index: 20;
+        }
+
+        .right-panel.show {
+            transform: translateX(-100vw);
+        }
+
+        /* Overlay */
+        .panel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out;
+            z-index: 15;
+        }
+
+        .panel-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Custom scrollbars */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #2a3440; border-radius: 2px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3a4450; }
+
+        /* Swipe indicators */
+        .swipe-indicator {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(13, 185, 242, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .swipe-indicator.left {
+            left: 20px;
+        }
+
+        .swipe-indicator.right {
+            right: 20px;
+        }
+
+        .swipe-indicator.show {
+            opacity: 1;
+        }
+
+        /* Message bubbles */
+        .message-bubble {
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .message-bubble.own {
+            background: linear-gradient(135deg, #0db9f2 0%, #0a8fc4 100%);
+            margin-left: auto;
+        }
+
+        .message-bubble.other {
+            background: #1a2128;
+        }
+
+        /* Hide desktop navigation completely on mobile */
+        @media (max-width: 768px) {
+            #mobileBottomNav { display: none !important; }
+            .desktop-sidebar { display: none !important; }
+            .desktop-chatlist { display: none !important; }
+        }
+
+        /* Pull to refresh indicator */
+        .pull-refresh {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(13, 185, 242, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .pull-refresh.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display">
+    
+    <!-- Loading Screen -->
+    <div class="login-screen fixed inset-0 z-50 flex items-center justify-center bg-background-dark" id="loginScreen">
+        <div class="w-full max-w-md p-8 bg-surface-dark rounded-2xl border border-slate-800 shadow-2xl">
+            <div class="flex flex-col items-center gap-6">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-surface-dark to-primary flex items-center justify-center shadow-lg animate-pulse">
+                    <span class="material-symbols-outlined text-primary text-4xl">waves</span>
+                </div>
+                <div class="text-center">
+                    <img src="/nobackweave.png" alt="WaveChat" class="h-16 w-16 mx-auto mb-4 object-contain" />
+                    <h1 class="text-white text-4xl font-bold mb-2">WAVE</h1>
+                    <p class="text-slate-400 text-sm">Checking authentication...</p>
+                </div>
+                <div class="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Chat Container -->
+    <div class="mobile-container hidden" id="mobileContainer">
+        <!-- Left Panel - Room Members & Settings -->
+        <div class="mobile-panel left-panel" id="leftPanel">
+            <div class="flex flex-col h-full">
+                <!-- Header -->
+                <div class="p-4 border-b border-slate-800/40">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-white">Room Info</h2>
+                        <button id="closeLeftPanel" class="w-8 h-8 rounded-lg bg-surface-lighter text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">close</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Room Header -->
+                    <div class="text-center mb-4">
+                        <img src="/wavechat.png" alt="Room" class="w-16 h-16 rounded-full mx-auto mb-2 object-cover" />
+                        <h3 class="text-lg font-semibold text-white" id="leftRoomName">Select a room</h3>
+                        <p class="text-sm text-slate-400" id="leftRoomStatus">No room selected</p>
+                    </div>
+
+                    <!-- Room Actions -->
+                    <div class="flex gap-2">
+                        <button class="flex-1 py-2 px-3 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">notifications</span>
+                            Notify
+                        </button>
+                        <button class="flex-1 py-2 px-3 bg-surface-lighter hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">group_add</span>
+                            Invite
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Room Members -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="p-4">
+                        <h4 class="text-sm font-bold text-white mb-3">Members</h4>
+                        <div id="leftRoomMembers" class="space-y-2">
+                            <div class="text-xs text-slate-400 text-center py-4">No room selected</div>
+                        </div>
+
+                        <!-- Room Settings -->
+                        <div class="mt-6">
+                            <h4 class="text-sm font-bold text-white mb-3">Settings</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-slate-300">Notifications</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-slate-300">Sound Effects</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-slate-300">Auto-scroll</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="mt-6">
+                            <h4 class="text-sm font-bold text-white mb-3">Quick Actions</h4>
+                            <div class="space-y-2">
+                                <button class="w-full py-2 px-3 bg-surface-lighter hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                                    Copy Room Code
+                                </button>
+                                <button class="w-full py-2 px-3 bg-surface-lighter hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-[18px]">share</span>
+                                    Share Room
+                                </button>
+                                <button class="w-full py-2 px-3 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                                    Leave Room
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Panel -->
+        <div class="mobile-panel main-panel" id="mainPanel">
+            <!-- Swipe Indicators -->
+            <div class="swipe-indicator left" id="leftSwipeIndicator">
+                <span class="material-symbols-outlined text-primary">people</span>
+            </div>
+            <div class="swipe-indicator right" id="rightSwipeIndicator">
+                <span class="material-symbols-outlined text-primary">chat_bubble</span>
+            </div>
+
+            <!-- Pull to refresh indicator -->
+            <div class="pull-refresh" id="pullRefreshIndicator">
+                <span class="material-symbols-outlined text-white animate-spin">refresh</span>
+            </div>
+
+            <div class="flex flex-col h-full">
+                <!-- Top Header -->
+                <header class="bg-surface-dark/80 backdrop-blur-lg px-4 py-3 border-b border-slate-800/40">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button id="showChatsBtn" class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-lighter text-slate-400 hover:text-white transition-colors">
+                                <span class="material-symbols-outlined">menu</span>
+                            </button>
+                            <div>
+                                <h1 class="text-lg font-semibold text-white" id="currentRoomName">Select a chat</h1>
+                                <p class="text-xs text-primary" id="currentRoomStatus"></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="showMembersBtn" class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-lighter text-slate-400 hover:text-white transition-colors">
+                                <span class="material-symbols-outlined">people</span>
+                            </button>
+                            <button id="searchBtn" class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-lighter text-slate-400 hover:text-white transition-colors">
+                                <span class="material-symbols-outlined">search</span>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Messages Container -->
+                <div class="flex-1 relative overflow-hidden">
+                    <div class="h-full overflow-y-auto px-4 py-4 custom-scrollbar" id="messagesContainer">
+                        <!-- Welcome Message -->
+                        <div class="flex flex-col items-center justify-center h-full text-center" id="welcomeMessage">
+                            <div class="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+                                <span class="material-symbols-outlined text-primary text-4xl">chat_bubble</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">Welcome to Wave Chat</h3>
+                            <p class="text-slate-400 mb-6 max-w-xs">Swipe right to see your chats or create a new room to get started</p>
+                            <button id="createRoomBtn" class="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors">
+                                Create Room
+                            </button>
+                        </div>
+
+                        <!-- Messages will be loaded here -->
+                        <div id="messagesList" class="space-y-3 hidden">
+                            <!-- Messages will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <!-- Scroll to bottom button -->
+                    <button id="scrollToBottomBtn" class="hidden absolute bottom-4 right-4 w-12 h-12 bg-primary hover:bg-primary/90 rounded-full shadow-lg flex items-center justify-center text-white transition-all">
+                        <span class="material-symbols-outlined">arrow_downward</span>
+                        <span id="unreadBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 bg-surface-dark/50 backdrop-blur-lg border-t border-slate-800/40">
+                    <!-- Typing Indicator -->
+                    <div id="typingIndicator" class="mb-2 text-xs text-slate-400 italic hidden">
+                        <span id="typingText">Someone is typing...</span>
+                    </div>
+
+                    <!-- Input Container -->
+                    <div class="bg-surface-lighter rounded-2xl border border-slate-700 flex items-center p-2 gap-2">
+                        <button id="attachBtn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-dark text-slate-400 hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined">add</span>
+                        </button>
+                        
+                        <div class="flex-1">
+                            <input 
+                                id="messageInput" 
+                                type="text" 
+                                placeholder="Type a message..."
+                                class="w-full bg-transparent text-white placeholder-slate-400 border-none focus:outline-none text-sm py-2"
+                                autocomplete="off"
+                            />
+                        </div>
+
+                        <div class="flex items-center gap-1">
+                            <button id="emojiBtn" class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined">sentiment_satisfied</span>
+                            </button>
+                            <button id="voiceBtn" class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined">mic</span>
+                            </button>
+                            <button id="sendBtn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary hover:bg-primary/90 text-white transition-colors">
+                                <span class="material-symbols-outlined">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Chats List -->
+        <div class="mobile-panel right-panel" id="rightPanel">
+            <div class="flex flex-col h-full">
+                <!-- Header -->
+                <div class="p-4 border-b border-slate-800/40">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <img src="/wavechat.png" alt="Wave" class="w-8 h-8 rounded-lg object-contain" />
+                            <h2 class="text-lg font-bold text-white">Wave</h2>
+                        </div>
+                        <button id="closeRightPanel" class="w-8 h-8 rounded-lg bg-surface-lighter text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">close</span>
+                        </button>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="relative mb-4">
+                        <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-slate-500 text-[20px]">search</span>
+                        </div>
+                        <input 
+                            id="chatSearchInput" 
+                            type="text" 
+                            placeholder="Search chats..."
+                            class="w-full pl-10 pr-4 py-2.5 bg-surface-lighter border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                        />
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="flex gap-2">
+                        <button id="newChatBtn" class="flex-1 py-2 px-3 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                            New Chat
+                        </button>
+                        <button id="joinRoomBtn" class="flex-1 py-2 px-3 bg-surface-lighter hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">group_add</span>
+                            Join Room
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chats List -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="p-4">
+                        <div id="chatsList" class="space-y-2">
+                            <!-- Sample chat items - these would be dynamically loaded -->
+                            <div class="p-3 bg-surface-lighter rounded-xl cursor-pointer hover:bg-slate-700 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-white text-[18px]">group</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-sm font-medium text-white truncate">General Room</h4>
+                                            <span class="text-xs text-slate-400">2m</span>
+                                        </div>
+                                        <p class="text-xs text-slate-400 truncate">Hey everyone! 👋</p>
+                                    </div>
+                                    <div class="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">3</div>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-surface-lighter rounded-xl cursor-pointer hover:bg-slate-700 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-400 to-green-600 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-white text-[18px]">person</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-sm font-medium text-white truncate">Alice</h4>
+                                            <span class="text-xs text-slate-400">5m</span>
+                                        </div>
+                                        <p class="text-xs text-slate-400 truncate">Sure, let's meet tomorrow</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-xs text-slate-500 text-center py-4">
+                                No more chats
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="p-4 bg-[#0b1418] border-t border-slate-800/40">
+                    <nav class="flex justify-around items-center rounded-xl bg-surface-dark p-1">
+                        <a class="flex flex-col items-center p-2 rounded-lg text-primary bg-primary/10 flex-1" href="#">
+                            <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+                            <span class="text-[10px] font-medium mt-1">Chats</span>
+                        </a>
+                        <a class="flex flex-col items-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/ai-chat.html">
+                            <span class="material-symbols-outlined text-[20px]">smart_toy</span>
+                            <span class="text-[10px] font-medium mt-1">AI</span>
+                        </a>
+                        <a class="flex flex-col items-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/feed.html">
+                            <span class="material-symbols-outlined text-[20px]">newspaper</span>
+                            <span class="text-[10px] font-medium mt-1">Feed</span>
+                        </a>
+                        <a class="flex flex-col items-center p-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors flex-1" href="/profile.html">
+                            <span class="material-symbols-outlined text-[20px]">person</span>
+                            <span class="text-[10px] font-medium mt-1">Profile</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Overlay -->
+        <div class="panel-overlay" id="panelOverlay"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/mobile-chat-swipe.js"></script>
+    <script src="/js/mobile-chat.js"></script>
+</body>
+</html>

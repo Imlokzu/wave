@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link rel="icon" type="image/png" href="/nobackwave.png" />
     <title>WaveChat AI Helper</title>
     <!-- Theme Init -->
     <script src="/js/theme-init.js"></script>
@@ -18,6 +19,7 @@
     <script src="/js/auth-guard.js"></script>
     <script src="/js/mobile-detector.js"></script>
     <script src="/js/update-checker.js"></script>
+    <script src="/js/i18n.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -296,7 +298,7 @@
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center gap-3">
                     <img src="/wavechat.png" alt="Wave" class="size-9 rounded-xl object-contain" />
-                    <h1 class="text-xl font-bold tracking-tight text-white">Wave AI</h1>
+                    <h1 class="text-xl font-bold tracking-tight text-white" data-i18n="ai.waveAI">Wave AI</h1>
                 </div>
                 <button onclick="closeSidebar()"
                     class="lg:hidden size-8 rounded-lg bg-background-dark hover:bg-surface-hover text-slate-400 hover:text-white flex items-center justify-center transition-colors border border-slate-700/50">
@@ -307,22 +309,22 @@
             <div class="mb-5">
                 <!-- Tab Navigation -->
                 <div class="flex rounded-lg bg-background-dark p-1 mb-4">
-                    <button class="tab-button active flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors" data-tab="chats" onclick="switchTab('chats')">
+                    <button class="tab-button active flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors" data-tab="chats" onclick="switchTab('chats')" data-i18n="ai.chatHistory">
                         Chats
                     </button>
-                    <button class="tab-button flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors text-slate-400" data-tab="settings" onclick="switchTab('settings')">
+                    <button class="tab-button flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors text-slate-400" data-tab="settings" onclick="switchTab('settings')" data-i18n="nav.settings">
                         Settings
                     </button>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="saveCurrentChat()"
                         class="size-8 rounded-lg bg-background-dark hover:bg-surface-hover text-slate-400 hover:text-primary flex items-center justify-center transition-colors border border-slate-700/50"
-                        title="Save Chat">
+                        data-i18n-title="ai.savedChats" title="Save Chat">
                         <span class="material-symbols-outlined text-[20px]">bookmark</span>
                     </button>
                     <button onclick="clearChat()"
                         class="size-8 rounded-lg bg-background-dark hover:bg-surface-hover text-slate-400 hover:text-primary flex items-center justify-center transition-colors border border-slate-700/50"
-                        title="New Chat">
+                        data-i18n-title="ai.newChat" title="New Chat">
                         <span class="material-symbols-outlined text-[20px]">add</span>
                     </button>
                 </div>
@@ -340,7 +342,7 @@
             <div class="space-y-4">
                 <!-- Model Selection -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Model</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="ai.model">Model</label>
                     <select id="modelSelect" class="w-full px-3 py-2 bg-background-dark border border-slate-700 rounded-lg text-white">
                         <optgroup label="Wave Flash (Fast)">
                             <option value="wave-flash-1">Wave Flash 1</option>
@@ -366,34 +368,34 @@
                 </div>
                 <!-- Temperature -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Temperature</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="ai.temperature">Temperature</label>
                     <input type="range" id="temperatureSlider" min="0" max="2" step="0.1" value="0.7" class="w-full">
                     <span id="temperatureValue" class="text-sm text-slate-400">0.7</span>
                 </div>
                 <!-- Max Tokens -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Max Tokens</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="ai.maxTokens">Max Tokens</label>
                     <input type="range" id="maxTokensSlider" min="100" max="4000" step="100" value="1000" class="w-full">
                     <span id="maxTokensValue" class="text-sm text-slate-400">1000</span>
                 </div>
                 <!-- System Prompt -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">System Prompt</label>
-                    <textarea id="systemPrompt" rows="3" class="w-full px-3 py-2 bg-background-dark border border-slate-700 rounded-lg text-white" placeholder="Enter system prompt..."></textarea>
+                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="ai.systemPrompt">System Prompt</label>
+                    <textarea id="systemPrompt" rows="3" class="w-full px-3 py-2 bg-background-dark border border-slate-700 rounded-lg text-white" data-i18n-placeholder="ai.enterSystemPrompt" placeholder="Enter system prompt..."></textarea>
                 </div>
                 <!-- Toggles -->
                 <div class="space-y-3">
                     <label class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-slate-300">Thinking Mode</span>
+                        <span class="text-sm font-medium text-slate-300" data-i18n="ai.thinkingMode">Thinking Mode</span>
                         <input type="checkbox" id="thinkingMode" class="rounded">
                     </label>
                     <label class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-slate-300">Search Mode</span>
+                        <span class="text-sm font-medium text-slate-300" data-i18n="ai.searchMode">Search Mode</span>
                         <input type="checkbox" id="searchMode" class="rounded">
                     </label>
                 </div>
                 <!-- Save Button -->
-                <button onclick="saveSettings()" class="w-full py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors">
+                <button onclick="saveSettings()" class="w-full py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors" data-i18n="ai.saveSettings">
                     Save Settings
                 </button>
             </div>
@@ -403,29 +405,29 @@
         <div class="p-3 bg-[#0b1418] border-t border-slate-800/40 shrink-0">
             <nav class="grid grid-cols-5 gap-1 rounded-xl bg-background-dark p-1">
                 <a class="flex flex-col items-center justify-center py-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors min-w-0"
-                    href="/chat.html" title="Chats">
+                    href="/chat.html" title="Chats" data-i18n-title="nav.chats">
                     <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
-                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter">Chats</span>
+                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter" data-i18n="nav.chats">Chats</span>
                 </a>
                 <a class="flex flex-col items-center justify-center py-2 rounded-lg text-primary bg-primary/10 min-w-0"
-                    href="/ai-chat.html" title="AI Chat">
+                    href="/ai-chat.html" title="AI Chat" data-i18n-title="nav.ai">
                     <span class="material-symbols-outlined text-[20px]">smart_toy</span>
-                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter">AI</span>
+                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter" data-i18n="nav.ai">AI</span>
                 </a>
                 <a class="flex flex-col items-center justify-center py-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors min-w-0"
-                    href="/feed.html" title="Feed">
+                    href="/feed.html" title="Feed" data-i18n-title="nav.feed">
                     <span class="material-symbols-outlined text-[20px]">newspaper</span>
-                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter">Feed</span>
+                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter" data-i18n="nav.feed">Feed</span>
                 </a>
                 <a class="flex flex-col items-center justify-center py-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors min-w-0"
-                    href="/profile.html" title="Profile">
+                    href="/profile.html" title="Profile" data-i18n-title="nav.profile">
                     <span class="material-symbols-outlined text-[20px]">person</span>
-                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter">User</span>
+                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter" data-i18n="nav.profile">Profile</span>
                 </a>
                 <a class="flex flex-col items-center justify-center py-2 rounded-lg text-[#90bccb] hover:text-white hover:bg-surface-hover transition-colors min-w-0"
-                    href="/settings.html" title="Settings">
+                    href="/settings.html" title="Settings" data-i18n-title="nav.settings">
                     <span class="material-symbols-outlined text-[20px]">settings</span>
-                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter">Sets</span>
+                    <span class="text-[9px] font-bold mt-1 uppercase tracking-tighter" data-i18n="nav.settings">Settings</span>
                 </a>
             </nav>
         </div>
@@ -490,7 +492,7 @@
                             <span
                                 class="material-symbols-outlined text-[16px] text-primary group-hover:text-white transition-colors">translate</span>
                             <span
-                                class="text-xs font-medium text-slate-200 group-hover:text-white transition-colors">Translate</span>
+                                class="text-xs font-medium text-slate-200 group-hover:text-white transition-colors" data-i18n="ai.translateThis">Translate</span>
                         </button>
                         <button
                             class="flex shrink-0 items-center justify-center gap-1.5 h-8 rounded-full bg-surface-dark border border-white/10 px-4 hover:bg-primary hover:border-primary hover:shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all group active:scale-95"
@@ -498,7 +500,7 @@
                             <span
                                 class="material-symbols-outlined text-[16px] text-primary group-hover:text-white transition-colors">summarize</span>
                             <span
-                                class="text-xs font-medium text-slate-200 group-hover:text-white transition-colors">Summarize</span>
+                                class="text-xs font-medium text-slate-200 group-hover:text-white transition-colors" data-i18n="ai.summarizeThis">Summarize</span>
                         </button>
                         <button
                             class="flex shrink-0 items-center justify-center gap-1.5 h-8 rounded-full bg-surface-dark border border-white/10 px-4 hover:bg-primary hover:border-primary hover:shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all group active:scale-95"
@@ -506,7 +508,7 @@
                             <span
                                 class="material-symbols-outlined text-[16px] text-primary group-hover:text-white transition-colors">code</span>
                             <span
-                                class="text-xs font-medium text-slate-200 group-hover:text-white transition-colors">Write
+                                class="text-xs font-medium text-slate-200 group-hover:text-white transition-colors" data-i18n="ai.writeCode">Write
                                 Code</span>
                         </button>
                         <button
@@ -515,7 +517,7 @@
                             <span
                                 class="material-symbols-outlined text-[16px] text-primary group-hover:text-white transition-colors">school</span>
                             <span
-                                class="text-xs font-medium text-slate-200 group-hover:text-white transition-colors">Explain</span>
+                                class="text-xs font-medium text-slate-200 group-hover:text-white transition-colors" data-i18n="ai.explain">Explain</span>
                         </button>
                         <div class="h-6 w-px bg-white/10 mx-1 self-center"></div>
                         <button onclick="toggleWebSearch()" id="webSearchBtn"
@@ -523,7 +525,7 @@
                             title="Toggle Web Search">
                             <span
                                 class="material-symbols-outlined text-[16px] group-hover:scale-110 transition-transform">travel_explore</span>
-                            <span class="text-xs font-medium">Search On</span>
+                            <span class="text-xs font-medium" data-i18n="ai.searchOn">Search On</span>
                         </button>
                     </div>
                     <div class="px-6 flex items-center gap-2 mt-2">
@@ -542,9 +544,9 @@
                                     </div>
                                     <div>
                                         <div
-                                            class="text-sm font-medium text-white group-hover:text-primary transition-colors">
+                                            class="text-sm font-medium text-white group-hover:text-primary transition-colors" data-i18n="ai.attachCode">
                                             Attach Code</div>
-                                        <div class="text-xs text-slate-400">Open code editor</div>
+                                        <div class="text-xs text-slate-400" data-i18n="ai.openCodeEditor">Open code editor</div>
                                     </div>
                                 </button>
                                 <button onclick="openFileUpload()"
@@ -555,9 +557,9 @@
                                     </div>
                                     <div>
                                         <div
-                                            class="text-sm font-medium text-white group-hover:text-primary transition-colors">
+                                            class="text-sm font-medium text-white group-hover:text-primary transition-colors" data-i18n="ai.uploadPDF">
                                             Upload PDF</div>
-                                        <div class="text-xs text-slate-400">Analyze PDF documents</div>
+                                        <div class="text-xs text-slate-400" data-i18n="ai.analyzePDF">Analyze PDF documents</div>
                                     </div>
                                 </button>
                                 <button onclick="openFileUpload()"
@@ -568,9 +570,9 @@
                                     </div>
                                     <div>
                                         <div
-                                            class="text-sm font-medium text-white group-hover:text-primary transition-colors">
+                                            class="text-sm font-medium text-white group-hover:text-primary transition-colors" data-i18n="ai.attachFile">
                                             Attach File</div>
-                                        <div class="text-xs text-slate-400">Upload text file</div>
+                                        <div class="text-xs text-slate-400" data-i18n="ai.uploadTextFile">Upload text file</div>
                                     </div>
                                 </button>
                             </div>
@@ -579,7 +581,7 @@
                             class="flex-1 bg-surface-dark rounded-3xl min-h-[3.5rem] px-5 py-3.5 flex items-center gap-2 border border-white/5 focus-within:border-primary/50 focus-within:bg-surface-dark-lighter transition-all shadow-sm">
                             <input id="messageInput"
                                 class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-slate-500 focus:ring-0 p-0"
-                                placeholder="Message or type / for commands..." type="text"
+                                placeholder="Message or type / for commands..." data-i18n-placeholder="ai.messagePlaceholder" type="text"
                                 onkeypress="handleKeyPress(event)" />
                         </div>
                         <button onclick="sendMessage()"
@@ -705,17 +707,17 @@
                     <div id="textInputSection">
                         <textarea id="aiCommandInput"
                             class="w-full bg-background-dark text-white rounded-lg p-3 border border-white/10 focus:border-primary/50 focus:outline-none resize-none text-sm"
-                            rows="3" placeholder="Enter your text here..."></textarea>
+                            rows="3" placeholder="Enter your text here..." data-i18n-placeholder="ai.enterTextHere"></textarea>
                     </div>
 
                     <div class="flex gap-2 mt-3">
                         <button onclick="closeAIModal()"
                             class="flex-1 py-2 rounded-lg bg-surface-lighter text-slate-300 text-sm font-medium hover:bg-slate-700 transition-all">
-                            Cancel
+                            <span data-i18n="common.cancel">Cancel</span>
                         </button>
                         <button onclick="executeAICommand()"
                             class="flex-1 py-2 rounded-lg bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-bold shadow-lg hover:shadow-xl transition-all">
-                            Execute
+                            <span data-i18n="ai.execute">Execute</span>
                         </button>
                     </div>
                 </div>
@@ -727,7 +729,7 @@
                 <div
                     class="bg-surface-dark rounded-3xl p-6 w-full max-w-2xl mx-4 border border-white/10 shadow-2xl max-h-[80vh] flex flex-col">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-white">Saved Chats</h3>
+                        <h3 class="text-lg font-bold text-white" data-i18n="ai.savedChatsTitle">Saved Chats</h3>
                         <button onclick="closeSavedChatsModal()"
                             class="text-slate-400 hover:text-white transition-colors">
                             <span class="material-symbols-outlined">close</span>
@@ -803,28 +805,28 @@
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-white flex items-center gap-2">
                             <span class="material-symbols-outlined text-primary">code</span>
-                            Code Editor
+                            <span data-i18n="ai.codeEditor">Code Editor</span>
                         </h3>
                         <button onclick="closeCodeEditor()" class="text-slate-400 hover:text-white transition-colors">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
                     <div class="mb-3">
-                        <label class="text-sm text-slate-400 mb-2 block">Language (optional)</label>
+                        <label class="text-sm text-slate-400 mb-2 block" data-i18n="ai.languageOptional">Language (optional)</label>
                         <input id="codeLanguage" type="text"
                             class="w-full bg-background-dark text-white rounded-xl px-4 py-2 border border-white/10 focus:border-primary/50 focus:outline-none text-sm"
-                            placeholder="e.g., javascript, python, html..." />
+                            placeholder="e.g., javascript, python, html..." data-i18n-placeholder="ai.languagePlaceholder" />
                     </div>
                     <textarea id="codeEditorInput"
                         class="flex-1 w-full bg-background-dark text-white rounded-xl p-4 border border-white/10 focus:border-primary/50 focus:outline-none resize-none font-mono text-sm"
-                        placeholder="Paste or type your code here..."></textarea>
+                        placeholder="Paste or type your code here..." data-i18n-placeholder="ai.pasteCodeHere"></textarea>
                     <div class="flex gap-3 mt-4">
                         <button onclick="closeCodeEditor()"
                             class="flex-1 py-3 rounded-xl bg-surface-lighter text-slate-300 font-medium hover:bg-slate-700 transition-all">
                             Cancel
                         </button>
                         <button onclick="attachCode()"
-                            class="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white font-bold shadow-lg hover:shadow-xl transition-all">
+                            class="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white font-bold shadow-lg hover:shadow-xl transition-all" data-i18n="ai.attachCode">
                             Attach Code
                         </button>
                     </div>
@@ -841,32 +843,32 @@
                 <button onclick="copyMessageText()"
                     class="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-slate-200 transition-colors active:bg-white/10 border-b border-white/5">
                     <span class="material-symbols-outlined text-[20px] text-slate-400">content_copy</span>
-                    <span class="text-sm font-medium">Copy Text</span>
+                    <span class="text-sm font-medium" data-i18n="ai.copyText">Copy Text</span>
                 </button>
                 <button onclick="viewSources()"
                     class="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-slate-200 transition-colors active:bg-white/10 border-b border-white/5">
                     <span class="material-symbols-outlined text-[20px] text-primary">source</span>
-                    <span class="text-sm font-medium">View Sources</span>
+                    <span class="text-sm font-medium" data-i18n="ai.viewSources">View Sources</span>
                 </button>
                 <button onclick="handleContextAction('explain')"
                     class="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-slate-200 transition-colors active:bg-white/10">
                     <span class="material-symbols-outlined text-[20px] text-slate-400">school</span>
-                    <span class="text-sm font-medium">Explain This</span>
+                    <span class="text-sm font-medium" data-i18n="ai.explainThis">Explain This</span>
                 </button>
                 <button onclick="handleContextAction('translate')"
                     class="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-slate-200 transition-colors active:bg-white/10">
                     <span class="material-symbols-outlined text-[20px] text-slate-400">translate</span>
-                    <span class="text-sm font-medium">Translate</span>
+                    <span class="text-sm font-medium" data-i18n="ai.translateThis">Translate</span>
                 </button>
                 <button onclick="handleContextAction('summarize')"
                     class="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-slate-200 transition-colors active:bg-white/10 border-b border-white/5">
                     <span class="material-symbols-outlined text-[20px] text-slate-400">summarize</span>
-                    <span class="text-sm font-medium">Summarize</span>
+                    <span class="text-sm font-medium" data-i18n="ai.summarizeThis">Summarize</span>
                 </button>
                 <button onclick="handleContextAction('read')"
                     class="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-slate-200 transition-colors active:bg-white/10">
                     <span class="material-symbols-outlined text-[20px] text-slate-400">volume_up</span>
-                    <span class="text-sm font-medium">Read Aloud</span>
+                    <span class="text-sm font-medium" data-i18n="ai.readAloud">Read Aloud</span>
                 </button>
             </div>
 
@@ -1040,15 +1042,16 @@
                 function updateWebSearchUI() {
                     const btn = document.getElementById('webSearchBtn');
                     if (!btn) return;
+                    const t = window.i18n?.t ? window.i18n.t.bind(window.i18n) : (key) => key;
 
                     if (searchEnabled) {
                         btn.classList.remove('text-slate-400', 'border-white/10');
                         btn.classList.add('text-primary', 'border-primary/50', 'bg-primary/5');
-                        btn.querySelector('span:last-child').innerText = 'Search On';
+                        btn.querySelector('span:last-child').innerText = t('ai.searchOn');
                     } else {
                         btn.classList.add('text-slate-400', 'border-white/10');
                         btn.classList.remove('text-primary', 'border-primary/50', 'bg-primary/5');
-                        btn.querySelector('span:last-child').innerText = 'Search Off';
+                        btn.querySelector('span:last-child').innerText = t('ai.searchOff');
                     }
                 }
 
@@ -1712,7 +1715,6 @@ Wave is a modern, feature-rich messaging platform you're integrated into. Here's
 - 💬 Real-time messaging with friends and groups
 - 🤖 AI Chat (that's you!) - Help with translations, coding, questions, web search
 - 📰 Feed - News and content from Telegram channels
-- 🎵 Music Player - Listen to music while chatting
 - 👤 User Profiles - Customizable profiles with avatars and bios
 - 🌓 Dark/Light themes with transparency mode
 - 📱 Mobile-optimized interface with swipe gestures
@@ -2934,27 +2936,32 @@ You're here to help users with anything they need - from answering questions to 
 
                     // Show success message
                     const successDiv = document.createElement('div');
+                    const t = window.i18n?.t ? window.i18n.t.bind(window.i18n) : (key) => key;
                     successDiv.className = 'fixed top-20 right-6 bg-primary text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-fade-in';
                     successDiv.innerHTML = `
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined">check_circle</span>
-                    <span>Chat saved successfully!</span>
+                    <span>${t('ai.chatSavedSuccess')}</span>
                 </div>
             `;
                     document.body.appendChild(successDiv);
                     setTimeout(() => successDiv.remove(), 3000);
                 }
 
-                function showSavedChats() {
+                async function showSavedChats() {
                     const savedChats = JSON.parse(localStorage.getItem('aiSavedChats') || '[]');
                     const listContainer = document.getElementById('savedChatsList');
+                    if (window.i18n && !window.i18n.translations?.[window.i18n.currentLang]) {
+                        await window.i18n.init();
+                    }
+                    const t = window.i18n?.t ? window.i18n.t.bind(window.i18n) : (key) => key;
 
                     if (savedChats.length === 0) {
                         listContainer.innerHTML = `
                     <div class="text-center py-12 text-slate-400">
                         <span class="material-symbols-outlined text-5xl mb-3 opacity-50">bookmark_border</span>
-                        <p>No saved chats yet</p>
-                        <p class="text-xs mt-2">Save your conversations to access them later</p>
+                        <p>${t('ai.noSavedChats')}</p>
+                        <p class="text-xs mt-2">${t('ai.saveConversations')}</p>
                     </div>
                 `;
                     } else {
@@ -3065,6 +3072,13 @@ You're here to help users with anything they need - from answering questions to 
                 async function loadAIStatus() {
                     console.log('loadAIStatus called');
                     
+                    // Wait for i18n to be ready (simple check with timeout)
+                    if (!window.i18n) {
+                        console.log('i18n not ready, waiting...');
+                        setTimeout(loadAIStatus, 100);
+                        return;
+                    }
+                    
                     // Ensure messagesContainer exists
                     const container = document.getElementById('messages-inner-container');
                     if (!container) {
@@ -3095,16 +3109,24 @@ You're here to help users with anything they need - from answering questions to 
                     const welcomeDiv = document.createElement('div');
                     welcomeDiv.className = 'flex gap-3 group';
                     welcomeDiv.id = 'aiWelcomeMessage'; // Add ID for easier removal if needed
+                    
+                    // Get translations (bind context to preserve 'this')
+                    const aiAssistantText = window.i18n.t('ai.aiAssistant');
+                    const welcomeMsg = window.i18n.t('ai.welcomeMessage');
+                    const welcomeDesc = window.i18n.t('ai.welcomeDescription');
+                    const currentlyUsingText = window.i18n.t('ai.currentlyUsing');
+                    const changeInSettingsText = window.i18n.t('ai.changeInSettings');
+                    
                     welcomeDiv.innerHTML = `
                 <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style='background-image: url("/wavechat.png");'></div>
                 <div class="flex flex-col gap-1 max-w-[85%]">
-                    <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">AI Assistant</p>
+                    <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">${aiAssistantText}</p>
                     <div class="bg-surface-dark p-3.5 rounded-2xl rounded-bl-none border border-white/5 shadow-sm">
                         <div class="text-sm leading-relaxed text-slate-200">
-                            Hello! I'm your Wave AI assistant 🌊<br><br>
-                            I can help you translate, summarize, write code, and explain topics. Use the buttons below or just chat with me!
+                            ${welcomeMsg}<br><br>
+                            ${welcomeDesc}
                         </div>
-                        <div class="text-[10px] text-slate-500 mt-2">Currently using: ${modelName} • Change in Settings</div>
+                        <div class="text-[10px] text-slate-500 mt-2">${currentlyUsingText}: ${modelName} • ${changeInSettingsText}</div>
                     </div>
                 </div>
             `;
@@ -3119,10 +3141,21 @@ You're here to help users with anything they need - from answering questions to 
 
                 // Wait for DOM to be ready before loading AI status
                 if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', loadAIStatus);
+                    document.addEventListener('DOMContentLoaded', async () => {
+                        // Initialize i18n first
+                        if (window.i18n) {
+                            await window.i18n.init();
+                        }
+                        loadAIStatus();
+                    });
                 } else {
-                    // DOM already loaded
-                    loadAIStatus();
+                    // DOM already loaded, initialize i18n then load AI status
+                    (async () => {
+                        if (window.i18n) {
+                            await window.i18n.init();
+                        }
+                        loadAIStatus();
+                    })();
                 }
             </script>
 
@@ -3506,10 +3539,14 @@ You're here to help users with anything they need - from answering questions to 
                 });
 
                 // Load saved chats in sidebar
-                function loadSidebarChats() {
+                async function loadSidebarChats() {
                     try {
                         const savedChats = JSON.parse(localStorage.getItem('aiSavedChats') || '[]');
                         const container = document.getElementById('sidebarChatsList');
+                        if (window.i18n && !window.i18n.translations?.[window.i18n.currentLang]) {
+                            await window.i18n.init();
+                        }
+                        const t = window.i18n?.t ? window.i18n.t.bind(window.i18n) : (key) => key;
 
                         if (!container) return;
 
@@ -3517,8 +3554,8 @@ You're here to help users with anything they need - from answering questions to 
                             container.innerHTML = `
                         <div class="text-center py-8 text-slate-400">
                             <span class="material-symbols-outlined text-4xl mb-2 opacity-50">bookmark_border</span>
-                            <p class="text-sm">No saved chats yet</p>
-                            <p class="text-xs mt-1 text-slate-500">Save conversations to access them later</p>
+                            <p class="text-sm">${t('ai.noSavedChats')}</p>
+                            <p class="text-xs mt-1 text-slate-500">${t('ai.saveConversations')}</p>
                         </div>
                     `;
                         } else {

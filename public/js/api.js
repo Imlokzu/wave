@@ -125,6 +125,29 @@ class APIClient {
     return this.request(`/api/rooms/${roomId}/messages`);
   }
 
+  // Get messages with cache (2 minute expiry)
+  async getMessagesCached(roomId) {
+    const cacheKey = `msg_${roomId}`;
+    const cached = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(`${cacheKey}_t`);
+    
+    if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 120000) {
+      console.log('[API] Using cached messages for:', roomId);
+      return JSON.parse(cached);
+    }
+    
+    const result = await this.getMessages(roomId);
+    localStorage.setItem(cacheKey, JSON.stringify(result));
+    localStorage.setItem(`${cacheKey}_t`, Date.now().toString());
+    return result;
+  }
+
+  // Clear message cache for a room
+  invalidateMessageCache(roomId) {
+    localStorage.removeItem(`msg_${roomId}`);
+    localStorage.removeItem(`msg_${roomId}_t`);
+  }
+
   async clearMessages(roomId, preserveSystem = true) {
     return this.request(`/api/rooms/${roomId}/clear`, {
       method: 'POST',
@@ -246,6 +269,32 @@ class APIClient {
   // Health Check
   async healthCheck() {
     return this.request('/health');
+  }
+
+  // DM Conversations API
+  async getMyConversations() {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return { success: false, data: [] };
+    
+    // Check cache first (5 minute expiry)
+    const cacheKey = `conversations_${userId}`;
+    const cached = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(`${cacheKey}_t`);
+    
+    if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 300000) {
+      console.log('[API] Using cached conversations');
+      return JSON.parse(cached);
+    }
+    
+    try {
+      const result = await this.request(`/api/dms/conversations/${userId}`);
+      localStorage.setItem(cacheKey, JSON.stringify(result));
+      localStorage.setItem(`${cacheKey}_t`, Date.now().toString());
+      return result;
+    } catch (err) {
+      console.error('[API] Failed to load conversations:', err);
+      return { success: false, data: [] };
+    }
   }
 }
 

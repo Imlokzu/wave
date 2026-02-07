@@ -9,7 +9,11 @@ const config = {
     baseURL: window.location.origin,
     timeout: 30000, // 30 seconds
     retryAttempts: 3,
-    retryDelay: 1000 // 1 second
+    retryDelay: 1000, // 1 second
+    // Performance optimizations
+    cacheDuration: 600000, // 10 minutes
+    batchRequests: true,
+    batchDelay: 50 // Batch requests within 50ms
   },
 
   // Socket Configuration
