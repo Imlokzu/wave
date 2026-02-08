@@ -115,6 +115,11 @@ class App {
     console.log('[App] Ready');
   }
 
+  isAIBotUsername(username = '') {
+    const clean = username.replace('@', '').trim().toLowerCase();
+    return clean === 'wavebot' || /wavebot|wave ai|ai assistant/i.test(clean);
+  }
+
   /**
    * Check if user is authenticated
    * Returns true if authenticated, false otherwise
@@ -234,6 +239,9 @@ class App {
         result.data.forEach(conv => {
           const username = conv.otherUser?.username;
           if (username) {
+            if (this.isAIBotUsername(username)) {
+              return;
+            }
             this.dmConversations.add(username);
             const lastMessage = conv.lastMessage;
             if (lastMessage) {
@@ -315,6 +323,9 @@ class App {
         if (session.dmConversations && Array.isArray(session.dmConversations)) {
           console.log('[App] Restoring DM conversations:', session.dmConversations.length);
           session.dmConversations.forEach(username => {
+            if (this.isAIBotUsername(username)) {
+              return;
+            }
             this.dmConversations.add(username);
           });
           this.renderDMList();
@@ -1011,7 +1022,8 @@ class App {
 
     // Don't add AI bot to DM list - it should only respond in existing conversations
     const isAIBot = senderUsername.toLowerCase() === 'wavebot' || 
-                    message.senderId === '00000000-0000-0000-0000-000000000001';
+            message.senderId === '00000000-0000-0000-0000-000000000001' ||
+            /wavebot|wave ai|ai assistant/i.test(message.senderNickname || '');
     
     if (!isAIBot) {
       // Add sender to DM list (but not the AI bot)
@@ -1087,7 +1099,8 @@ class App {
         senderNickname: senderUsername,
         content: content,
         timestamp: message.timestamp || new Date(),
-        type: messageType,
+        type: isAIBot ? 'ai' : messageType,
+        isAI: isAIBot,
         imageUrl: imageUrl,
         fileUrl: fileUrl,
         fileName: fileName,
@@ -1226,6 +1239,7 @@ class App {
    */
   async checkUserOnlineStatus(username) {
     try {
+      const normalize = (value) => (value || '').toString().replace(/^@/, '').toLowerCase();
       // Try to get userId from username
       const response = await fetch(`/api/users/search?q=${encodeURIComponent(username)}`);
       if (!response.ok) {
@@ -1239,9 +1253,8 @@ class App {
         return false;
       }
       
-      const user = users.find(u => 
-        (u.username || u.nickname || '').toLowerCase() === username.toLowerCase()
-      );
+      const target = normalize(username);
+      const user = users.find(u => normalize(u.username || u.nickname) === target);
       
       if (!user || !user.id) {
         return false;
@@ -1869,6 +1882,15 @@ class App {
   async handleAttachmentClick() {
     console.log('[App] handleAttachmentClick called!');
     
+    // If checkbox-driven inline toggle exists, toggle it and return
+    const toggle = document.getElementById('attachmentToggle');
+    if (toggle) {
+      toggle.checked = !toggle.checked;
+      const menuInline = document.getElementById('attachmentMenu');
+      try { if (menuInline) menuInline.dataset.openedAt = Date.now().toString(); } catch(e){}
+      return;
+    }
+
     // Show attachment menu
     const menu = document.getElementById('attachmentMenu');
     console.log('[App] Attachment menu element:', menu);
@@ -1880,25 +1902,51 @@ class App {
       return;
     }
     
-    // Position menu near attachment button
+    // Position menu near attachment button (if menu is a global fixed element)
     const attachmentBtn = document.getElementById('attachmentBtn');
     console.log('[App] Positioning menu near button:', attachmentBtn);
-    
-    if (attachmentBtn) {
+
+    const isInlineMenu = attachmentBtn && menu && menu.parentElement && menu.parentElement.contains(attachmentBtn);
+
+    if (!isInlineMenu && attachmentBtn) {
       const rect = attachmentBtn.getBoundingClientRect();
       console.log('[App] Button rect:', rect);
       menu.style.left = `${rect.left}px`;
       menu.style.bottom = `${window.innerHeight - rect.top + 10}px`;
     }
-    
+
+    // Toggle menu if already open
+    if (!menu.classList.contains('hidden')) {
+      console.log('[App] Hiding attachment menu');
+      menu.style.opacity = '0';
+      menu.style.transform = 'scale(0.9) translateY(8px)';
+      setTimeout(() => menu.classList.add('hidden'), 350);
+      return;
+    }
+
     // Show menu with animation
     console.log('[App] Showing attachment menu');
-    menu.classList.remove('hidden');
-    // Trigger animation
-    requestAnimationFrame(() => {
+    if (isInlineMenu) {
+      // menu is positioned relative to button; use class-based animation
+      menu.classList.remove('hidden');
+      void menu.offsetWidth;
       menu.style.opacity = '1';
       menu.style.transform = 'scale(1) translateY(0)';
-    });
+    } else {
+      menu.classList.remove('hidden');
+      // Trigger animation for fixed menu
+      requestAnimationFrame(() => {
+        menu.style.opacity = '1';
+        menu.style.transform = 'scale(1) translateY(0)';
+      });
+    }
+
+    // Mark open time so outside-click handlers can ignore immediate clicks
+    try {
+      menu.dataset.openedAt = Date.now().toString();
+    } catch (e) {
+      // ignore
+    }
     
     // Setup menu item handlers with null checks
     // ## CODE REVIEW FIX: Added null checks for all menu items
@@ -1960,6 +2008,12 @@ class App {
     // Close menu when clicking outside
     setTimeout(() => {
       document.addEventListener('click', function closeAttachmentMenu(e) {
+        // Ignore clicks that occur immediately after opening (likely the opening click)
+        const openedAt = parseInt(menu.dataset.openedAt || '0', 10);
+        if (openedAt && (Date.now() - openedAt) < 150) {
+          return;
+        }
+
         if (!menu.contains(e.target) && !e.target.closest('button[id="attachmentBtn"]')) {
           console.log('[App] Closing attachment menu (clicked outside)');
           menu.style.opacity = '0';
@@ -2540,6 +2594,11 @@ class App {
       // Only add room messages when in a regular room (not DM)
       const currentRoom = state.get('room');
       if (currentRoom && !currentRoom.isDM) {
+        const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
+        if (message && (message.senderId === AI_BOT_ID || /wavebot|wave ai|ai assistant/i.test(message.senderNickname || ''))) {
+          message.type = 'ai';
+          message.isAI = true;
+        }
         state.addMessage(message);
         
         // Auto-mark as read immediately if message is from someone else
@@ -3118,8 +3177,16 @@ class App {
       return true;
     });
     
-    console.log('[App] Received message history:', validMessages.length);
-    state.setMessages(validMessages);
+    const normalized = validMessages.map(msg => {
+      const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
+      if (msg.senderId === AI_BOT_ID || /wavebot|wave ai|ai assistant/i.test(msg.senderNickname || '')) {
+        return { ...msg, type: 'ai', isAI: true };
+      }
+      return msg;
+    });
+
+    console.log('[App] Received message history:', normalized.length);
+    state.setMessages(normalized);
     
     // Mark ALL messages from others as read immediately when history loads
     // This simulates "message loaded in browser = message read"
@@ -3159,18 +3226,16 @@ class App {
           return;
         }
 
-        // Add user message locally
-        state.addMessage({
-          id: `msg_${Date.now()}`,
-          senderId: state.get('user.id'),
-          senderNickname: state.get('user.nickname'),
-          content: trimmedContent,
-          timestamp: new Date(),
-          type: 'text'
-        });
+        // Route AI requests through socket to persist and broadcast
+        const currentRoom = state.get('room');
+        const aiContent = `@ai ${query}`;
+        if (currentRoom && currentRoom.isDM) {
+          await this.sendDirectMessage(aiContent);
+        } else {
+          socketManager.sendMessage(aiContent);
+        }
 
         ui.clearMessageInput();
-        await this.handleAICommand(query);
         if (replyIndicator) replyIndicator.remove();
         socketManager.stopTyping();
         return;
@@ -3305,6 +3370,12 @@ class App {
    * Handle edit message
    */
   handleEditMessage(messageId, content) {
+    const messages = state.get('messages') || [];
+    const target = messages.find(m => m.id === messageId);
+    if (target && (target.type === 'ai' || target.isAI || target.senderId === 'ai' || /wavebot|wave ai|ai assistant/i.test(target.senderNickname || ''))) {
+      alert('AI messages cannot be edited');
+      return;
+    }
     state.setEditingMessage(messageId);
     ui.setMessageInput(content);
     ui.focusMessageInput();
@@ -4005,6 +4076,9 @@ class App {
     
     // Render DMs first
     for (const username of this.dmConversations) {
+      if (this.isAIBotUsername(username)) {
+        continue;
+      }
       const cleanUsername = username.replace('@', '');
       const isActive = currentRoom && currentRoom.isDM && 
         currentRoom.name.replace('@', '').toLowerCase() === cleanUsername.toLowerCase();

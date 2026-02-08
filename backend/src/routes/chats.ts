@@ -6,6 +6,8 @@ import { SupabaseDMManager } from '../managers/SupabaseDMManager';
 import { RoomManager } from '../managers/RoomManager';
 import { MessageManager } from '../managers/MessageManager';
 
+const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
+
 export function createChatRouter(
   userManager: UserManager | SupabaseUserManager,
   dmManager: DMManager | SupabaseDMManager,
@@ -26,11 +28,15 @@ export function createChatRouter(
       
       // Get user's rooms (we'll need to track this)
       // For now, return DM conversations
-      const conversations = await Promise.all(
+      const conversations = (await Promise.all(
         dmConversations.map(async (convId) => {
           const [user1Id, user2Id] = convId.split('_');
           const otherUserId = user1Id === userId ? user2Id : user1Id;
           const otherUser = await userManager.getUserById(otherUserId);
+          const isAIBotUser = otherUser?.id === AI_BOT_ID || (otherUser?.username || '').toLowerCase() === 'wavebot';
+          if (isAIBotUser) {
+            return null;
+          }
           const messages = await dmManager.getDMHistory(userId, otherUserId);
           const lastMessage = messages[messages.length - 1];
           const unreadCount = 0; // TODO: Implement unread tracking
@@ -53,7 +59,7 @@ export function createChatRouter(
             isOnline: false, // TODO: Track online status
           };
         })
-      );
+      )).filter(Boolean);
 
       res.json({
         success: true,

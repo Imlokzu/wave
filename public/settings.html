@@ -1447,19 +1447,13 @@
                                             </p>
                                             <a class="text-primary text-xs font-bold hover:underline mt-1 inline-flex items-center gap-1"
                                                 href="https://openrouter.ai/keys" target="_blank">
-                                                Go to OpenRouter Dashboard
+                                                <span data-i18n="settings.openRouterDashboard">Go to OpenRouter Dashboard</span>
                                                 <span class="material-symbols-outlined text-[10px]">open_in_new</span>
                                             </a>
                                         </div>
                                     </div>
 
-                                    <div class="flex justify-end pt-2">
-                                        <button type="button"
-                                            class="bg-surface-dark-hover border border-[#223f49] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2c4652] transition-colors mr-3">Cancel</button>
-                                        <button id="saveApiKey" type="submit"
-                                            class="bg-primary text-black px-6 py-2 rounded-lg text-sm font-bold hover:bg-[#34caff] shadow-lg shadow-primary/20 transition-all active:scale-95">Save
-                                            Changes</button>
-                                    </div>
+                                    <!-- API key auto-saved on input/blur; buttons removed -->
                                 </form>
                             </div>
                         </section>
@@ -1517,7 +1511,7 @@
                                         class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">help</span>
-                                            <p class="text-white font-medium text-sm">Help Center</p>
+                                            <p class="text-white font-medium text-sm" data-i18n="settings.helpCenter">Help Center</p>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
                                     </a>
@@ -1526,7 +1520,7 @@
                                         class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">bug_report</span>
-                                            <p class="text-white font-medium text-sm">Report a Bug</p>
+                                            <p class="text-white font-medium text-sm" data-i18n="settings.reportBug">Report a Bug</p>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">open_in_new</span>
                                     </a>
@@ -1534,18 +1528,18 @@
                             </div>
 
                             <div class="bg-surface-dark rounded-xl p-6 border border-[#223f49]">
-                                <h4 class="text-white font-bold mb-4">System Information</h4>
+                                <h4 class="text-white font-bold mb-4" data-i18n="settings.systemInfo">System Information</h4>
                                 <div class="flex flex-col gap-3 text-sm">
                                     <div class="flex justify-between">
-                                        <span class="text-[#90bccb]">Platform</span>
+                                        <span class="text-[#90bccb]" data-i18n="settings.platform">Platform</span>
                                         <span class="text-white font-medium">Web</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-[#90bccb]">Browser</span>
+                                        <span class="text-[#90bccb]" data-i18n="settings.browser">Browser</span>
                                         <span class="text-white font-medium" id="browserInfo">Loading...</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-[#90bccb]">Last Updated</span>
+                                        <span class="text-[#90bccb]" data-i18n="settings.lastUpdated">Last Updated</span>
                                         <span class="text-white font-medium">Feb 2026</span>
                                     </div>
                                 </div>

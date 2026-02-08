@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <link rel="icon" type="image/png" href="/nobackwave.png" />
+  <title>Channels</title>
+  <script src="/js/theme-init.js"></script>
+  <link href="/css/theme.css" rel="stylesheet" />
+  <link href="/css/theme-config.css" rel="stylesheet" />
+  <script src="/js/auth-guard.js"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body class="bg-background-dark text-white min-h-screen">
+  <div class="max-w-6xl mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Channels</h1>
+      <a href="/chat.html" class="text-sm text-primary hover:text-primary/90">Back to Chat</a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <aside class="bg-surface-dark rounded-xl border border-slate-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-slate-200">All Channels</h2>
+          <span id="adminBadge" class="hidden text-xs px-2 py-1 rounded-full bg-primary/20 text-primary">Admin</span>
+        </div>
+        <div id="channelsList" class="space-y-2"></div>
+
+        <div id="adminCreateChannel" class="hidden mt-4 pt-4 border-t border-slate-800">
+          <h3 class="text-xs font-semibold text-slate-300 mb-2">Create Channel</h3>
+          <input id="channelName" type="text" placeholder="Channel name" class="w-full mb-2 px-3 py-2 rounded-lg bg-surface-lighter border border-slate-700 text-sm" />
+          <textarea id="channelDescription" placeholder="Description (optional)" class="w-full mb-2 px-3 py-2 rounded-lg bg-surface-lighter border border-slate-700 text-sm"></textarea>
+          <button id="createChannelBtn" class="w-full py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm">Create</button>
+        </div>
+      </aside>
+
+      <main class="lg:col-span-2 bg-surface-dark rounded-xl border border-slate-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 id="channelTitle" class="text-lg font-bold">Select a channel</h2>
+            <p id="channelSubtitle" class="text-xs text-slate-400"></p>
+          </div>
+        </div>
+
+        <div id="adminCreatePost" class="hidden mb-4">
+          <textarea id="postContent" placeholder="Write an update..." class="w-full mb-2 px-3 py-2 rounded-lg bg-surface-lighter border border-slate-700 text-sm"></textarea>
+          <button id="createPostBtn" class="py-2 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm">Post</button>
+        </div>
+
+        <div id="postsList" class="space-y-4"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/js/channels.js"></script>
+</body>
+</html>

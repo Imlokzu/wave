@@ -215,6 +215,12 @@ export function setupSocketIO(
           return;
         }
 
+        // Normalize /ai to @ai so older clients still trigger AI
+        let content = data.content || '';
+        if (/^\s*\/ai\b/i.test(content)) {
+          content = content.replace(/^\s*\/ai\b/i, '@ai').trim();
+        }
+
         console.log(`📝 [Socket] Creating message from ${nickname} (${userId}) in room ${roomId}`);
 
         // Check if room is locked
@@ -235,7 +241,7 @@ export function setupSocketIO(
           roomId,
           userId!,
           nickname!,
-          data.content
+          content
         );
 
         // Add avatar to message if user has one
@@ -250,14 +256,14 @@ export function setupSocketIO(
         console.log(`✅ [Socket] Message from ${nickname} in room ${roomId}`);
 
         // Check if message mentions @ai
-        if (data.content.includes('@ai')) {
+        if (content.includes('@ai')) {
           console.log('🤖 [Socket] AI mention detected, processing...');
           
           const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
           
           // Extract model selection if provided (format: @ai [model:wave-r1] query)
           let modelId: string | undefined;
-          let userQuery = data.content.replace('@ai', '').trim();
+          let userQuery = content.replace('@ai', '').trim();
           
           const modelMatch = userQuery.match(/\[model:([^\]]+)\]/);
           if (modelMatch) {
@@ -289,15 +295,6 @@ export function setupSocketIO(
           console.log(`[Socket] Query needs search: ${needsSearch} - "${userQuery.substring(0, 50)}..."`);
           
           if (needsSearch) {
-            // Show searching indicator
-            const thinkingMessage = await messageManager.createMessage(
-              roomId,
-              AI_BOT_ID,
-              '🤖 WaveBot',
-              '🔍 Searching the web...'
-            );
-            io.to(roomId).emit('message:new', thinkingMessage);
-            
             try {
               // Detect user location for region-specific search
               const { getLocationService } = await import('../services/LocationService');
@@ -317,10 +314,6 @@ export function setupSocketIO(
               const formattedResults = searchService.formatResultsForAI(searchResults);
               
               console.log(`[Socket] Found ${searchResults.length} search results`);
-              
-              // Delete searching message
-              await messageManager.deleteMessage(thinkingMessage.id, AI_BOT_ID, true);
-              io.to(roomId).emit('message:deleted', { messageId: thinkingMessage.id });
               
               // Use Unified AI Service with model selection
               const { getUnifiedAIService } = await import('../services/UnifiedAIService');
@@ -372,10 +365,6 @@ ${formattedResults}`
               
             } catch (searchError: any) {
               console.error('❌ [Socket] Search error:', searchError);
-              
-              // Delete searching message
-              await messageManager.deleteMessage(thinkingMessage.id, AI_BOT_ID, true);
-              io.to(roomId).emit('message:deleted', { messageId: thinkingMessage.id });
               
               // Send error
               const errorMessage = await messageManager.createMessage(
@@ -1574,6 +1563,10 @@ ${conversationContext}`
         }
 
         let { toUsername, content } = data;
+        // Normalize /ai to @ai so older clients still trigger AI
+        if (/^\s*\/ai\b/i.test(content || '')) {
+          content = (content || '').replace(/^\s*\/ai\b/i, '@ai').trim();
+        }
         console.log('From:', socketData.username);
         console.log('To:', toUsername);
         console.log('Content:', content);
@@ -1668,26 +1661,6 @@ ${conversationContext}`
           const modelMatch = content.match(/\[model:([^\]]+)\]/);
           const requestedModel = modelMatch ? modelMatch[1] : null;
           console.log('🎯 [DM] Requested AI model:', requestedModel || 'default');
-          
-          // Generate proper UUID for thinking message (temporary, not saved to DB)
-          const { randomUUID } = await import('crypto');
-          const thinkingMessageId = randomUUID();
-          
-          // Send "AI is thinking..." indicator to sender
-          const thinkingMessageToSender = {
-            id: thinkingMessageId,
-            roomId: message.roomId,
-            senderId: AI_BOT_ID,
-            senderNickname: '🤖 WaveBot',
-            senderUsername: 'wavebot',
-            content: '💭 Thinking...',
-            type: 'normal' as const,
-            timestamp: new Date(),
-            expiresAt: null,
-            delivered: true,
-            to_username: socketData.username,
-          };
-          socket.emit('dm:received', { message: thinkingMessageToSender });
           
           // Import DeepSeek AI service with web search
           const { getDeepSeekService } = await import('../services/DeepSeekAIService');
@@ -1786,13 +1759,6 @@ DO NOT add signatures, footers, or "powered by" messages at the end of your resp
             if (searchMatch) {
               const searchQuery = searchMatch[1].trim();
               console.log('🔍 [DM] AI requested search:', searchQuery);
-              
-              // Update thinking message to show searching
-              const searchingMessage = {
-                ...thinkingMessageToSender,
-                content: '🔍 Searching the web...',
-              };
-              socket.emit('dm:received', { message: searchingMessage });
               
               // Import search service
               const { getSearchService } = await import('../services/SearchService');

@@ -3,7 +3,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import path from 'path';
 import { config } from './config';
-import { InMemoryStorage, RoomManager, MessageManager } from './managers';
+import { InMemoryStorage, RoomManager, MessageManager, createChannelManager } from './managers';
 import { UserManager } from './managers/UserManager';
 import { DMManager } from './managers/DMManager';
 import { SupabaseUserManager } from './managers/SupabaseUserManager';
@@ -31,6 +31,7 @@ import { createReportsRouter } from './routes/reports';
 import { createSettingsRouter } from './routes/settings';
 import { createSearchRouter } from './routes/search';
 import { createAIChatRouter } from './routes/ai-chat';
+import { createChannelsRouter } from './routes/channels';
 import weatherRouter from './routes/weather';
 import versionRouter from './routes/version';
 
@@ -41,6 +42,7 @@ const roomStorage = config.supabaseUrl && config.supabaseKey
   : storage;
 const roomManager = new RoomManager(roomStorage);
 const messageManager = new MessageManager(storage, config.messageExpirationMinutes);
+const channelManager = createChannelManager(config.supabaseUrl, config.supabaseKey);
 
 // Use Supabase managers if configured, otherwise use in-memory
 const userManager = config.supabaseUrl && config.supabaseKey
@@ -186,6 +188,7 @@ app.use('/api/feed', feedRouter);
 app.use('/api/settings', createSettingsRouter(userManager));
 app.use('/api/search', createSearchRouter());
 app.use('/api/ai-chat', createAIChatRouter());
+app.use('/api/channels', createChannelsRouter(userManager, channelManager));
 app.use('/api/reports', createReportsRouter(userManager));
 app.use('/api/admin', createAdminRouter(userManager));
 app.use('/api/weather', weatherRouter);

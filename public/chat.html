@@ -110,7 +110,7 @@
             transform: translateY(10px);
             transition: opacity 0.2s ease-out,
                         transform 0.2s ease-out;
-            pointer-events: none;
+            pointer-events: auto;
             background: rgba(15, 20, 25, 0.25) !important;
             backdrop-filter: blur(40px) saturate(180%) brightness(1.1) !important;
             -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.1) !important;
@@ -136,6 +136,8 @@
             transition: opacity 0.25s ease-in,
                         transform 0.25s ease-in;
         }
+
+        /* compact toggle removed; using ai-chat style inline menu */
         
         /* Plus button rotation */
         #attachmentBtn .material-symbols-outlined {
@@ -416,9 +418,35 @@
                 </div>
                 
                 <div class="bg-surface-dark rounded-xl border border-slate-800 shadow-lg flex items-end p-2 gap-2 relative z-20">
-                    <button id="attachmentBtn" class="p-2 text-slate-400 hover:text-primary transition-colors rounded-lg hover:bg-surface-lighter">
-                        <span class="material-symbols-outlined">add_circle</span>
-                    </button>
+                    <div class="relative">
+                        <button id="attachmentBtn" class="size-9 shrink-0 flex items-center justify-center rounded-full bg-surface-dark border border-white/5 text-slate-400 hover:text-primary hover:border-primary/50 transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[24px]">add</span>
+                        </button>
+                        <!-- Inline attach menu (ai-chat style) -->
+                        <div id="attachmentMenu" class="hidden absolute bottom-full left-0 mb-2 bg-surface-dark/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-2 min-w-[200px] transform origin-bottom-left scale-95 opacity-0 transition-all duration-200 ease-out">
+                            <button id="attachImage" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group">
+                                <span class="material-symbols-outlined text-primary text-[20px]">image</span>
+                                <span class="text-sm font-medium text-white">Image</span>
+                            </button>
+                            <button id="attachFile" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group mt-1">
+                                <span class="material-symbols-outlined text-orange-400 text-[20px]">attach_file</span>
+                                <span class="text-sm font-medium text-white">File</span>
+                            </button>
+                            <button id="attachSticker" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group mt-1">
+                                <span class="material-symbols-outlined text-purple-400 text-[20px]">emoji_emotions</span>
+                                <span class="text-sm font-medium text-white">Sticker</span>
+                            </button>
+                            <button id="attachAudio" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group mt-1">
+                                <span class="material-symbols-outlined text-emerald-400 text-[20px]">audio_file</span>
+                                <span class="text-sm font-medium text-white">Audio (MP3)</span>
+                            </button>
+                            <div class="h-px bg-slate-700 my-1"></div>
+                            <button id="startVoiceCall" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group">
+                                <span class="material-symbols-outlined text-sky-400 text-[20px]">call</span>
+                                <span class="text-sm font-medium text-white">Voice Call</span>
+                            </button>
+                        </div>
+                    </div>
                     <div class="flex-1 py-2">
                         <input id="messageInput" class="w-full bg-transparent border-none text-sm text-white placeholder-slate-400 focus:ring-0 p-0 outline-none" data-i18n-placeholder="chat.typeMessage" placeholder="Type a message..." type="text"/>
                     </div>
@@ -547,32 +575,7 @@
         </div>
     </nav>
     
-    <!-- Attachment Menu -->
-    <div id="attachmentMenu" class="fixed rounded-xl shadow-2xl z-50" style="display: none;">
-        <div class="p-2 space-y-1 min-w-[200px]">
-            <button id="attachImage" class="w-full px-4 py-3 hover:bg-surface-lighter rounded-lg text-left flex items-center gap-3 text-white transition-colors">
-                <span class="material-symbols-outlined text-primary">image</span>
-                <span class="text-sm">Image</span>
-            </button>
-            <button id="attachFile" class="w-full px-4 py-3 hover:bg-surface-lighter rounded-lg text-left flex items-center gap-3 text-white transition-colors">
-                <span class="material-symbols-outlined text-primary">attach_file</span>
-                <span class="text-sm">File</span>
-            </button>
-            <button id="attachSticker" class="w-full px-4 py-3 hover:bg-surface-lighter rounded-lg text-left flex items-center gap-3 text-white transition-colors">
-                <span class="material-symbols-outlined text-primary">emoji_emotions</span>
-                <span class="text-sm">Sticker</span>
-            </button>
-            <button id="attachAudio" class="w-full px-4 py-3 hover:bg-surface-lighter rounded-lg text-left flex items-center gap-3 text-white transition-colors">
-                <span class="material-symbols-outlined text-primary">audio_file</span>
-                <span class="text-sm">Audio (MP3)</span>
-            </button>
-            <div class="h-px bg-slate-700 my-1"></div>
-            <button id="startVoiceCall" class="w-full px-4 py-3 hover:bg-surface-lighter rounded-lg text-left flex items-center gap-3 text-white transition-colors">
-                <span class="material-symbols-outlined text-primary">call</span>
-                <span class="text-sm">Voice Call</span>
-            </button>
-        </div>
-    </div>
+    <!-- attachmentMenu moved next to button for compact UI -->
     
     <!-- Poll Creation Modal -->
     <div id="pollModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
@@ -645,6 +648,9 @@
                 <button id="joinRoomTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white" data-i18n="chat.joinRoom">
                     Join Room
                 </button>
+                <button id="createChannelTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white" data-i18n="chat.createChannelTab">
+                    Create Channel
+                </button>
             </div>
             
             <!-- Create Room Content -->
@@ -710,6 +716,21 @@
                 </div>
                 <button id="joinRoomBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors" data-i18n="chat.joinRoom">
                     Join Room
+                </button>
+            </div>
+
+            <!-- Create Channel Content (admin only) -->
+            <div id="createChannelContent" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="chat.channelName">Channel Name</label>
+                    <input id="channelNameInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="Announcements" data-i18n-placeholder="chat.channelNamePlaceholder" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2" data-i18n="chat.channelDescriptionOptional">Description (optional)</label>
+                    <textarea id="channelDescriptionInput" class="block w-full px-3 py-2 border-none rounded-lg bg-surface-lighter text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary text-sm" placeholder="Updates and news" data-i18n-placeholder="chat.channelDescriptionPlaceholder"></textarea>
+                </div>
+                <button id="createChannelBtn" class="w-full py-2 px-4 bg-primary hover:bg-primary/90 rounded-lg text-white font-medium transition-colors" data-i18n="chat.createChannel">
+                    Create Channel
                 </button>
             </div>
         </div>
@@ -1409,108 +1430,7 @@
         });
     </script>
     
-    <!-- Attachment Menu Handler -->
-    <script>
-        // Wait for chat screen to be active
-        function initAttachmentMenu() {
-            const attachmentBtn = document.getElementById('attachmentBtn');
-            const attachmentMenu = document.getElementById('attachmentMenu');
-            
-            console.log('[Attachment] Button:', attachmentBtn);
-            console.log('[Attachment] Menu:', attachmentMenu);
-            
-            if (attachmentBtn && attachmentMenu) {
-                attachmentBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    console.log('[Attachment] Button clicked');
-                    
-                    // Toggle menu
-                    const isShowing = attachmentMenu.classList.contains('show');
-                    console.log('[Attachment] Is showing:', isShowing);
-                    
-                    if (isShowing) {
-                        // Hide menu with clean slide-out animation
-                        attachmentMenu.classList.add('closing');
-                        attachmentMenu.classList.remove('show');
-                        attachmentBtn.classList.remove('active');
-                        
-                        // Remove closing class and hide after animation
-                        setTimeout(() => {
-                            attachmentMenu.classList.remove('closing');
-                            attachmentMenu.style.display = 'none';
-                        }, 250);
-                    } else {
-                        // Show menu - position it above the button
-                        const btnRect = attachmentBtn.getBoundingClientRect();
-                        attachmentMenu.style.left = btnRect.left + 'px';
-                        attachmentMenu.style.bottom = (window.innerHeight - btnRect.top + 8) + 'px';
-                        attachmentMenu.style.top = 'auto';
-                        
-                        // Remove hidden state and trigger animation
-                        attachmentMenu.style.display = 'block';
-                        attachmentMenu.classList.remove('closing');
-                        
-                        // Force reflow to ensure display change is applied before animation
-                        attachmentMenu.offsetHeight;
-                        
-                        // Add show class to trigger animation
-                        attachmentMenu.classList.add('show');
-                        attachmentBtn.classList.add('active');
-                        console.log('[Attachment] Menu opened');
-                    }
-                });
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', function(e) {
-                    // Don't close if clicking the button or menu itself
-                    if (attachmentBtn.contains(e.target) || attachmentMenu.contains(e.target)) {
-                        return;
-                    }
-                    
-                    if (attachmentMenu.classList.contains('show')) {
-                        attachmentMenu.classList.add('closing');
-                        attachmentMenu.classList.remove('show');
-                        attachmentBtn.classList.remove('active');
-                        
-                        setTimeout(() => {
-                            attachmentMenu.classList.remove('closing');
-                            attachmentMenu.style.display = 'none';
-                        }, 250);
-                    }
-                });
-                
-                // Close menu when clicking a menu item
-                attachmentMenu.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        attachmentMenu.classList.add('closing');
-                        attachmentMenu.classList.remove('show');
-                        attachmentBtn.classList.remove('active');
-                        
-                        setTimeout(() => {
-                            attachmentMenu.classList.remove('closing');
-                            attachmentMenu.style.display = 'none';
-                        }, 250);
-                    });
-                });
-                
-                console.log('[Attachment] Menu initialized successfully');
-            } else {
-                console.error('[Attachment] Elements not found!');
-            }
-        }
-        
-        // Try to initialize immediately
-        document.addEventListener('DOMContentLoaded', function() {
-            // Wait a bit for chat screen to become active
-            setTimeout(initAttachmentMenu, 500);
-        });
-        
-        // Also try when window loads
-        window.addEventListener('load', function() {
-            setTimeout(initAttachmentMenu, 100);
-        });
-    </script>
+    <!-- Attachment Menu Handler removed (handled in app.js) -->
     
     <!-- Mobile back button handler -->
     <script>
@@ -1701,12 +1621,17 @@
             const closeBtn = document.getElementById('closeCreateJoinModal');
             const createRoomTab = document.getElementById('createRoomTab');
             const joinRoomTab = document.getElementById('joinRoomTab');
+            const createChannelTab = document.getElementById('createChannelTab');
             const createRoomContent = document.getElementById('createRoomContent');
             const joinRoomContent = document.getElementById('joinRoomContent');
+            const createChannelContent = document.getElementById('createChannelContent');
             const tempRoomBtn = document.getElementById('tempRoomBtn');
             const foreverRoomBtn = document.getElementById('foreverRoomBtn');
             const createRoomBtn = document.getElementById('createRoomBtn');
             const joinRoomBtn = document.getElementById('joinRoomBtn');
+            const createChannelBtn = document.getElementById('createChannelBtn');
+            const channelNameInput = document.getElementById('channelNameInput');
+            const channelDescriptionInput = document.getElementById('channelDescriptionInput');
             const roomCodeInput = document.getElementById('roomCodeInput');
             
             let selectedRoomType = 'temp'; // default
@@ -1725,23 +1650,47 @@
                 }
             });
             
+            const setActiveTab = (tab) => {
+                createRoomTab?.classList.toggle('bg-primary', tab === 'create');
+                createRoomTab?.classList.toggle('text-white', tab === 'create');
+                createRoomTab?.classList.toggle('text-slate-400', tab !== 'create');
+
+                joinRoomTab?.classList.toggle('bg-primary', tab === 'join');
+                joinRoomTab?.classList.toggle('text-white', tab === 'join');
+                joinRoomTab?.classList.toggle('text-slate-400', tab !== 'join');
+
+                createChannelTab?.classList.toggle('bg-primary', tab === 'channel');
+                createChannelTab?.classList.toggle('text-white', tab === 'channel');
+                createChannelTab?.classList.toggle('text-slate-400', tab !== 'channel');
+
+                createRoomContent?.classList.toggle('hidden', tab !== 'create');
+                joinRoomContent?.classList.toggle('hidden', tab !== 'join');
+                createChannelContent?.classList.toggle('hidden', tab !== 'channel');
+            };
+
+            const getI18nText = (key, fallback) => {
+                if (window.i18n && typeof window.i18n.t === 'function') {
+                    return window.i18n.t(key);
+                }
+                return fallback;
+            };
+
+            if (createChannelBtn) {
+                createChannelBtn.disabled = false;
+                createChannelBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
             // Tab switching
             createRoomTab?.addEventListener('click', () => {
-                createRoomTab.classList.add('bg-primary', 'text-white');
-                createRoomTab.classList.remove('text-slate-400');
-                joinRoomTab.classList.remove('bg-primary', 'text-white');
-                joinRoomTab.classList.add('text-slate-400');
-                createRoomContent.classList.remove('hidden');
-                joinRoomContent.classList.add('hidden');
+                setActiveTab('create');
             });
             
             joinRoomTab?.addEventListener('click', () => {
-                joinRoomTab.classList.add('bg-primary', 'text-white');
-                joinRoomTab.classList.remove('text-slate-400');
-                createRoomTab.classList.remove('bg-primary', 'text-white');
-                createRoomTab.classList.add('text-slate-400');
-                joinRoomContent.classList.remove('hidden');
-                createRoomContent.classList.add('hidden');
+                setActiveTab('join');
+            });
+
+            createChannelTab?.addEventListener('click', () => {
+                setActiveTab('channel');
             });
             
             // Room type selection
@@ -1769,6 +1718,42 @@
                     modal?.classList.remove('flex');
                 }
             });
+
+            // Create channel button (admin only)
+            createChannelBtn?.addEventListener('click', async () => {
+                const name = channelNameInput?.value.trim();
+                const description = channelDescriptionInput?.value.trim();
+                if (!name) {
+                    alert(getI18nText('chat.channelNameRequired', 'Please enter a channel name'));
+                    return;
+                }
+
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    alert(getI18nText('chat.loginFirst', 'Please login first'));
+                    return;
+                }
+
+                const res = await fetch('/api/channels', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, description })
+                });
+
+                if (res.ok) {
+                    if (channelNameInput) channelNameInput.value = '';
+                    if (channelDescriptionInput) channelDescriptionInput.value = '';
+                    modal?.classList.add('hidden');
+                    modal?.classList.remove('flex');
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || getI18nText('chat.createChannelFailed', 'Failed to create channel'));
+                }
+            });
+
             
             // Join room button
             joinRoomBtn?.addEventListener('click', () => {

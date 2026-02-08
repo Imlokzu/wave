@@ -79,7 +79,18 @@
     "allowImages": "Allow Images",
     "roomCode": "Room Code",
     "enterRoomCode": "Enter 6-character room code...",
-    "copy": "Copy"
+    "copy": "Copy",
+    "createChannelTab": "Create Channel",
+    "createChannel": "Create Channel",
+    "adminOnly": "Admin only",
+    "adminOnlyAsk": "Admin only — ask an admin for access",
+    "channelName": "Channel Name",
+    "channelNamePlaceholder": "Announcements",
+    "channelDescriptionOptional": "Description (optional)",
+    "channelDescriptionPlaceholder": "Updates and news",
+    "channelNameRequired": "Please enter a channel name",
+    "loginFirst": "Please login first",
+    "createChannelFailed": "Failed to create channel"
   },
   "ai": {
     "title": "AI Assistant",
@@ -295,17 +306,28 @@
     "aiModelSelection": "AI Model Selection",
     "chooseModel": "Choose your preferred AI model for chat",
     "loadingModels": "Loading AI models...",
+    "noModelsAvailable": "No AI models available",
+    "usingAutoSelect": "Using auto-select mode",
+    "modelChangedAuto": "Auto-select enabled",
+    "modelChanged": "Model changed to {model}",
     "openrouterKey": "OpenRouter API Key",
     "keyEncrypted": "Your key is encrypted locally",
     "needKey": "Need an API Key?",
     "needKeyDesc": "Generate your key from the OpenRouter dashboard. This allows Wave to connect directly to models like GPT-4, Claude 3, and Llama 3.",
+    "openRouterDashboard": "Go to OpenRouter Dashboard",
     "everyone": "Everyone",
     "friendsOnly": "Friends Only",
     "private": "Private",
     "autoDetect": "Auto-detect",
     "bio": "Bio",
     "tellAboutYou": "Tell us about yourself...",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "helpCenter": "Help Center",
+    "reportBug": "Report a Bug",
+    "systemInfo": "System Information",
+    "platform": "Platform",
+    "browser": "Browser",
+    "lastUpdated": "Last Updated"
   },
   "pro": {
     "title": "Wave Pro",
@@ -386,5 +408,79 @@
     "daysAgo": "{count} days ago",
     "weekAgo": "{count} week ago",
     "weeksAgo": "{count} weeks ago"
+  },
+  "helpPage": {
+    "title": "Help Center",
+    "subtitle": "Find answers to common questions",
+    "gettingStarted": {
+      "cardTitle": "Getting Started",
+      "cardDesc": "Learn the basics of Wave Messenger",
+      "title": "Getting Started",
+      "q1": "How do I create an account?",
+      "a1": "Click \"Sign Up\" on the login page, enter your email and password, and you'll receive an invite code. Enter the code to complete registration.",
+      "q2": "How do I start a chat?",
+      "a2": "Click the \"+\" button in the sidebar to create a new room or start a direct message with another user.",
+      "q3": "What is Wave Pro?",
+      "a3": "Wave Pro is our premium subscription that unlocks unlimited AI conversations and exclusive features."
+    },
+    "account": {
+      "cardTitle": "Account & Settings",
+      "cardDesc": "Manage your account and preferences",
+      "title": "Account & Settings",
+      "q1": "How do I change my password?",
+      "a1": "Go to Settings → Privacy & Security → Change Password.",
+      "q2": "How do I upload a profile picture?",
+      "a2": "Go to your Profile page and click on your avatar to upload a new image.",
+      "q3": "How do I delete my account?",
+      "a3": "Go to Settings → Data & Storage → Delete Account. This action is permanent and cannot be undone.",
+      "q4": "Can I change my username?",
+      "a4": "Yes, go to Settings → General → Username and update it."
+    },
+    "features": {
+      "cardTitle": "Features",
+      "cardDesc": "Explore Wave's capabilities",
+      "title": "Features",
+      "q1": "How do I use the AI assistant?",
+      "a1": "Click on the AI tab in the navigation. Type your message or use commands like /search, /weather, or /help.",
+      "q2": "How do I add Telegram channels to my feed?",
+      "a2": "Go to the Feed tab, click \"Add Channel\", and paste the Telegram channel URL (t.me/channelname).",
+      "q3": "Can I edit or delete messages?",
+      "a3": "Yes, hover over your message and click the edit or delete icon.",
+      "q4": "How do I pin a message?",
+      "a4": "Hover over any message and click the pin icon. Pinned messages appear at the top of the chat."
+    },
+    "ai": {
+      "cardTitle": "AI",
+      "cardDesc": "Learn about AI models and features",
+      "title": "AI Features",
+      "q1": "What AI models are available?",
+      "a1": "Wave offers several AI models including Wave Flash for speed, Wave for balance, and Wave O for reasoning tasks.",
+      "q2": "How do I choose an AI model?",
+      "a2": "Go to Settings → AI → Model Selection and choose the model that best fits your needs.",
+      "q3": "Do I need an API key?",
+      "a3": "For some models, you may need an OpenRouter API key. Generate one at their dashboard to connect directly to models like GPT-4, Claude 3, and Llama 3."
+    },
+    "troubleshooting": {
+      "cardTitle": "Troubleshooting",
+      "cardDesc": "Fix common issues",
+      "title": "Troubleshooting",
+      "q1": "Messages aren't sending",
+      "a1": "Try these steps:",
+      "a1.step1": "Check your internet connection",
+      "a1.step2": "Refresh the page",
+      "a1.step3": "Clear browser cache",
+      "a1.step4": "Try a different browser",
+      "q2": "Can't log in",
+      "a2": "Make sure you're using the correct email and password. If you forgot your password, use the \"Forgot Password\" link.",
+      "q3": "AI isn't responding",
+      "a3": "The AI service may be temporarily unavailable. Try again in a few minutes or check the AI status indicator."
+    },
+    "contact": {
+      "title": "Still need help?",
+      "description": "Can't find what you're looking for? Report a bug or contact our support team."
+    },
+    "footer": {
+      "copyright": "© 2025 Wave Messenger. All rights reserved."
+    }
   }
 }

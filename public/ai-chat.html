@@ -297,7 +297,7 @@
         <div class="px-6 pt-6 pb-2 shrink-0">
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center gap-3">
-                    <img src="/wavechat.png" alt="Wave" class="size-9 rounded-xl object-contain" />
+                    <img src="/nobackwave.png" alt="Wave" class="size-9 rounded-xl object-contain" />
                     <h1 class="text-xl font-bold tracking-tight text-white" data-i18n="ai.waveAI">Wave AI</h1>
                 </div>
                 <button onclick="closeSidebar()"
@@ -454,7 +454,7 @@
                         </button>
                         <div class="relative group cursor-pointer">
                             <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/50 group-hover:border-primary transition-colors"
-                                style='background-image: url("/wavechat.png");'></div>
+                                style='background-image: url("/nobackwave.png");'></div>
                             <div
                                 class="absolute bottom-0 right-0 size-3 bg-emerald-500 border-2 border-background-dark rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]">
                             </div>
@@ -1902,7 +1902,7 @@ You're here to help users with anything they need - from answering questions to 
                         const streamingDiv = document.createElement('div');
                         streamingDiv.className = 'flex gap-3 group streaming-ai-message';
                         streamingDiv.innerHTML = `
-                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style='background-image: url("/wavechat.png");'></div>
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style='background-image: url("/nobackwave.png");'></div>
                     <div class="flex flex-col gap-2 max-w-[85%]">
                         <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>
                         ${isSlowModel ? '<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 w-fit"><div class="loader loader-xs"><div class="circle" style="--color: #a855f7;"></div><div class="circle" style="--color: #a855f7;"></div><div class="circle" style="--color: #a855f7;"></div><div class="circle" style="--color: #a855f7;"></div></div><span class="text-[9px] font-bold uppercase tracking-wider text-purple-300">Thinking...</span></div>' : ''}
@@ -2474,7 +2474,7 @@ You're here to help users with anything they need - from answering questions to 
 
                     const avatar = isUser
                         ? '<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 bg-primary"></div>'
-                        : '<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style=\'background-image: url("/wavechat.png");\'></div>';
+                        : '<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style=\'background-image: url("/nobackwave.png");\'></div>';
 
                     const bubbleClass = isUser
                         ? 'bg-gradient-to-br from-primary to-sky-600 p-3.5 rounded-2xl rounded-br-none shadow-lg shadow-primary/10'
@@ -3221,7 +3221,7 @@ You're here to help users with anything they need - from answering questions to 
                     const changeInSettingsText = window.i18n.t('ai.changeInSettings');
                     
                     welcomeDiv.innerHTML = `
-                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style='background-image: url("/wavechat.png");'></div>
+                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style='background-image: url("/nobackwave.png");'></div>
                 <div class="flex flex-col gap-1 max-w-[85%]">
                     <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">${aiAssistantText}</p>
                     <div class="bg-surface-dark p-3.5 rounded-2xl rounded-bl-none border border-white/5 shadow-sm">

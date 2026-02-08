@@ -160,6 +160,11 @@ async function loadAIModels() {
 
     const container = document.getElementById('aiModelsContainer');
 
+    const t = window.i18n && window.i18n.t ? window.i18n.t.bind(window.i18n) : (k, opts) => {
+      if (opts && opts.model) return `${opts.model}`;
+      return k;
+    };
+
     // Get saved preferred model
     const savedModel = localStorage.getItem('preferredAIModel') || 'auto';
 
@@ -168,10 +173,10 @@ async function loadAIModels() {
       <div class="px-6 py-4 space-y-3">
         <div class="flex items-center justify-between mb-3">
           <div>
-            <span class="text-sm font-semibold text-slate-200">AI Model Selection</span>
-            <p class="text-xs text-slate-500 mt-0.5">Choose your preferred AI model</p>
+            <span class="text-sm font-semibold text-slate-200">${t('settings.aiModelSelection')}</span>
+            <p class="text-xs text-slate-500 mt-0.5">${t('settings.chooseModel')}</p>
           </div>
-          <span class="text-xs px-2 py-1 rounded-full ${isPro ? 'bg-primary/20 text-primary' : 'bg-slate-700 text-slate-400'}">${isPro ? 'Pro' : 'Free'} Tier</span>
+          <span class="text-xs px-2 py-1 rounded-full ${isPro ? 'bg-primary/20 text-primary' : 'bg-slate-700 text-slate-400'}">${isPro ? t('settings.proTier') : t('settings.freeTier')}</span>
         </div>
     `;
 
@@ -182,10 +187,10 @@ async function loadAIModels() {
           <input type="radio" name="aiModel" value="auto" ${savedModel === 'auto' ? 'checked' : ''} onchange="selectAIModel('auto')" class="w-4 h-4 text-primary"/>
           <div>
             <div class="text-sm font-semibold text-white flex items-center gap-2">
-              Auto Select
+              ${t('settings.autoSelect')}
               <span class="material-symbols-outlined text-primary text-[16px]">auto_awesome</span>
             </div>
-            <div class="text-xs text-slate-400 mt-0.5">Automatically picks the best model for each task</div>
+            <div class="text-xs text-slate-400 mt-0.5">${t('settings.autoSelectDesc')}</div>
           </div>
         </div>
         ${savedModel === 'auto' ? '<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>' : ''}
@@ -201,7 +206,7 @@ async function loadAIModels() {
     if (flashModels.length > 0) {
       html += `
         <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Wave Flash (Speed / Low Latency)</div>
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">${t('settings.waveFlashTitle')}</div>
       `;
 
       flashModels.forEach(model => {
@@ -232,7 +237,7 @@ async function loadAIModels() {
     if (standardModels.length > 0) {
       html += `
         <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Wave (Balanced / Default)</div>
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">${t('settings.waveDefaultTitle')}</div>
       `;
 
       standardModels.forEach(model => {
@@ -263,7 +268,7 @@ async function loadAIModels() {
     if (oModels.length > 0) {
       html += `
         <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Wave O (Thinking / Reasoning)</div>
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">${t('settings.waveThinkingTitle')}</div>
       `;
 
       oModels.forEach(model => {
@@ -293,9 +298,9 @@ async function loadAIModels() {
     if (flashModels.length === 0 && standardModels.length === 0 && oModels.length === 0) {
       html += `
         <div class="p-4 text-center text-slate-400 text-sm">
-          <p>No AI models available</p>
-          <p class="text-xs mt-1">Using auto-select mode</p>
-        </div>
+            <p>${t('settings.noModelsAvailable')}</p>
+            <p class="text-xs mt-1">${t('settings.usingAutoSelect')}</p>
+          </div>
       `;
     }
 
@@ -334,7 +339,11 @@ function selectAIModel(modelId) {
       inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   `;
-  toast.textContent = modelId === 'auto' ? 'Auto-select enabled' : `Model changed to ${modelId}`;
+  const t = window.i18n && window.i18n.t ? window.i18n.t.bind(window.i18n) : (k, opts) => {
+    if (opts && opts.model) return `${opts.model}`;
+    return k;
+  };
+  toast.textContent = modelId === 'auto' ? t('settings.modelChangedAuto') : t('settings.modelChanged', { model: modelId });
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);
 }
@@ -869,9 +878,24 @@ document.addEventListener('DOMContentLoaded', () => {
     saveProfileBtn.addEventListener('click', saveProfileInfo);
   }
 
-  const saveApiKeyBtn = document.getElementById('saveApiKey');
-  if (saveApiKeyBtn) {
-    saveApiKeyBtn.addEventListener('click', saveApiKey);
+  // Auto-save API key on input (debounced) and on blur
+  const apiKeyInputEl = document.getElementById('apikey');
+  if (apiKeyInputEl) {
+    let saveTimeout = null;
+    apiKeyInputEl.addEventListener('input', () => {
+      if (saveTimeout) clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveApiKey();
+        saveTimeout = null;
+      }, 800);
+    });
+    apiKeyInputEl.addEventListener('blur', () => {
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+        saveTimeout = null;
+      }
+      saveApiKey();
+    });
   }
 
   // Privacy toggles
