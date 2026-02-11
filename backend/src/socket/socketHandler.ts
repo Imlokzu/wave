@@ -255,8 +255,8 @@ export function setupSocketIO(
 
         console.log(`✅ [Socket] Message from ${nickname} in room ${roomId}`);
 
-        // Check if message mentions @ai
-        if (content.includes('@ai')) {
+        // Check if message explicitly starts with @ai
+        if (/^\s*@ai\b/i.test(content)) {
           console.log('🤖 [Socket] AI mention detected, processing...');
           
           const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
@@ -358,7 +358,8 @@ ${formattedResults}`
                 roomId,
                 AI_BOT_ID,
                 '🤖 WaveBot',
-                aiResponse
+                aiResponse,
+                'ai'
               );
               io.to(roomId).emit('message:new', aiMessage);
               console.log(`✅ [Socket] AI response sent with web search results (model: ${modelId || 'auto'})`);
@@ -371,7 +372,8 @@ ${formattedResults}`
                 roomId,
                 AI_BOT_ID,
                 '🤖 WaveBot',
-                '❌ Sorry, search failed. Please try again.'
+                '❌ Sorry, search failed. Please try again.',
+                'ai'
               );
               io.to(roomId).emit('message:new', errorMessage);
             }
@@ -409,7 +411,8 @@ ${conversationContext}`
                 roomId,
                 AI_BOT_ID,
                 '🤖 WaveBot',
-                aiResponse
+                aiResponse,
+                'ai'
               );
               io.to(roomId).emit('message:new', aiMessage);
               console.log(`✅ [Socket] AI response sent (no search needed, model: ${modelId || 'auto'})`);
@@ -419,7 +422,8 @@ ${conversationContext}`
                 roomId,
                 AI_BOT_ID,
                 '🤖 WaveBot',
-                '❌ Sorry, I encountered an error. Please try again.'
+                '❌ Sorry, I encountered an error. Please try again.',
+                'ai'
               );
               io.to(roomId).emit('message:new', errorMessage);
             }
@@ -1651,8 +1655,8 @@ ${conversationContext}`
         console.log('═══════════════════════════════════════════════════════');
         console.log('');
 
-        // Check if message mentions @ai
-        if (content.includes('@ai')) {
+        // Check if message explicitly starts with @ai
+        if (/^\s*@ai\b/i.test(content)) {
           console.log('🤖 [DM] AI mention detected, processing...');
           
           const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
@@ -1791,18 +1795,21 @@ DO NOT add signatures, footers, or "powered by" messages at the end of your resp
                   const finalAnswer = await deepSeekService.chat(messagesWithSearch, false);
                   
                   // Save final answer to database
+                  const aiContentForSender = `[[dmctx|${toUser.id}]] ${finalAnswer}`;
+                  const aiContentForRecipient = `[[dmctx|${socketData.userId}]] ${finalAnswer}`;
+
                   const aiMessageToSender = await dmManager.sendDM(
                     AI_BOT_ID,
                     'wavebot',
                     socketData.userId,
-                    finalAnswer
+                    aiContentForSender
                   );
 
                   const aiMessageToRecipient = await dmManager.sendDM(
                     AI_BOT_ID,
                     'wavebot',
                     toUser.id,
-                    finalAnswer
+                    aiContentForRecipient
                   );
 
                   // Send to sender
@@ -1876,11 +1883,14 @@ DO NOT add signatures, footers, or "powered by" messages at the end of your resp
             }
             
             // No search needed, save regular AI response to database as DM from AI bot to sender
+            const aiContentForSender = `[[dmctx|${toUser.id}]] ${aiResponse}`;
+            const aiContentForRecipient = `[[dmctx|${socketData.userId}]] ${aiResponse}`;
+
             const aiMessageToSender = await dmManager.sendDM(
               AI_BOT_ID,
               'wavebot',
               socketData.userId,
-              aiResponse
+              aiContentForSender
             );
 
             // Also save AI response to recipient
@@ -1888,7 +1898,7 @@ DO NOT add signatures, footers, or "powered by" messages at the end of your resp
               AI_BOT_ID,
               'wavebot',
               toUser.id,
-              aiResponse
+              aiContentForRecipient
             );
 
             // Prepare message for sender
@@ -1986,6 +1996,7 @@ DO NOT add signatures, footers, or "powered by" messages at the end of your resp
             id: otherUser.id,
             username: otherUser.username,
             nickname: otherUser.nickname,
+            bio: otherUser.bio || null,
           },
           messages,
         });

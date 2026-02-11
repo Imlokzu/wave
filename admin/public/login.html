@@ -52,162 +52,55 @@
                 <p class="text-[#90bccb] text-sm mt-2">Admin Panel Access</p>
             </div>
 
-            <!-- Error Message -->
-            <div id="errorMessage" class="hidden mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-red-500">error</span>
-                    <p class="text-red-400 text-sm font-medium" id="errorText"></p>
-                </div>
-            </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" class="space-y-6">
-                <div>
-                    <label class="block text-white text-sm font-medium mb-2" for="username">
-                        Username
-                    </label>
-                    <input
-                        id="username"
-                        type="text"
-                        required
-                        autocomplete="username"
-                        class="block w-full rounded-lg border-[#223f49] bg-[#101e23] px-4 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                        placeholder="Enter your username"
-                    />
-                </div>
-
-                <div>
-                    <label class="block text-white text-sm font-medium mb-2" for="password">
-                        Password
-                    </label>
-                    <input
-                        id="password"
-                        type="password"
-                        required
-                        autocomplete="current-password"
-                        class="block w-full rounded-lg border-[#223f49] bg-[#101e23] px-4 py-3 text-white placeholder-[#5a7d8a] focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                        placeholder="Enter your password"
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    id="loginButton"
-                    class="w-full bg-primary text-black px-6 py-3 rounded-lg text-sm font-bold hover:bg-[#34caff] shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                    <span id="loginButtonText">Sign In</span>
-                    <span id="loginSpinner" class="hidden">
-                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </span>
-                </button>
-            </form>
+            <div id="clerk-admin-sign-in" class="w-full"></div>
         </div>
     </div>
 
+    <script src="/js/clerk-config.js"></script>
+    <script src="/js/clerk-auth.js"></script>
     <script>
-        // API base URL - detect environment
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname.startsWith('192.168') 
             ? `http://${window.location.hostname}:3001`
             : 'https://api.metrocraft.eu';
 
-        // Check if already logged in with main site token
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-        if (token) {
-            // Check if user is admin by trying to access admin endpoint
-            fetch(`${API_BASE}/api/admin/stats`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            .then(res => {
-                if (res.ok) {
-                    // User is admin, redirect to dashboard
-                    localStorage.setItem('token', token);
-                    localStorage.setItem('adminToken', token);
-                    window.location.href = '/admin/index.html';
-                }
-            })
-            .catch(() => {
-                // Not admin or invalid token
-                localStorage.removeItem('token');
-                localStorage.removeItem('adminToken');
+        async function verifyAdmin(token) {
+            const response = await fetch(`${API_BASE}/api/admin/stats`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-        }
 
-        const loginForm = document.getElementById('loginForm');
-        const errorMessage = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
-        const loginButton = document.getElementById('loginButton');
-        const loginButtonText = document.getElementById('loginButtonText');
-        const loginSpinner = document.getElementById('loginSpinner');
-
-        function showError(message) {
-            errorText.textContent = message;
-            errorMessage.classList.remove('hidden');
-        }
-
-        function hideError() {
-            errorMessage.classList.add('hidden');
-        }
-
-        function setLoading(loading) {
-            loginButton.disabled = loading;
-            if (loading) {
-                loginButtonText.classList.add('hidden');
-                loginSpinner.classList.remove('hidden');
-            } else {
-                loginButtonText.classList.remove('hidden');
-                loginSpinner.classList.add('hidden');
+            if (!response.ok) {
+                throw new Error('Admin access required. Please contact an administrator.');
             }
+
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('token', token);
+            localStorage.setItem('adminToken', token);
+            window.location.href = '/admin/index.html';
         }
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideError();
-            setLoading(true);
-
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
+        (async function () {
             try {
-                const response = await fetch(`${API_BASE}/api/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
+                await window.clerkAuth.ensureLoaded();
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Login failed');
-                }
-
-                // Verify user is admin
-                const adminCheckResponse = await fetch(`${API_BASE}/api/admin/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${data.token}`
+                if (window.Clerk?.user) {
+                    const token = await window.clerkAuth.getToken();
+                    if (token) {
+                        await verifyAdmin(token);
+                        return;
                     }
-                });
-
-                if (!adminCheckResponse.ok) {
-                    throw new Error('Admin access required. Please contact an administrator.');
                 }
 
-                // Store token and redirect
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('adminToken', data.token);
-                window.location.href = '/admin/index.html';
+                const signInDiv = document.getElementById('clerk-admin-sign-in');
+                if (signInDiv) {
+                    window.Clerk.mountSignIn(signInDiv, {
+                        afterSignInUrl: '/admin/index.html',
+                        afterSignUpUrl: '/admin/index.html'
+                    });
+                }
             } catch (error) {
-                showError(error.message);
-                setLoading(false);
+                console.error('Failed to initialize Clerk:', error);
             }
-        });
+        })();
     </script>
 </body>
 </html>

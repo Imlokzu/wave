@@ -9,6 +9,8 @@
     <!-- Theme System -->
     <link href="/css/theme.css" rel="stylesheet" />
     <link href="/css/theme-config.css" rel="stylesheet" />
+    <script src="/js/clerk-config.js"></script>
+    <script src="/js/clerk-auth.js"></script>
     <script src="/js/auth-guard.js"></script>
     <script src="/js/mobile-detector.js"></script>
     <script src="/js/update-checker.js"></script>
@@ -585,7 +587,7 @@
                                         <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
                                     </button>
 
-                                    <button
+                                    <button onclick="window.location.href='/sessions-map.html'"
                                         class="flex items-center justify-between p-4 rounded-lg bg-[#101e23] hover:bg-surface-dark-hover transition-colors">
                                         <div class="flex items-center gap-3">
                                             <span class="material-symbols-outlined text-primary">devices</span>
@@ -595,6 +597,18 @@
                                             </div>
                                         </div>
                                         <span class="material-symbols-outlined text-[#90bccb]">chevron_right</span>
+                                    </button>
+
+                                    <button id="logoutButton"
+                                        class="flex items-center justify-between p-4 rounded-lg bg-red-900/20 hover:bg-red-900/30 border border-red-900/30 transition-colors">
+                                        <div class="flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-red-400">logout</span>
+                                            <div>
+                                                <p class="text-white font-medium text-sm" data-i18n="settings.logout">Logout</p>
+                                                <p class="text-[#90bccb] text-xs" data-i18n="settings.logoutDesc">Sign out of your account</p>
+                                            </div>
+                                        </div>
+                                        <span class="material-symbols-outlined text-red-400">chevron_right</span>
                                     </button>
                                 </div>
                             </div>

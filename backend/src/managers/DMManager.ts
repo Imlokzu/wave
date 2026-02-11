@@ -7,6 +7,7 @@ import { IDMManager } from './IDMManager';
  */
 export class DMManager implements IDMManager {
   private conversations: Map<string, Message[]> = new Map(); // conversationId -> messages
+  private static AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
 
   /**
    * Get conversation ID for two users (sorted to ensure consistency)
@@ -60,7 +61,19 @@ export class DMManager implements IDMManager {
    */
   async getDMHistory(userId1: string, userId2: string): Promise<Message[]> {
     const conversationId = this.getConversationId(userId1, userId2);
-    return this.conversations.get(conversationId) || [];
+    const baseMessages = this.conversations.get(conversationId) || [];
+
+    // Include AI messages addressed to userId1 with context userId2
+    const aiConversationId = this.getConversationId(DMManager.AI_BOT_ID, userId1);
+    const aiMessages = (this.conversations.get(aiConversationId) || []).filter(msg => {
+      const match = (msg.content || '').match(/^\[\[dmctx\|([^\]]+)\]\]\s*/);
+      const ctxId = match ? match[1] : null;
+      return msg.senderId === DMManager.AI_BOT_ID && ctxId === userId2;
+    });
+
+    return [...baseMessages, ...aiMessages].sort((a, b) => {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    });
   }
 
   /**

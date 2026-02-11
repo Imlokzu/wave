@@ -1746,7 +1746,7 @@ Wave is a modern, feature-rich messaging platform you're integrated into. Here's
 
 **AI Features (Your Capabilities):**
 - 🔍 Web Search - AI can search DuckDuckGo automatically for current information
-- 🌤️ Weather - Use [WEATHER: city] to get weather info
+- 🌤️ Weather - ALWAYS use [WEATHER: city] for any weather request (no guessing)
 - 📄 Read Files - Use [READ_FILE: filename.html] to read Wave HTML files for accurate help
 - 🌐 Translation - Translate text to any language
 - 💻 Code Writing - Help with programming in any language
@@ -1779,6 +1779,7 @@ Wave is a modern, feature-rich messaging platform you're integrated into. Here's
 - If they ask "what can Wave do?" - explain the features above
 - If they ask about messaging - tell them about DMs, groups, profiles
 - If they ask about AI - explain your search, weather, translation, coding abilities
+- For any weather question, respond with ONLY: [WEATHER: city]
 - If they need help with features - guide them through the UI (Settings → specific tab)
 - If they ask about updates - mention the latest version 1.0.0 features
 - If they want to report bugs - direct them to /report-bug.html
@@ -2170,10 +2171,7 @@ You're here to help users with anything they need - from answering questions to 
                             console.log('🌤️ AI requested weathers:', weatherCities);
                             console.log('📄 AI requested files:', filesToRead);
 
-                            // Remove the streaming message
-                            streamingDiv.remove();
-
-                            // Show consolidated processing indicator
+                            // Replace the streaming message content with processing indicator
                             let statusText = '🔍 Processing requests...';
                             const parts = [];
                             if (searchQueries.length > 0) parts.push(`searching for ${searchQueries.length} items`);
@@ -2184,7 +2182,10 @@ You're here to help users with anything they need - from answering questions to 
                                 statusText = `🔍 ${parts.join(', ')}...`;
                             }
 
-                            const statusMsg = addMessage(statusText, false);
+                            const statusContent = streamingDiv?.querySelector('.streaming-content');
+                            if (statusContent) {
+                                statusContent.textContent = statusText;
+                            }
 
                             try {
                                 const results = [];
@@ -2195,13 +2196,14 @@ You're here to help users with anything they need - from answering questions to 
                                         const res = await fetch('/api/search', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ query, maxResults: 5 })
+                                            body: JSON.stringify({ query, maxResults: 5, includeContent: true })
                                         });
                                         const data = await res.json();
                                         if (data.success && data.results.length > 0) {
-                                            return `Results for "${query}":\n` + data.results.map((r, i) =>
-                                                `${i + 1}. ${r.title}\n   URL: ${r.url}\n   ${r.snippet || 'No description'}`
-                                            ).join('\n\n');
+                                            return `Results for "${query}":\n` + data.results.map((r, i) => {
+                                                const content = r.content ? `\n   Content: ${r.content}` : '';
+                                                return `${i + 1}. ${r.title}\n   URL: ${r.url}\n   ${r.snippet || 'No description'}${content}`;
+                                            }).join('\n\n');
                                         }
                                         return `No results found for "${query}".`;
                                     } catch (e) {
@@ -2261,9 +2263,6 @@ You're here to help users with anything they need - from answering questions to 
                                 const allResults = await Promise.all([...searchPromises, ...weatherPromises, ...filePromises]);
                                 const consolidatedContext = allResults.join('\n\n---\n\n');
 
-                                // Remove status message
-                                statusMsg.remove();
-
                                 // Remove JSON search block from the original response
                                 const cleanedResponse = fullResponse.replace(/```json[\s\S]*?```/g, '').trim();
 
@@ -2286,7 +2285,11 @@ You're here to help users with anything they need - from answering questions to 
                                 });
 
                                 if (!finalResponse.ok) {
-                                    addMessage('❌ Failed to process the information.', false);
+                                    if (statusContent) {
+                                        statusContent.textContent = '❌ Failed to process the information.';
+                                    } else {
+                                        addMessage('❌ Failed to process the information.', false);
+                                    }
                                     return;
                                 }
 
@@ -2297,26 +2300,55 @@ You're here to help users with anything they need - from answering questions to 
                                     
                                     // If response is too short or only thinking, show fallback
                                     if (!cleanResponse || cleanResponse.length < 5) {
-                                        addMessage('👋 Hello! How can I help you today?', false);
+                                        if (statusContent) {
+                                            statusContent.innerHTML = formatAIContent('👋 Hello! How can I help you today?');
+                                        } else {
+                                            addMessage('👋 Hello! How can I help you today?', false);
+                                        }
                                         conversationHistory.push({
                                             role: 'model',
                                             parts: [{ text: '👋 Hello! How can I help you today?' }]
                                         });
                                     } else {
-                                        addMessage(cleanResponse, false);
+                                        if (statusContent) {
+                                            statusContent.innerHTML = formatAIContent(cleanResponse);
+                                        } else {
+                                            addMessage(cleanResponse, false);
+                                        }
                                         conversationHistory.push({
                                             role: 'model',
                                             parts: [{ text: cleanResponse }]
                                         });
                                     }
+                                    // Add speech and stop buttons after final response
+                                    if (streamingDiv) {
+                                        const buttonContainer = document.createElement('div');
+                                        buttonContainer.className = 'flex items-center gap-2 justify-start ml-1 mt-1';
+                                        buttonContainer.innerHTML = `
+                    <button onclick="speakText(this.closest('.flex-col').querySelector('.text-sm').innerText, this)" class="speak-btn p-1 text-slate-500 hover:text-primary transition-colors opacity-0 group-hover:opacity-100" title="Read Aloud">
+                        <span class="material-symbols-outlined text-[16px]">volume_up</span>
+                    </button>
+                    <button onclick="stopSpeaking()" class="p-1 text-slate-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100" title="Stop Reading">
+                        <span class="material-symbols-outlined text-[16px]">stop_circle</span>
+                    </button>
+                `;
+                                        streamingDiv.querySelector('.flex-col')?.appendChild(buttonContainer);
+                                    }
                                     saveConversation();
                                 } else {
-                                    addMessage('❌ Something went wrong while processing the information.', false);
+                                    if (statusContent) {
+                                        statusContent.textContent = '❌ Something went wrong while processing the information.';
+                                    } else {
+                                        addMessage('❌ Something went wrong while processing the information.', false);
+                                    }
                                 }
                             } catch (err) {
                                 console.error('Error processing multi-requests:', err);
-                                statusMsg.remove();
-                                addMessage('❌ Something went wrong while gathering information.', false);
+                                if (statusContent) {
+                                    statusContent.textContent = '❌ Something went wrong while gathering information.';
+                                } else {
+                                    addMessage('❌ Something went wrong while gathering information.', false);
+                                }
                             }
 
                             return;

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Sessions - Wave</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://feasible-mantis-66.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #101e23;
+            color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0db9f2;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(13, 185, 242, 0.1);
+            border: 1px solid #0db9f2;
+            border-radius: 8px;
+            color: #0db9f2;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(13, 185, 242, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #16262c;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #a3a3a3;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0db9f2;
+        }
+
+        #map {
+            height: 600px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .sessions-list {
+            background: #16262c;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .sessions-list h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #f5f5f5;
+        }
+
+        .session-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .session-info {
+            flex: 1;
+        }
+
+        .session-location {
+            font-weight: 600;
+            color: #f5f5f5;
+            margin-bottom: 5px;
+        }
+
+        .session-details {
+            font-size: 14px;
+            color: #a3a3a3;
+        }
+
+        .session-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(13, 185, 242, 0.2);
+            border-radius: 4px;
+            font-size: 12px;
+            color: #0db9f2;
+            margin-right: 8px;
+        }
+
+        .terminate-btn {
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            border-radius: 6px;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .terminate-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .current-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #a3a3a3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌍 Active Sessions</h1>
+            <a href="/settings.html" class="back-btn">← Back to Settings</a>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Active Sessions</div>
+                <div class="stat-value" id="activeSessions">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Locations</div>
+                <div class="stat-value" id="totalLocations">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Current IP</div>
+                <div class="stat-value" id="currentIP" style="font-size: 18px;">Loading...</div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="sessions-list">
+            <h2>Session Details</h2>
+            <div id="sessionsList" class="loading">Loading sessions...</div>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let markers = [];
+        let currentIP = '';
+        let clerk;
+
+        // Initialize Clerk
+        async function initClerk() {
+            clerk = new window.Clerk('pk_test_ZmVhc2libGUtbWFudGlzLTY2LmNsZXJrLmFjY291bnRzLmRldiQ');
+            await clerk.load();
+
+            if (!clerk.user) {
+                window.location.href = '/auth/login.html';
+                return;
+            }
+
+            // User is authenticated, load sessions
+            initMap();
+            loadSessions();
+            
+            // Refresh every 30 seconds
+            setInterval(loadSessions, 30000);
+        }
+
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([20, 0], 2);
+
+            // Dark theme tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        // Add marker to map
+        function addMarker(location) {
+            const isCurrent = location.ip === currentIP;
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="
+                    background: ${isCurrent ? '#10b981' : '#0db9f2'};
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    border: 3px solid ${isCurrent ? '#059669' : '#0a9dd1'};
+                    box-shadow: 0 0 10px ${isCurrent ? 'rgba(16, 185, 129, 0.5)' : 'rgba(13, 185, 242, 0.5)'};
+                "></div>`,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            const marker = L.marker([location.lat, location.lon], { icon })
+                .addTo(map)
+                .bindPopup(`
+                    <div style="color: #101e23; font-family: sans-serif;">
+                        <strong>${location.city}, ${location.country}</strong><br>
+                        ${isCurrent ? '<span style="color: #10b981;">● Current Session</span><br>' : ''}
+                        Device: ${location.device}<br>
+                        Browser: ${location.browser}<br>
+                        IP: ${location.ip}
+                    </div>
+                `);
+
+            markers.push(marker);
+        }
+
+        // Load sessions
+        async function loadSessions() {
+            try {
+                const token = await clerk.session.getToken();
+                
+                const response = await fetch('/api/sessions/current', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load sessions');
+
+                const data = await response.json();
+                const sessions = data.sessions;
+
+                // Get current IP
+                if (sessions.length > 0) {
+                    currentIP = sessions[sessions.length - 1].ip;
+                    document.getElementById('currentIP').textContent = currentIP;
+                }
+
+                // Update stats
+                document.getElementById('activeSessions').textContent = sessions.length;
+                document.getElementById('totalLocations').textContent = new Set(sessions.map(s => `${s.location.lat},${s.location.lon}`)).size;
+
+                // Clear existing markers
+                markers.forEach(m => map.removeLayer(m));
+                markers = [];
+
+                // Add markers
+                sessions.forEach(session => {
+                    addMarker({
+                        lat: session.location.lat,
+                        lon: session.location.lon,
+                        city: session.location.city,
+                        country: session.location.country,
+                        ip: session.ip,
+                        device: session.device,
+                        browser: session.browser
+                    });
+                });
+
+                // Fit map to markers
+                if (markers.length > 0) {
+                    const group = L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+
+                // Display session list
+                displaySessionList(sessions);
+
+            } catch (error) {
+                console.error('Failed to load sessions:', error);
+                document.getElementById('sessionsList').innerHTML = '<p style="color: #ef4444;">Failed to load sessions</p>';
+            }
+        }
+
+        // Display session list
+        function displaySessionList(sessions) {
+            const container = document.getElementById('sessionsList');
+            
+            if (sessions.length === 0) {
+                container.innerHTML = '<p style="color: #a3a3a3;">No active sessions</p>';
+                return;
+            }
+
+            container.innerHTML = sessions.map(session => {
+                const isCurrent = session.ip === currentIP;
+                const lastActivity = new Date(session.lastActivity);
+                const timeAgo = getTimeAgo(lastActivity);
+
+                return `
+                    <div class="session-item">
+                        <div class="session-info">
+                            <div class="session-location">
+                                ${session.location.city}, ${session.location.country}
+                                ${isCurrent ? '<span class="session-badge current-badge">Current</span>' : ''}
+                            </div>
+                            <div class="session-details">
+                                <span class="session-badge">${session.device}</span>
+                                <span class="session-badge">${session.browser}</span>
+                                <span class="session-badge">${session.os}</span>
+                                <br>
+                                IP: ${session.ip} • Last active: ${timeAgo}
+                            </div>
+                        </div>
+                        ${!isCurrent ? `<button class="terminate-btn" onclick="terminateSession('${session.ip}')">Terminate</button>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Terminate session
+        async function terminateSession(ip) {
+            if (!confirm('Are you sure you want to terminate this session?')) return;
+
+            try {
+                const token = await clerk.session.getToken();
+                
+                const response = await fetch(`/api/sessions/${ip}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to terminate session');
+
+                // Reload sessions
+                await loadSessions();
+            } catch (error) {
+                console.error('Failed to terminate session:', error);
+                alert('Failed to terminate session');
+            }
+        }
+
+        // Get time ago string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initClerk();
+        });
+    </script>
+</body>
+</html>

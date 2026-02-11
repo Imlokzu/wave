@@ -2,11 +2,9 @@ import { Router, Response } from 'express';
 import { getProfileManager } from '../managers/ProfileManager';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { AuthService } from '../services/AuthService';
-import { IUserManager } from '../managers/IUserManager';
 
-export function createProfileRouter(userManager: IUserManager): Router {
+export function createProfileRouter(authService: AuthService): Router {
   const router = Router();
-  const authService = new AuthService(userManager);
   const authMiddleware = requireAuth(authService);
 
   /**
@@ -24,7 +22,7 @@ export function createProfileRouter(userManager: IUserManager): Router {
       const profile = await profileManager.getProfile(userId);
 
       // Also get user data for avatar
-      const user = await userManager.getUserById(userId);
+      const user = await authService.userManager.getUserById(userId);
 
       if (!profile) {
         return res.status(404).json({ error: 'Profile not found' });

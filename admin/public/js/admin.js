@@ -10,10 +10,19 @@ let totalPages = 1;
 let searchQuery = '';
 
 // Check authentication - use same token as main site
-const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('adminToken');
+const getAuthToken = () => localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('adminToken');
+let token = getAuthToken();
 if (!token) {
     window.location.href = '/admin/login.html';
 }
+
+// Keep token in sync if refreshed by Clerk
+setInterval(() => {
+    const latestToken = getAuthToken();
+    if (latestToken) {
+        token = latestToken;
+    }
+}, 60000);
 
 // Verify admin access
 fetch(`${API_BASE}/api/admin/stats`, {
@@ -34,8 +43,8 @@ fetch(`${API_BASE}/api/admin/stats`, {
     window.location.href = '/admin/login.html';
 });
 
-// Get current user info from /api/auth/me
-fetch(`${API_BASE}/api/auth/me`, {
+// Get current user info from /api/auth/session
+fetch(`${API_BASE}/api/auth/session`, {
     headers: {
         'Authorization': `Bearer ${token}`
     }

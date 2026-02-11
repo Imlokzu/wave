@@ -15,7 +15,7 @@ export class SupabaseUserManager implements IUserManager {
   /**
    * Register a new user with unique username
    */
-  async registerUser(username: string, nickname: string, passwordHash?: string): Promise<User | null> {
+  async registerUser(username: string, nickname: string, passwordHash?: string, clerkId?: string): Promise<User | null> {
     try {
       // Remove @ if present (we don't store @ in database)
       if (username.startsWith('@')) {
@@ -32,6 +32,11 @@ export class SupabaseUserManager implements IUserManager {
       // Add password hash if provided
       if (passwordHash) {
         insertData.password_hash = passwordHash;
+      }
+
+      // Add Clerk ID if provided
+      if (clerkId) {
+        insertData.clerk_id = clerkId;
       }
 
       // Insert user (lowercase for consistency)
@@ -69,6 +74,7 @@ export class SupabaseUserManager implements IUserManager {
         username: data.username,
         nickname: data.nickname,
         passwordHash: data.password_hash,
+        clerkId: data.clerk_id,
         isPro: data.is_pro || false,
         createdAt: new Date(data.created_at),
         lastSeen: new Date(data.last_seen),
@@ -76,6 +82,53 @@ export class SupabaseUserManager implements IUserManager {
     } catch (error) {
       console.error('Error registering user:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Get user by Clerk ID
+   */
+  async getUserByClerkId(clerkId: string): Promise<User | null> {
+    try {
+      console.log(`[DEBUG] Looking up user by Clerk ID: "${clerkId}"`);
+
+      const { data, error } = await this.supabase
+        .from('flux_users')
+        .select('*')
+        .eq('clerk_id', clerkId)
+        .single();
+
+      if (error) {
+        console.error('[DEBUG] Supabase error:', error);
+        return null;
+      }
+
+      if (!data) {
+        console.log('[DEBUG] No user found with Clerk ID');
+        return null;
+      }
+
+      console.log('[DEBUG] User found by Clerk ID:', {
+        id: data.id,
+        username: data.username,
+        clerkId: data.clerk_id,
+        isPro: data.is_pro
+      });
+
+      return {
+        id: data.id,
+        username: data.username,
+        nickname: data.nickname,
+        passwordHash: data.password_hash,
+        clerkId: data.clerk_id,
+        isPro: data.is_pro || false,
+        isAdmin: data.is_admin || false,
+        createdAt: new Date(data.created_at),
+        lastSeen: new Date(data.last_seen),
+      };
+    } catch (error) {
+      console.error('Error getting user by Clerk ID:', error);
+      return null;
     }
   }
 

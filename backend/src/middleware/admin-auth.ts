@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../services/AuthService';
 import { IUserManager } from '../managers/IUserManager';
+import { AuthService } from '../services/AuthService';
 
 /**
  * Extended Request interface with admin user data
@@ -18,7 +18,7 @@ export interface AdminAuthenticatedRequest extends Request {
  * Admin authentication middleware
  * Verifies session token and checks admin status
  */
-export function requireAdmin(authService: AuthService, userManager: IUserManager) {
+export function requireAdmin(authService: AuthService) {
   return async (
     req: AdminAuthenticatedRequest,
     res: Response,
@@ -36,7 +36,7 @@ export function requireAdmin(authService: AuthService, userManager: IUserManager
       }
 
       // Validate session
-      const user = await authService.validateSession(token);
+      const user = await authService.validateToken(token);
 
       if (!user) {
         res.status(401).json({
@@ -47,9 +47,7 @@ export function requireAdmin(authService: AuthService, userManager: IUserManager
       }
 
       // Check admin status
-      const fullUser = await userManager.getUserById(user.id);
-      
-      if (!fullUser || !fullUser.isAdmin) {
+      if (!user.isAdmin) {
         res.status(403).json({
           error: 'Admin access required',
           code: 'FORBIDDEN'

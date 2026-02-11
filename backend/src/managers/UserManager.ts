@@ -12,7 +12,7 @@ export class UserManager implements IUserManager {
   /**
    * Register a new user with unique username
    */
-  async registerUser(username: string, nickname: string, passwordHash?: string): Promise<User | null> {
+  async registerUser(username: string, nickname: string, passwordHash?: string, clerkId?: string): Promise<User | null> {
     // Validate username format (@username)
     if (!username.startsWith('@')) {
       username = '@' + username;
@@ -28,6 +28,7 @@ export class UserManager implements IUserManager {
       username: username.toLowerCase(),
       nickname,
       passwordHash,
+      clerkId,
       createdAt: new Date(),
       lastSeen: new Date(),
       isOnline: false,
@@ -37,6 +38,19 @@ export class UserManager implements IUserManager {
     this.userIds.set(user.id, user);
 
     return user;
+  }
+
+  /**
+   * Get user by Clerk ID
+   */
+  async getUserByClerkId(clerkId: string): Promise<User | null> {
+    // Search through all users to find one with matching Clerk ID
+    for (const user of this.users.values()) {
+      if (user.clerkId === clerkId) {
+        return user;
+      }
+    }
+    return null;
   }
 
   /**

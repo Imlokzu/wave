@@ -1,7 +1,6 @@
 import { Router, Response } from 'express';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { AuthService } from '../services/AuthService';
-import { IUserManager } from '../managers/IUserManager';
 import { getSubscriptionManager } from '../managers/SubscriptionManager';
 import { getAvailableModels, AI_MODELS } from '../services/AIModelConfig';
 import multer from 'multer';
@@ -28,9 +27,8 @@ const backgroundUpload = multer({
   },
 });
 
-export function createSettingsRouter(userManager: IUserManager): Router {
+export function createSettingsRouter(authService: AuthService): Router {
   const router = Router();
-  const authService = new AuthService(userManager);
   const authMiddleware = requireAuth(authService);
 
   /**
@@ -49,7 +47,7 @@ export function createSettingsRouter(userManager: IUserManager): Router {
       }
 
       // Get user from database to check Pro status
-      const user = await userManager.getUser(userId);
+      const user = await authService.userManager.getUser(userId);
       const isPro = user?.isPro || false;
       
       console.log(`[Settings] User ${user?.username} (${userId}) Pro status: ${isPro}`);
@@ -145,7 +143,7 @@ export function createSettingsRouter(userManager: IUserManager): Router {
       }
       
       // Update user profile
-      const user = await userManager.getUser(userId);
+      const user = await authService.userManager.getUser(userId);
       if (user) {
         // Update nickname if provided
         if (displayName) {
@@ -318,7 +316,7 @@ export function createSettingsRouter(userManager: IUserManager): Router {
       console.log(`[Settings] Uploading background for user ${userId}: ${filename}`);
 
       // Get old background to delete later (if exists)
-      const user = await userManager.getUser(userId);
+      const user = await authService.userManager.getUser(userId);
       const oldBackgroundUrl = (user as any)?.customBackground || null;
 
       // Upload to Supabase Storage

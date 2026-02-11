@@ -20,6 +20,7 @@ export interface User {
   username: string; // Unique @username
   nickname: string;
   passwordHash?: string; // Optional for authentication
+  clerkId?: string; // Clerk user ID for authentication
   email?: string; // Optional email
   avatar?: string; // Optional avatar URL
   bio?: string; // Optional bio

@@ -56,8 +56,11 @@ class App {
     // Check authentication FIRST - redirect if not authenticated
     const isAuthenticated = await this.checkAuthentication();
     if (!isAuthenticated) {
-      console.log('[App] Not authenticated, redirecting to login...');
-      window.location.href = '/login.html';
+      console.log('[App] Not authenticated');
+      if (!window.clerkAuth) {
+        console.log('[App] Redirecting to login...');
+        window.location.href = '/login.html';
+      }
       return; // Stop initialization
     }
 
@@ -125,6 +128,87 @@ class App {
    * Returns true if authenticated, false otherwise
    */
   async checkAuthentication() {
+    if (!window.clerkAuth) {
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = '/js/clerk-config.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = '/js/clerk-auth.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      } catch (error) {
+        console.warn('[App] Clerk helpers failed to load:', error);
+      }
+    }
+
+    if (window.clerkAuth) {
+      try {
+        await window.clerkAuth.ensureLoaded();
+
+        let clerkUser = window.Clerk?.user;
+        let clerkSession = window.Clerk?.session;
+
+        if (!clerkUser && !clerkSession) {
+          for (let i = 0; i < 8; i += 1) {
+            await new Promise(resolve => setTimeout(resolve, 250));
+            clerkUser = window.Clerk?.user;
+            clerkSession = window.Clerk?.session;
+            if (clerkUser || clerkSession) break;
+          }
+        }
+
+        if (!clerkUser && !clerkSession) {
+          console.log('[App] Clerk: no active session');
+          return false;
+        }
+
+        await window.clerkAuth.getToken();
+
+        const backendUser = await window.clerkAuth.syncSessionWithBackend();
+        const user = backendUser || (await window.clerkAuth.syncUserToStorage());
+
+        if (user) {
+          state.setUser({
+            id: user.id,
+            username: user.username,
+            nickname: user.nickname
+          });
+          window.clerkAuth.startTokenRefresh();
+          return true;
+        }
+
+        // Fallback: allow Clerk session even if backend sync fails
+        if (window.Clerk?.user) {
+          const clerkUser = window.Clerk.user;
+          const email = clerkUser.primaryEmailAddress?.emailAddress || '';
+          const username = clerkUser.username || email.split('@')[0] || clerkUser.id;
+          const nickname = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ').trim() || username;
+
+          state.setUser({
+            id: clerkUser.id,
+            username,
+            nickname
+          });
+          window.clerkAuth.startTokenRefresh();
+          return true;
+        }
+
+        return false;
+      } catch (error) {
+        console.error('[App] Clerk auth check failed:', error);
+        return false;
+      }
+    }
+
     const authToken = localStorage.getItem('authToken');
     const userId = localStorage.getItem('userId');
 
@@ -987,6 +1071,25 @@ class App {
     }
   }
   
+  updateRoomSubtitle(text) {
+    const subtitleEl = document.getElementById('roomSubtitleRight');
+    if (subtitleEl) {
+      subtitleEl.textContent = text;
+    }
+  }
+3  
+  stripDMContextPrefix(content) {
+    if (!content) return '';
+    return content.replace(/^\[\[dmctx\|[^\]]+\]\]\s*/, '');
+  }
+
+  getI18nText(key, fallback) {
+    if (window.i18n && typeof window.i18n.t === 'function') {
+      return window.i18n.t(key);
+    }
+    return fallback;
+  }
+  
   /**
    * Add DM to sidebar list
    */
@@ -1010,6 +1113,7 @@ class App {
     }
 
     const senderUsername = (message.senderUsername || message.senderNickname || 'Unknown').replace('@', '');
+    const content = this.stripDMContextPrefix(message.content);
     const currentUsername = (state.get('user.username') || state.get('user.nickname') || '').replace('@', '');
     
     console.log(`[App] 📩 New DM from ${senderUsername}`);
@@ -1032,7 +1136,7 @@ class App {
     
     // Check if we're chatting with this user
     const currentRoom = state.get('room');
-    const isInDMWithSender = currentRoom && currentRoom.isDM && 
+    const isInDMWithSender = currentRoom && currentRoom.isDM &&
       currentRoom.name.replace('@', '').toLowerCase() === senderUsername.toLowerCase();
 
     // For AI bot, check if we're in the DM that this AI message belongs to
@@ -1060,7 +1164,7 @@ class App {
       let fileUrl = null;
       let fileName = null;
       let fileSize = null;
-      let content = message.content;
+      let content = this.stripDMContextPrefix(message.content);
       
       // Check if it's an image message
       if (content && content.startsWith('[Image:') && content.endsWith(']')) {
@@ -1083,7 +1187,6 @@ class App {
             fileUrl = fileInfo;
           }
         } else {
-          fileName = fileInfo;
           fileUrl = fileInfo; // Fallback
         }
         content = '';
@@ -2378,6 +2481,7 @@ class App {
       try {
         await navigator.clipboard.writeText(roomCode);
         alert(message + '\n\n✓ Code copied to clipboard!');
+      this.updateRoomSubtitle(this.getI18nText('chat.directMessage', 'Direct message'));
       } catch (e) {
         alert(message);
       }
@@ -2756,7 +2860,7 @@ class App {
         const existingMessages = state.get('messages') || [];
         const existingIds = new Set(existingMessages.map(m => m.id));
         const existingSignatures = new Set(
-          existingMessages.map(m => `${m.senderId || ''}|${m.content || ''}`)
+          existingMessages.map(m => `${m.senderId || ''}|${this.stripDMContextPrefix(m.content || '')}`)
         );
         
         // Add only new messages to state
@@ -2767,7 +2871,7 @@ class App {
           }
 
           // Skip if same sender+content already exists (dedupe cached optimistic messages)
-          const signature = `${msg.senderId || ''}|${msg.content || ''}`;
+          const signature = `${msg.senderId || ''}|${this.stripDMContextPrefix(msg.content || '')}`;
           if (existingSignatures.has(signature)) {
             return;
           }
@@ -2778,7 +2882,7 @@ class App {
           let fileUrl = null;
           let fileName = null;
           let fileSize = null;
-          let content = msg.content;
+          let content = this.stripDMContextPrefix(msg.content);
           
           // Check if it's an image message
           if (content && content.startsWith('[Image:') && content.endsWith(']')) {
@@ -2811,13 +2915,17 @@ class App {
           if (msg.fileName && !fileName) fileName = msg.fileName;
           if (msg.fileSize && !fileSize) fileSize = msg.fileSize;
           
+          const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
+          const isAIBot = msg.senderId === AI_BOT_ID || /wavebot|wave ai|ai assistant/i.test(msg.senderNickname || '');
+
           state.addMessage({
             id: msg.id,
             senderId: msg.senderId,
             senderNickname: msg.senderNickname,
             content: content,
             timestamp: msg.timestamp || new Date(),
-            type: messageType,
+            type: isAIBot ? 'ai' : messageType,
+            isAI: isAIBot,
             imageUrl: imageUrl,
             fileUrl: fileUrl,
             fileName: fileName,
@@ -2828,6 +2936,11 @@ class App {
         // Update cached DM messages
         const allMessages = state.get('messages') || [];
         this.dmMessages.set(currentRoom.dmUsername, [...allMessages]);
+
+        // Update DM subtitle with bio if available
+        if (data.otherUser && typeof data.otherUser.bio === 'string' && data.otherUser.bio.trim()) {
+          this.updateRoomSubtitle(data.otherUser.bio.trim());
+        }
         
         // Mark ALL messages from others as read immediately when history loads
         // This simulates "message loaded in browser = message read"
@@ -3095,6 +3208,7 @@ class App {
     
     // Update status to show it's a room
     this.updateRoomStatus('Active now');
+    this.updateRoomSubtitle(this.getI18nText('chat.wavechatRoom', 'WaveChat room'));
     
     // Update room code display and UI state
     this.updateRoomCodeDisplay(roomCode);
@@ -3948,10 +4062,14 @@ class App {
       
       // Clear all localStorage
       localStorage.removeItem('wave_session');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('username');
-      localStorage.removeItem('nickname');
+      if (window.clerkAuth?.clearAuthStorage) {
+        window.clerkAuth.clearAuthStorage();
+      } else {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('username');
+        localStorage.removeItem('nickname');
+      }
       
       // Disconnect socket
       socketManager.disconnect();
@@ -3960,7 +4078,11 @@ class App {
       state.reset();
       
       // Redirect to login page
-      window.location.href = '/login.html';
+      if (window.clerkAuth?.signOutAndRedirect) {
+        await window.clerkAuth.signOutAndRedirect('/login.html');
+      } else {
+        window.location.href = '/login.html';
+      }
     } catch (error) {
       console.error('[App] Logout error:', error);
       // Force redirect anyway

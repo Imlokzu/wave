@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 const sessions = new Map<string, { userId: string; expiresAt: number }>();
 
 export class AuthService {
-  constructor(private userManager: IUserManager) {}
+  constructor(public userManager: IUserManager) {}
 
   /**
    * Generate a secure session token

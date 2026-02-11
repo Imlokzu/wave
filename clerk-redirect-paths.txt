@@ -1,0 +1,3 @@
+/chat.html
+/chat.html
+/login.html

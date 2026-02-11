@@ -1,16 +1,13 @@
 import { Router, Response } from 'express';
-import { AuthService } from '../services/AuthService';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { requireAdmin, AdminAuthenticatedRequest } from '../middleware/admin-auth';
-import { IUserManager } from '../managers/IUserManager';
+import { AuthService } from '../services/AuthService';
 import { IChannelManager } from '../managers/ChannelManager';
 
-export function createChannelsRouter(userManager: IUserManager, channelManager: IChannelManager): Router {
+export function createChannelsRouter(authService: AuthService, channelManager: IChannelManager): Router {
   const router = Router();
-  const authService = new AuthService(userManager);
-
   const authMiddleware = requireAuth(authService);
-  const adminMiddleware = requireAdmin(authService, userManager);
+  const adminMiddleware = requireAdmin(authService);
 
   // List channels (auth required)
   router.get('/', authMiddleware, async (_req: AuthenticatedRequest, res: Response) => {

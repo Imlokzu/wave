@@ -1,5 +1,4 @@
 import { Router, Response } from 'express';
-import { IUserManager } from '../managers/IUserManager';
 import { AuthService } from '../services/AuthService';
 import { requireAdmin, AdminAuthenticatedRequest } from '../middleware/admin-auth';
 
@@ -7,12 +6,11 @@ import { requireAdmin, AdminAuthenticatedRequest } from '../middleware/admin-aut
  * Create admin router
  * Handles admin-only operations
  */
-export function createAdminRouter(userManager: IUserManager): Router {
+export function createAdminRouter(authService: AuthService): Router {
   const router = Router();
-  const authService = new AuthService(userManager);
 
   // Apply admin authentication to all routes
-  router.use(requireAdmin(authService, userManager));
+  router.use(requireAdmin(authService));
 
   /**
    * GET /api/admin/stats
@@ -20,7 +18,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
    */
   router.get('/stats', async (req: AdminAuthenticatedRequest, res: Response) => {
     try {
-      const users = await userManager.getAllUsers();
+      const users = await authService.userManager.getAllUsers();
       
       const stats = {
         totalUsers: users.length,
@@ -50,7 +48,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
       const limit = parseInt(req.query.limit as string) || 50;
       const search = req.query.search as string;
 
-      let users = await userManager.getAllUsers();
+      let users = await authService.userManager.getAllUsers();
 
       // Apply search filter
       if (search) {
@@ -102,7 +100,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
       const { userId } = req.params;
       const { isPro } = req.body;
 
-      const user = await userManager.getUserById(userId);
+      const user = await authService.userManager.getUserById(userId);
       
       if (!user) {
         res.status(404).json({
@@ -112,7 +110,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
         return;
       }
 
-      await userManager.updateUser(userId, { isPro });
+      await authService.userManager.updateUser(userId, { isPro });
 
       res.json({
         message: 'User pro status updated',
@@ -140,7 +138,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
       const { userId } = req.params;
       const { isAdmin } = req.body;
 
-      const user = await userManager.getUserById(userId);
+      const user = await authService.userManager.getUserById(userId);
       
       if (!user) {
         res.status(404).json({
@@ -159,7 +157,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
         return;
       }
 
-      await userManager.updateUser(userId, { isAdmin });
+      await authService.userManager.updateUser(userId, { isAdmin });
 
       res.json({
         message: 'User admin status updated',
@@ -195,7 +193,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
         return;
       }
 
-      const user = await userManager.getUserById(userId);
+      const user = await authService.userManager.getUserById(userId);
       
       if (!user) {
         res.status(404).json({
@@ -205,7 +203,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
         return;
       }
 
-      await userManager.deleteUser(userId);
+      await authService.userManager.deleteUser(userId);
 
       res.json({
         message: 'User deleted successfully',
@@ -358,7 +356,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
 
       // If approved, grant pro status
       if (status === 'approved') {
-        await userManager.updateUser(request.user_id, { isPro: true });
+        await authService.userManager.updateUser(request.user_id, { isPro: true });
       }
 
       res.json({ message: 'Pro request processed' });
@@ -472,7 +470,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
       if (banError) throw banError;
 
       // Update user banned status
-      await userManager.updateUser(userId, { is_banned: true } as any);
+      await authService.userManager.updateUser(userId, { is_banned: true } as any);
 
       res.json({ message: 'User banned successfully' });
     } catch (error: any) {
@@ -506,7 +504,7 @@ export function createAdminRouter(userManager: IUserManager): Router {
       if (banError) throw banError;
 
       // Update user banned status
-      await userManager.updateUser(userId, { is_banned: false } as any);
+      await authService.userManager.updateUser(userId, { is_banned: false } as any);
 
       res.json({ message: 'User unbanned successfully' });
     } catch (error: any) {

@@ -26,6 +26,10 @@ export class MessageManager {
     content: string,
     type: MessageType = 'normal'
   ): Promise<Message> {
+    const expiresAt = type === 'ai'
+      ? null
+      : new Date(Date.now() + this.defaultExpirationMinutes * 60 * 1000);
+
     const message: Message = {
       id: uuidv4(),
       roomId,
@@ -34,13 +38,15 @@ export class MessageManager {
       content,
       type,
       timestamp: new Date(),
-      expiresAt: new Date(Date.now() + this.defaultExpirationMinutes * 60 * 1000),
+      expiresAt,
       delivered: true, // Message is delivered when created on server
       readBy: [],
     };
 
     await this.storage.saveMessage(message);
-    this.scheduleExpiration(message);
+    if (message.expiresAt) {
+      this.scheduleExpiration(message);
+    }
     return message;
   }
 

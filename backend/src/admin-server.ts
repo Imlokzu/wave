@@ -37,8 +37,11 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+import { AuthService } from './services/AuthService';
+const authService = new AuthService(userManager);
+
 app.use('/api/auth', createAuthRouter(userManager));
-app.use('/api/admin', createAdminRouter(userManager));
+app.use('/api/admin', createAdminRouter(authService));
 
 // Error handlers
 app.use((req, res) => {

@@ -1,63 +1,31 @@
 /**
  * Centralized Authentication Guard
  * Include this script in any page that requires authentication
- * Uses session cache to avoid re-validating on every page
+ * 
+ * IMPORTANT: This now relies on Clerk's automatic session management
+ * No manual token storage or refresh - Clerk handles everything via secure cookies
  */
 
 (function() {
   'use strict';
   
-  const SESSION_CACHE_KEY = 'auth_session_valid';
-  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-  
   /**
-   * Check if we have a valid cached session
-   */
-  function hasValidCache() {
-    const cached = sessionStorage.getItem(SESSION_CACHE_KEY);
-    if (!cached) return false;
-    
-    try {
-      const { timestamp, valid } = JSON.parse(cached);
-      const age = Date.now() - timestamp;
-      
-      if (valid && age < CACHE_DURATION) {
-        console.log('[AuthGuard] Using cached session (age: ' + Math.round(age/1000) + 's)');
-        return true;
-      }
-    } catch (e) {
-      return false;
-    }
-    
-    return false;
-  }
-  
-  /**
-   * Cache session validation result
-   */
-  function cacheSession(valid) {
-    sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify({
-      timestamp: Date.now(),
-      valid: valid
-    }));
-  }
-  
-  /**
-   * Clear session cache
-   */
-  function clearCache() {
-    sessionStorage.removeItem(SESSION_CACHE_KEY);
-  }
-  
-  /**
-   * Clear auth data from localStorage
+   * Clear legacy auth storage (cleanup only)
    */
   function clearAuth() {
+    if (window.clerkAuth?.clearAuthStorage) {
+      window.clerkAuth.clearAuthStorage();
+    }
+    
+    // Clear legacy storage items
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
     localStorage.removeItem('username');
     localStorage.removeItem('nickname');
-    clearCache();
+    localStorage.removeItem('auth_cached');
+    localStorage.removeItem('auth_cache_time');
+    sessionStorage.removeItem('auth_cached');
+    sessionStorage.removeItem('auth_session_valid');
   }
   
   /**
@@ -74,68 +42,32 @@
   }
   
   /**
-   * Validate authentication token with server
+   * Validate authentication using Clerk
+   * No manual token management - Clerk handles sessions automatically
    */
-  async function validateAuth(skipCache = false) {
-    const authToken = localStorage.getItem('authToken');
-    const userId = localStorage.getItem('userId');
-    
-    // No token at all - redirect to login
-    if (!authToken || !userId) {
-      console.log('[AuthGuard] No credentials found, redirecting to login');
-      clearCache();
+  async function validateAuth() {
+    if (!window.clerkAuth) {
+      console.error('[AuthGuard] Clerk not loaded');
       redirectToLogin();
       return false;
     }
-    
-    // Check cache first (unless explicitly skipped)
-    if (!skipCache && hasValidCache()) {
-      return true;
-    }
-    
-    // Validate token with server
+
     try {
-      console.log('[AuthGuard] Validating session with server...');
-      
-      // Create abort controller for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-      
-      const response = await fetch('/api/auth/session', {
-        signal: controller.signal,
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[AuthGuard] Session valid for user:', data.user.username);
-        cacheSession(true);
-        return true;
-      } else {
-        console.log('[AuthGuard] Invalid session, clearing credentials');
+      await window.clerkAuth.ensureLoaded();
+
+      // Check if user is signed in via Clerk
+      if (!window.Clerk?.user) {
+        console.log('[AuthGuard] No Clerk session, redirecting to login');
         clearAuth();
-        clearCache();
         redirectToLogin();
         return false;
       }
+
+      console.log('[AuthGuard] Clerk session valid for user:', window.Clerk.user.username || window.Clerk.user.primaryEmailAddress?.emailAddress);
+      return true;
     } catch (error) {
-      console.error('[AuthGuard] Auth validation failed:', error);
-      
-      // If it's a timeout or network error, try to use cache or allow access
-      if (error.name === 'AbortError') {
-        console.log('[AuthGuard] Auth timeout, checking for valid cache...');
-        if (hasValidCache()) {
-          console.log('[AuthGuard] Using cached session due to timeout');
-          return true;
-        }
-      }
-      
+      console.error('[AuthGuard] Clerk auth validation failed:', error);
       clearAuth();
-      clearCache();
       redirectToLogin();
       return false;
     }
@@ -155,25 +87,39 @@
   (async function() {
     if (requiresAuth()) {
       console.log('[AuthGuard] Checking authentication...');
-      
-      // Quick bypass for development - check for stored auth
-      const authToken = localStorage.getItem('authToken');
-      if (authToken && hasValidCache()) {
-        console.log('[AuthGuard] Using cached authentication');
+
+      // Load Clerk if not already loaded
+      if (!window.clerkAuth) {
+        try {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/js/clerk-config.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/js/clerk-auth.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        } catch (error) {
+          console.warn('[AuthGuard] Clerk helper failed to load:', error);
+          redirectToLogin();
+          return;
+        }
+      }
+
+      const isValid = await validateAuth();
+
+      if (!isValid) {
+        console.log('[AuthGuard] Authentication failed, blocking page load');
         return;
       }
-      
-      const isValid = await validateAuth();
-      
-      if (!isValid) {
-        // Stop page execution by preventing DOMContentLoaded
-        console.log('[AuthGuard] Authentication failed, blocking page load');
-        document.addEventListener('DOMContentLoaded', function(e) {
-          e.stopImmediatePropagation();
-        }, true);
-        return; // Don't throw error, just return
-      }
-      
+
       console.log('[AuthGuard] Authentication successful');
     }
   })();
@@ -182,8 +128,6 @@
   window.authGuard = {
     validateAuth,
     clearAuth,
-    redirectToLogin,
-    clearCache,
-    cacheSession
+    redirectToLogin
   };
 })();

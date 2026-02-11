@@ -5,6 +5,7 @@ export interface SearchResult {
   url: string;
   title: string;
   snippet?: string;
+  content?: string;
 }
 
 export class SearchService {
@@ -22,6 +23,36 @@ export class SearchService {
       console.error('[Search] URL decode error:', error);
     }
     return url;
+  }
+
+  /**
+   * Fetch and extract readable text content from a URL
+   */
+  async fetchPageContent(url: string, maxChars: number = 3000): Promise<string | null> {
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        },
+        timeout: 8000
+      });
+
+      const contentType = String(response.headers['content-type'] || '');
+      if (!contentType.includes('text/html')) {
+        return null;
+      }
+
+      const html = response.data;
+      const $ = cheerio.load(html);
+      $('script, style, noscript, link').remove();
+      const text = $('body').text().replace(/\s+/g, ' ').trim();
+
+      if (!text) return null;
+      return text.length > maxChars ? `${text.slice(0, maxChars)}...` : text;
+    } catch (error) {
+      console.error('[Search] Fetch page content failed:', error);
+      return null;
+    }
   }
 
   /**

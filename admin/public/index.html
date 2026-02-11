@@ -185,6 +185,13 @@
         </div>
     </main>
 
+    <script src="/js/clerk-config.js"></script>
+    <script src="/js/clerk-auth.js"></script>
+    <script>
+        if (window.clerkAuth?.startTokenRefresh) {
+            window.clerkAuth.startTokenRefresh();
+        }
+    </script>
     <script src="/admin/js/admin.js"></script>
 </body>
 </html>

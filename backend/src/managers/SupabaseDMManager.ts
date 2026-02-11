@@ -7,6 +7,7 @@ import { IDMManager } from './IDMManager';
  */
 export class SupabaseDMManager implements IDMManager {
   private supabase: SupabaseClient;
+  private static AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
 
   constructor(supabaseUrl: string, supabaseKey: string) {
     this.supabase = createClient(supabaseUrl, supabaseKey);
@@ -110,9 +111,21 @@ export class SupabaseDMManager implements IDMManager {
         return [];
       }
 
+      const { data: aiData, error: aiError } = await this.supabase
+        .from('direct_messages')
+        .select('*, from_user:flux_users!from_user_id(username, nickname), read_by')
+        .eq('from_user_id', SupabaseDMManager.AI_BOT_ID)
+        .eq('to_user_id', userId1)
+        .ilike('content', `[[dmctx|${userId2}]]%`)
+        .order('created_at', { ascending: true });
+
+      if (aiError) {
+        console.error('[SupabaseDMManager] Error fetching AI DM history:', aiError);
+      }
+
       const conversationId = this.getConversationId(userId1, userId2);
 
-      return data.map(dm => {
+      const mapMessage = (dm: any): Message => {
         const messageType = dm.message_type === 'text' ? 'normal' : dm.message_type;
         return {
           id: dm.id,
@@ -136,7 +149,13 @@ export class SupabaseDMManager implements IDMManager {
           fileSize: dm.file_size,
           imageUrl: dm.image_url,
         };
-      });
+      };
+
+      const combined = [...data, ...(aiData || [])]
+        .map(mapMessage)
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      return combined;
     } catch (error) {
       console.error('Error getting DM history:', error);
       return [];

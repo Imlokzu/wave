@@ -2,11 +2,9 @@ import { Router, Response } from 'express';
 import { getSubscriptionManager } from '../managers/SubscriptionManager';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { AuthService } from '../services/AuthService';
-import { IUserManager } from '../managers/IUserManager';
 
-export function createSubscriptionRouter(userManager: IUserManager): Router {
+export function createSubscriptionRouter(authService: AuthService): Router {
   const router = Router();
-  const authService = new AuthService(userManager);
   const authMiddleware = requireAuth(authService);
 
 // Get user's subscription status

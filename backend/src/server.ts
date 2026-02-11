@@ -20,6 +20,7 @@ import { createAuthRouter } from './routes/auth';
 import { createProfileRouter } from './routes/profile';
 import { createAIRouter } from './routes/ai';
 import { setupSocketIO } from './socket/socketHandler';
+import { AuthService } from './services/AuthService';
 import { initializeEnhancedAIService } from './services/EnhancedAIService';
 import { initializeUnifiedAIService } from './services/UnifiedAIService';
 import { initializeProfileManager } from './managers/ProfileManager';
@@ -32,6 +33,7 @@ import { createSettingsRouter } from './routes/settings';
 import { createSearchRouter } from './routes/search';
 import { createAIChatRouter } from './routes/ai-chat';
 import { createChannelsRouter } from './routes/channels';
+import { createSessionsRouter } from './routes/sessions';
 import weatherRouter from './routes/weather';
 import versionRouter from './routes/version';
 
@@ -52,6 +54,9 @@ const userManager = config.supabaseUrl && config.supabaseKey
 const dmManager = config.supabaseUrl && config.supabaseKey
   ? new SupabaseDMManager(config.supabaseUrl, config.supabaseKey)
   : new DMManager();
+
+// Initialize auth service
+const authService = new AuthService(userManager);
 
 // Initialize image upload service
 const imageUploadService = new ImageUploadService(
@@ -181,16 +186,17 @@ app.use('/api/users', createUserRouter(userManager));
 app.use('/api/dms', createDMRouter(dmManager, userManager));
 app.use('/api/chats', createChatRouter(userManager, dmManager, roomManager, messageManager));
 app.use('/api/invites', createInvitesRouter());
-app.use('/api/profile', createProfileRouter(userManager));
-app.use('/api/ai', createAIRouter(userManager));
-app.use('/api/subscription', createSubscriptionRouter(userManager));
+app.use('/api/profile', createProfileRouter(authService));
+app.use('/api/ai', createAIRouter(authService));
+app.use('/api/subscription', createSubscriptionRouter(authService));
 app.use('/api/feed', feedRouter);
-app.use('/api/settings', createSettingsRouter(userManager));
+app.use('/api/settings', createSettingsRouter(authService));
 app.use('/api/search', createSearchRouter());
 app.use('/api/ai-chat', createAIChatRouter());
-app.use('/api/channels', createChannelsRouter(userManager, channelManager));
-app.use('/api/reports', createReportsRouter(userManager));
-app.use('/api/admin', createAdminRouter(userManager));
+app.use('/api/channels', createChannelsRouter(authService, channelManager));
+app.use('/api/reports', createReportsRouter(authService));
+app.use('/api/admin', createAdminRouter(authService));
+app.use('/api/sessions', createSessionsRouter(authService));
 app.use('/api/weather', weatherRouter);
 app.use('/api/version', versionRouter);
 

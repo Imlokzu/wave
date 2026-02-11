@@ -250,7 +250,7 @@ class SocketManager {
    */
   sendMessage(content) {
     // Check if message contains @ai and inject preferred model if set
-    if (content.includes('@ai') && !content.includes('[model:')) {
+    if (/^\s*@ai\b/i.test(content) && !content.includes('[model:')) {
       const preferredModel = localStorage.getItem('preferredAIModel');
       if (preferredModel && preferredModel !== 'auto') {
         // Inject model selection into message

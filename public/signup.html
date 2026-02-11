@@ -9,8 +9,13 @@
     <!-- Theme CSS -->
     <link href="/css/theme.css" rel="stylesheet"/>
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+        }
+    </style>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Theme Configuration -->
@@ -28,7 +33,7 @@
                         "flux-muted": "#94a3b8"
                     },
                     fontFamily: {
-                        "display": ["Spline Sans", "Noto Sans", "sans-serif"]
+                        "display": ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "Noto Sans", "sans-serif"]
                     },
                     borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
                     boxShadow: {
@@ -86,367 +91,79 @@
                 
                 <div class="layout-content-container flex flex-col relative z-10">
                     <!-- Header Section -->
-                    <div class="flex flex-col items-center gap-3 mb-10">
+                    <div class="flex flex-col items-center gap-3 mb-8">
                         <div class="relative">
                             <div class="absolute inset-0 bg-primary/30 blur-2xl rounded-full"></div>
-                            <img src="/nobackwave.png" alt="Wave" class="h-24 w-24 object-contain relative z-10 drop-shadow-2xl" />
+                            <img src="/nobackwave.png" alt="Wave" class="h-20 w-20 object-contain relative z-10 drop-shadow-2xl" />
                         </div>
-                        <h1 class="text-5xl font-black text-white tracking-tighter font-outfit">WAVE</h1>
-                        <p class="text-slate-400 text-sm font-medium tracking-wide uppercase" data-i18n="auth.createAccount">Create your account</p>
+                        <h1 class="text-4xl font-black text-white tracking-tighter font-outfit">WAVE</h1>
+                        <p class="text-slate-400 text-xs font-semibold tracking-[0.2em] uppercase" data-i18n="auth.createAccount">Create your account</p>
                     </div>
-                    
-                    <!-- Error Message -->
-                    <div id="error-message" class="hidden mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"></div>
-                    
-                    <!-- Signup Form -->
-                    <form id="signup-form" class="flex flex-col gap-5 w-full">
-                        <!-- Username Field -->
-                        <div class="group/input">
-                            <label class="flex flex-col w-full">
-                                <span class="sr-only" data-i18n="auth.username">Username</span>
-                                <div class="relative flex items-center">
-                                    <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors">
-                                        <span class="material-symbols-outlined">person</span>
-                                    </div>
-                                    <input 
-                                        id="username" 
-                                        name="username"
-                                        class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none" 
-                                        placeholder="Username" data-i18n-placeholder="auth.username"
-                                        type="text" 
-                                        required
-                                        autocomplete="username"
-                                    />
-                                    <div id="username-check" class="absolute right-5 hidden">
-                                        <span class="material-symbols-outlined"></span>
-                                    </div>
-                                </div>
-                                <p id="username-hint" class="text-xs text-flux-muted mt-2 ml-5 hidden"></p>
-                            </label>
-                        </div>
-                        
-                        <!-- Nickname Field -->
-                        <div class="group/input">
-                            <label class="flex flex-col w-full">
-                                <span class="sr-only">Nickname</span>
-                                <div class="relative flex items-center">
-                                    <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors">
-                                        <span class="material-symbols-outlined">badge</span>
-                                    </div>
-                                    <input 
-                                        id="nickname" 
-                                        name="nickname"
-                                        class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-6 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none" 
-                                        placeholder="Display Name (optional)" 
-                                        type="text"
-                                        autocomplete="nickname"
-                                    />
-                                </div>
-                            </label>
-                        </div>
-                        
-                        <!-- Password Field -->
-                        <div class="group/input">
-                            <label class="flex flex-col w-full">
-                                <span class="sr-only" data-i18n="auth.password">Password</span>
-                                <div class="relative flex items-center">
-                                    <div class="absolute left-5 flex items-center justify-center text-flux-muted group-focus-within/input:text-primary transition-colors">
-                                        <span class="material-symbols-outlined">lock</span>
-                                    </div>
-                                    <input 
-                                        id="password" 
-                                        name="password"
-                                        class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-14 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none" 
-                                        placeholder="Password (min 8 characters)" data-i18n-placeholder="auth.passwordMin"
-                                        type="password" 
-                                        required
-                                        autocomplete="new-password"
-                                    />
-                                    <button 
-                                        type="button"
-                                        id="toggle-password"
-                                        class="absolute right-5 flex items-center justify-center text-flux-muted hover:text-primary transition-colors"
-                                    >
-                                        <span class="material-symbols-outlined">visibility</span>
-                                    </button>
-                                </div>
-                                <!-- Password Strength Indicator -->
-                                <div class="mt-2 ml-5 mr-5">
-                                    <div class="password-strength-bar bg-flux-surface" id="strength-bar"></div>
-                                    <p id="strength-text" class="text-xs text-flux-muted mt-1"></p>
-                                </div>
-                            </label>
-                        </div>
-                        
-                        <!-- Confirm Password Field -->
-                        <div class="group/input">
-                            <label class="flex flex-col w-full">
-                                <span class="sr-only" data-i18n="auth.confirmPassword">Confirm Password</span>
-                                <div class="relative flex items-center">
-                                    <input 
-                                        id="confirm-password" 
-                                        name="confirm-password"
-                                        class="form-input flex w-full h-16 rounded-full bg-flux-surface text-white placeholder:text-flux-muted/60 pl-5 pr-16 text-lg font-normal border-2 border-transparent focus:border-primary/50 focus:ring-0 focus:bg-[#144535] transition-all duration-200 outline-none relative z-0" 
-                                        placeholder="Confirm Password" data-i18n-placeholder="auth.confirmPassword"
-                                        type="password" 
-                                        required
-                                        autocomplete="new-password"
-                                    />
-                                    <div id="password-match-icon" class="absolute right-5 flex items-center justify-center hidden z-20">
-                                        <span class="material-symbols-outlined"></span>
-                                    </div>
-                                </div>
-                                <p id="password-match" class="text-xs mt-2 ml-5 hidden"></p>
-                            </label>
-                        </div>
-                        
-                        <!-- Signup Button -->
-                        <button 
-                            type="submit"
-                            id="signup-btn"
-                            class="group/btn relative mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 bg-primary hover:bg-[#2563eb] active:scale-[0.98] transition-all duration-200 text-white shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <span class="text-lg font-bold leading-normal tracking-[0.015em] mr-2" data-i18n="auth.signUpButton">Create Account</span>
-                            <span class="material-symbols-outlined text-[20px] transition-transform group-hover/btn:translate-x-1 font-bold">arrow_forward</span>
-                            <div class="absolute inset-0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10"></div>
-                        </button>
-                    </form>
-                    
-                    <!-- Footer Link -->
-                    <div class="mt-8 text-center">
-                        <p class="text-flux-muted text-sm font-normal">
-                            <span data-i18n="auth.alreadyHaveAccount">Already have an account?</span> 
-                            <a class="text-primary hover:text-white font-medium hover:underline transition-colors decoration-primary/50 underline-offset-4" href="/login.html" data-i18n="auth.login">Login</a>
-                        </p>
+
+                    <div class="mb-6 text-center">
+                        <p class="text-white/90 text-lg font-semibold">Join Wave in seconds</p>
+                        <p class="text-slate-400 text-sm">One account for chat, rooms, and more.</p>
                     </div>
+
+                    <div id="clerk-loading" class="w-full text-center text-sm text-slate-400">Loading sign up…</div>
+                    <div id="clerk-error" class="hidden w-full text-center text-sm text-red-400">Sign-up failed to load. Check Clerk keys and network access.</div>
+                    <div id="clerk-sign-up" class="w-full"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="/js/clerk-config.js"></script>
+    <script src="/js/clerk-auth.js"></script>
     <script>
-        // API base URL - LOCALHOST for testing (use same origin as browser)
-        const API_BASE = window.location.origin;
-
-        const usernameInput = document.getElementById('username');
-        const nicknameInput = document.getElementById('nickname');
-        const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('confirm-password');
-        const signupForm = document.getElementById('signup-form');
-        const errorMessage = document.getElementById('error-message');
-        const signupBtn = document.getElementById('signup-btn');
-        const usernameCheck = document.getElementById('username-check');
-        const usernameHint = document.getElementById('username-hint');
-        const strengthBar = document.getElementById('strength-bar');
-        const strengthText = document.getElementById('strength-text');
-        const passwordMatch = document.getElementById('password-match');
-        const passwordMatchIcon = document.getElementById('password-match-icon');
-        const passwordMatchIconSpan = passwordMatchIcon.querySelector('.material-symbols-outlined');
-
-        // Toggle password visibility
-        const togglePassword = document.getElementById('toggle-password');
-        const toggleIcon = togglePassword.querySelector('.material-symbols-outlined');
-
-        togglePassword.addEventListener('click', () => {
-            const type = passwordInput.type === 'password' ? 'text' : 'password';
-            passwordInput.type = type;
-            confirmPasswordInput.type = type;
-            toggleIcon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
-        });
-
-        // Check username availability
-        let usernameCheckTimeout;
-        usernameInput.addEventListener('input', () => {
-            clearTimeout(usernameCheckTimeout);
-            const username = usernameInput.value.trim();
-            
-            if (username.length < 3) {
-                usernameCheck.classList.add('hidden');
-                usernameHint.classList.add('hidden');
-                return;
-            }
-
-            usernameCheckTimeout = setTimeout(async () => {
-                try {
-                    const response = await fetch(`${API_BASE}/api/users/check`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ username })
-                    });
-                    const result = await response.json();
-                    const data = result.data || result;
-                    
-                    const iconSpan = usernameCheck.querySelector('.material-symbols-outlined');
-                    
-                    if (data.available) {
-                        usernameCheck.classList.remove('hidden');
-                        iconSpan.textContent = 'check_circle';
-                        iconSpan.className = 'material-symbols-outlined text-primary';
-                        usernameHint.textContent = 'Username is available';
-                        usernameHint.className = 'text-xs text-primary mt-2 ml-5';
-                        usernameHint.classList.remove('hidden');
-                    } else {
-                        usernameCheck.classList.remove('hidden');
-                        iconSpan.textContent = 'cancel';
-                        iconSpan.className = 'material-symbols-outlined text-red-400';
-                        usernameHint.textContent = 'Username is taken';
-                        usernameHint.className = 'text-xs text-red-400 mt-2 ml-5';
-                        usernameHint.classList.remove('hidden');
-                    }
-                } catch (error) {
-                    console.error('Username check error:', error);
-                    usernameCheck.classList.add('hidden');
-                    usernameHint.classList.add('hidden');
-                }
-            }, 500);
-        });
-
-        // Password strength indicator
-        passwordInput.addEventListener('input', () => {
-            const password = passwordInput.value;
-            let strength = 0;
-            
-            if (password.length >= 8) strength++;
-            if (password.length >= 12) strength++;
-            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-            if (/\d/.test(password)) strength++;
-            if (/[^a-zA-Z0-9]/.test(password)) strength++;
-
-            const colors = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e'];
-            const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-            const widths = ['20%', '40%', '60%', '80%', '100%'];
-
-            if (password.length > 0) {
-                strengthBar.style.width = widths[strength];
-                strengthBar.style.backgroundColor = colors[strength];
-                strengthText.textContent = labels[strength];
-                strengthText.style.color = colors[strength];
-            } else {
-                strengthBar.style.width = '0%';
-                strengthText.textContent = '';
-            }
-
-            checkPasswordMatch();
-        });
-
-        // Check password match
-        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
-
-        function checkPasswordMatch() {
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-
-            if (confirmPassword.length > 0) {
-                if (password === confirmPassword) {
-                    passwordMatch.textContent = 'Passwords match';
-                    passwordMatch.className = 'text-xs text-primary mt-2 ml-5';
-                    passwordMatch.classList.remove('hidden');
-                    
-                    // Show checkmark icon
-                    passwordMatchIcon.classList.remove('hidden');
-                    passwordMatchIconSpan.textContent = 'check_circle';
-                    passwordMatchIconSpan.className = 'material-symbols-outlined text-primary';
-                } else {
-                    passwordMatch.textContent = 'Passwords do not match';
-                    passwordMatch.className = 'text-xs text-red-400 mt-2 ml-5';
-                    passwordMatch.classList.remove('hidden');
-                    
-                    // Show X icon
-                    passwordMatchIcon.classList.remove('hidden');
-                    passwordMatchIconSpan.textContent = 'cancel';
-                    passwordMatchIconSpan.className = 'material-symbols-outlined text-red-400';
-                }
-            } else {
-                passwordMatch.classList.add('hidden');
-                passwordMatchIcon.classList.add('hidden');
-            }
-        }
-
-        // Handle signup form submission
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = usernameInput.value.trim();
-            const nickname = nicknameInput.value.trim() || username;
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-
-            // Hide previous errors
-            errorMessage.classList.add('hidden');
-
-            // Validate password length
-            if (password.length < 8) {
-                errorMessage.textContent = 'Password must be at least 8 characters long';
-                errorMessage.classList.remove('hidden');
-                return;
-            }
-
-            // Validate password match
-            if (password !== confirmPassword) {
-                errorMessage.textContent = 'Passwords do not match';
-                errorMessage.classList.remove('hidden');
-                return;
-            }
-            
-            // Disable button
-            signupBtn.disabled = true;
-            signupBtn.querySelector('span').textContent = 'Creating account...';
+        (async function () {
+            const loadingEl = document.getElementById('clerk-loading');
+            const errorEl = document.getElementById('clerk-error');
 
             try {
-                const response = await fetch(`${API_BASE}/api/auth/signup`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, nickname, password })
-                });
+                await window.clerkAuth.ensureLoaded();
 
-                const data = await response.json();
+                if (window.Clerk?.user) {
+                    window.location.href = '/chat.html';
+                    return;
+                }
 
-                if (response.ok) {
-                    // Store token and user info
-                    localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('userId', data.user.id);
-                    localStorage.setItem('username', data.user.username);
-                    localStorage.setItem('nickname', data.user.nickname);
-                    
-                    // Show success message briefly
-                    signupBtn.querySelector('span').textContent = 'Success! Redirecting...';
-                    
-                    // Redirect to chat after brief delay
-                    setTimeout(() => {
-                        window.location.href = '/chat.html';
-                    }, 500);
-                } else {
-                    // Show error
-                    errorMessage.textContent = data.error || 'Signup failed';
-                    errorMessage.classList.remove('hidden');
-                    
-                    // Re-enable button
-                    signupBtn.disabled = false;
-                    signupBtn.querySelector('span').textContent = 'Create Account';
+                const signUpDiv = document.getElementById('clerk-sign-up');
+                if (signUpDiv) {
+                    window.Clerk.mountSignUp(signUpDiv, {
+                        afterSignUpUrl: '/chat.html',
+                        afterSignInUrl: '/chat.html',
+                        appearance: {
+                            variables: {
+                                colorPrimary: '#3b82f6',
+                                colorBackground: 'transparent',
+                                colorText: '#e6eef5',
+                                colorTextSecondary: '#94a3b8',
+                                colorInputBackground: 'rgba(15, 23, 41, 0.65)',
+                                colorInputText: '#e6eef5',
+                                borderRadius: '9999px',
+                                fontFamily: 'Inter, system-ui, sans-serif'
+                            },
+                            elements: {
+                                card: 'bg-transparent shadow-none p-0',
+                                headerTitle: 'text-white text-2xl font-bold',
+                                headerSubtitle: 'text-slate-400',
+                                socialButtonsBlockButton: 'bg-white/5 border border-white/10 hover:bg-white/10',
+                                formFieldInput: 'bg-white/5 border border-white/10 focus:border-primary/60',
+                                formButtonPrimary: 'bg-primary hover:bg-[#2563eb] text-white font-bold',
+                                footerActionLink: 'text-primary hover:text-white'
+                            }
+                        }
+                    });
+
+                    if (loadingEl) loadingEl.classList.add('hidden');
                 }
             } catch (error) {
-                console.error('Signup error:', error);
-                errorMessage.textContent = 'Network error. Please try again.';
-                errorMessage.classList.remove('hidden');
-                
-                // Re-enable button
-                signupBtn.disabled = false;
-                signupBtn.querySelector('span').textContent = 'Create Account';
+                console.error('Failed to initialize Clerk:', error);
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (errorEl) errorEl.classList.remove('hidden');
             }
-        });
-
-        // Animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shimmer {
-                100% { transform: translateX(100%); }
-            }
-        `;
-        document.head.appendChild(style);
+        })();
     </script>
     
     <!-- i18n Support -->

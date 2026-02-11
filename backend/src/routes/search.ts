@@ -13,7 +13,7 @@ export function createSearchRouter(): Router {
    */
   router.post('/', async (req: Request, res: Response) => {
     try {
-      const { query, maxResults = 5 } = req.body;
+      const { query, maxResults = 5, includeContent = false } = req.body;
 
       if (!query || typeof query !== 'string') {
         return res.status(400).json({
@@ -34,6 +34,25 @@ export function createSearchRouter(): Router {
       }
 
       const results = await searchService.searchDuckDuckGo(query, maxResults, region);
+
+      if (includeContent && results.length > 0) {
+        const enriched = await Promise.all(results.map(async (result) => {
+          const content = await searchService.fetchPageContent(result.url);
+          return { ...result, content };
+        }));
+
+        return res.json({
+          success: true,
+          query,
+          results: enriched,
+          count: enriched.length,
+          location: location ? {
+            country: location.country,
+            region: location.region,
+            city: location.city
+          } : undefined
+        });
+      }
 
       res.json({
         success: true,

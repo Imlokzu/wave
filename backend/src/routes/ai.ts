@@ -2,12 +2,10 @@ import { Router, Response } from 'express';
 import { getAIService } from '../services/AIService';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { AuthService } from '../services/AuthService';
-import { IUserManager } from '../managers/IUserManager';
 import { getUnifiedAIService } from '../services/UnifiedAIService';
 
-export function createAIRouter(userManager: IUserManager): Router {
+export function createAIRouter(authService: AuthService): Router {
   const router = Router();
-  const authService = new AuthService(userManager);
   const authMiddleware = requireAuth(authService);
 
   /**

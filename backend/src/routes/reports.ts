@@ -1,5 +1,4 @@
 import { Router, Response } from 'express';
-import { IUserManager } from '../managers/IUserManager';
 import { AuthService } from '../services/AuthService';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 
@@ -7,9 +6,8 @@ import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
  * Create reports router
  * Handles user-submitted bug reports, pro requests, and scam reports
  */
-export function createReportsRouter(userManager: IUserManager): Router {
+export function createReportsRouter(authService: AuthService): Router {
   const router = Router();
-  const authService = new AuthService(userManager);
 
   // Apply authentication to all routes
   router.use(requireAuth(authService));
@@ -149,7 +147,7 @@ export function createReportsRouter(userManager: IUserManager): Router {
       const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
 
       // Verify reported user exists
-      const reportedUser = await userManager.getUserById(reportedUserId);
+      const reportedUser = await authService.userManager.getUserById(reportedUserId);
       if (!reportedUser) {
         res.status(404).json({
           error: 'Reported user not found',

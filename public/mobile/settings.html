@@ -9,6 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols_Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/js/clerk-config.js"></script>
+<script src="/js/clerk-auth.js"></script>
 <script src="/js/api.js"></script>
 </head>
 <body class="bg-background-dark text-slate-100 font-display antialiased selection:bg-primary selection:text-white">
@@ -82,9 +84,24 @@ async function loadSettings() {
     }
 }
 
-function logout() {
-    localStorage.clear();
-    window.location.href = '/login.html';
+async function logout() {
+    try {
+        // Use Clerk's signOut if available
+        if (window.clerkAuth && window.clerkAuth.signOutAndRedirect) {
+            await window.clerkAuth.signOutAndRedirect('/auth/login.html');
+        } else {
+            // Fallback: clear storage and redirect
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/auth/login.html';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        // Force logout even if there's an error
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/auth/login.html';
+    }
 }
 
 loadSettings();

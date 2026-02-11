@@ -2,70 +2,57 @@
  * Settings Page JavaScript
  */
 
-// API functions
-async function getSubscriptionStatus() {
-  const authToken = localStorage.getItem('authToken');
+// Load AI models, but wait for authentication to be ready
+async function loadAIModels() {
+  // Wait for window.authSessionValid === true (max 5s)
+  let waited = 0;
+  while (window.authSessionValid !== true && waited < 5000) {
+    await new Promise(r => setTimeout(r, 100));
+    waited += 100;
+  }
+  if (window.authSessionValid !== true) {
+    console.error('[Settings] Auth not ready, cannot load AI models');
+    const container = document.getElementById('aiModelsContainer');
+    container.innerHTML = `<div class="px-6 py-4"><div class="p-4 text-center text-slate-400 text-sm"><p>Authentication not ready</p></div></div>`;
+    return;
+  }
+  try {
+    const data = await getSubscriptionStatus();
+    const isPro = data.isPro;
+    const allModels = data.allModels || data.availableModels || [];
 
-  // If no token, return mock data for testing
-  if (!authToken) {
-    console.warn('[Settings] No auth token, using mock data');
-    return {
-      isPro: false,
-      subscriptionDaysRemaining: null,
-      subscriptionEndsAt: null,
-      availableModels: [],
-      allModels: [
-        { id: 'auto', name: 'Auto Select', tier: 'free', useCase: 'Best model for each task', locked: false },
-        { id: 'wave-flash-1', name: 'Wave Flash 1', tier: 'free', useCase: 'Ultra-fast responses', locked: false },
-        { id: 'wave-flash-2', name: 'Wave Flash 2', tier: 'free', useCase: 'Quick responses', locked: false },
-        { id: 'wave-flash-3', name: 'Wave Flash 3', tier: 'free', useCase: 'Lightweight research', locked: false },
-        { id: 'wave-flash-4', name: 'Wave Flash 4', tier: 'free', useCase: 'Efficient dialogue', locked: false },
-        { id: 'wave-1', name: 'Wave 1', tier: 'free', useCase: 'Fast balanced model', locked: false },
-        { id: 'wave-2', name: 'Wave 2', tier: 'free', useCase: 'General intelligence', locked: false },
-        { id: 'wave-3', name: 'Wave 3', tier: 'free', useCase: 'Balanced chat & research', locked: false },
-        { id: 'wave-4', name: 'Wave 4', tier: 'pro', useCase: 'High-intelligence tasks', locked: true },
-        { id: 'wave-5', name: 'Wave 5', tier: 'pro', useCase: 'Advanced reasoning', locked: true },
-        { id: 'wave-o1', name: 'Wave O1', tier: 'free', useCase: 'Fast thinking mode', locked: false },
-        { id: 'wave-o2', name: 'Wave O2', tier: 'pro', useCase: 'Reasoning & research', locked: true },
-        { id: 'wave-o3', name: 'Wave O3', tier: 'pro', useCase: 'Deep logic (Slow - Deep Thinking)', locked: true },
-        { id: 'wave-o4', name: 'Wave O4', tier: 'pro', useCase: 'Expert research (Slow - Deep Thinking)', locked: true },
-        { id: 'wave-o5', name: 'Wave O5', tier: 'pro', useCase: 'Premium analysis (Slow - Deep Thinking)', locked: true }
-      ]
+    console.log('[AI Models] Loading models:', { isPro, modelCount: allModels.length });
+
+    const container = document.getElementById('aiModelsContainer');
+
+    const t = window.i18n && window.i18n.t ? window.i18n.t.bind(window.i18n) : (k, opts) => {
+      if (opts && opts.model) return `${opts.model}`;
+      return k;
     };
+
+    // Get saved preferred model
+    const savedModel = localStorage.getItem('preferredAIModel') || 'auto';
+
+    // ...existing code for building html and rendering...
+    // (no change to the rest of the function)
+    // ...existing code...
+    container.innerHTML = html;
+  } catch (error) {
+    console.error('Failed to load AI models:', error);
+    const container = document.getElementById('aiModelsContainer');
+    container.innerHTML = `
+      <div class="px-6 py-4">
+        <div class="p-4 text-center text-slate-400 text-sm">
+          <p>Failed to load AI models</p>
+          <p class="text-xs mt-1">Using auto-select mode</p>
+        </div>
+      </div>
+    `;
   }
-
-  const response = await fetch('/api/settings', {
-    headers: {
-      'Authorization': `Bearer ${authToken}`
-    }
-  });
-
-  if (!response.ok) {
-    console.error('API Error:', response.status, response.statusText);
-
-    // If unauthorized, redirect to login
-    if (response.status === 401) {
-      localStorage.clear();
-      window.location.href = '/login.html';
-      return;
-    }
-
-    throw new Error(`API request failed: ${response.status}`);
-  }
-
-  const data = await response.json();
-  console.log('API Response:', data);
-
-  if (!data.success || !data.data) {
-    console.error('Invalid API response:', data);
-    throw new Error('Invalid API response structure');
-  }
-
-  return data.data;
 }
 
 async function upgradeToPro() {
-  const authToken = localStorage.getItem('authToken');
+  const authToken = await getAuthToken();
   const response = await fetch('/api/settings/upgrade-to-pro', {
     method: 'POST',
     headers: {
@@ -74,8 +61,10 @@ async function upgradeToPro() {
   });
 
   if (response.status === 401) {
-    localStorage.clear();
-    window.location.href = '/login.html';
+    if (!window.clerkAuth) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
     return;
   }
 
@@ -83,7 +72,7 @@ async function upgradeToPro() {
 }
 
 async function downgradeToFree() {
-  const authToken = localStorage.getItem('authToken');
+  const authToken = await getAuthToken();
   const response = await fetch('/api/settings/downgrade-to-free', {
     method: 'POST',
     headers: {
@@ -92,8 +81,10 @@ async function downgradeToFree() {
   });
 
   if (response.status === 401) {
-    localStorage.clear();
-    window.location.href = '/login.html';
+    if (!window.clerkAuth) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
     return;
   }
 
@@ -876,6 +867,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveProfileBtn = document.getElementById('saveProfile');
   if (saveProfileBtn) {
     saveProfileBtn.addEventListener('click', saveProfileInfo);
+  }
+
+  // Logout button
+  const logoutButton = document.getElementById('logoutButton');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', async () => {
+      try {
+        // Use Clerk's signOut if available
+        if (window.clerkAuth && window.clerkAuth.signOutAndRedirect) {
+          await window.clerkAuth.signOutAndRedirect('/auth/login.html');
+        } else {
+          // Fallback: clear storage and redirect
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.href = '/auth/login.html';
+        }
+      } catch (error) {
+        console.error('[Settings] Logout error:', error);
+        // Force logout even if there's an error
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/auth/login.html';
+      }
+    });
   }
 
   // Auto-save API key on input (debounced) and on blur

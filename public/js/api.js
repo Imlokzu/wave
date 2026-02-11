@@ -17,9 +17,15 @@ class APIClient {
    */
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     // Add auth token if available
-    const authToken = localStorage.getItem('authToken');
+    let authToken = null;
+    if (window.clerkAuth?.getToken) {
+      authToken = await window.clerkAuth.getToken();
+    }
+    if (!authToken) {
+      authToken = localStorage.getItem('authToken');
+    }
     const headers = {
       ...this.defaultHeaders,
       ...options.headers
@@ -42,28 +48,59 @@ class APIClient {
 
       console.log('[API] Response:', response.status, data);
 
+      // Track 401s in sessionStorage
+      if (!window._api401Count) window._api401Count = 0;
+
       if (!response.ok) {
-        // Handle auth errors
-        if (response.status === 401) {
-          // Clear auth data and redirect to login
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('username');
-          localStorage.removeItem('nickname');
-          
-          // Only redirect if not already on login page
-          if (!window.location.pathname.includes('login.html')) {
+        // Only handle auth/session for 401/403
+        if (response.status === 401 || response.status === 403) {
+          window._api401Count = (window._api401Count || 0) + 1;
+          // Clear auth data
+          if (window.clerkAuth?.clearAuthStorage) {
+            window.clerkAuth.clearAuthStorage();
+          } else {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('username');
+            localStorage.removeItem('nickname');
+          }
+
+          // Show session expired UI after 2 consecutive 401/403s
+          if (window._api401Count >= 2) {
+            if (!document.getElementById('session-expired-banner')) {
+              const banner = document.createElement('div');
+              banner.id = 'session-expired-banner';
+              banner.style = 'position:fixed;top:0;left:0;width:100vw;background:#f87171;color:#fff;padding:16px 0;text-align:center;z-index:9999;font-size:1.1rem;font-family:inherit;box-shadow:0 2px 8px #0002;';
+              banner.innerText = 'Your session has expired. Please log in again.';
+              document.body.appendChild(banner);
+            }
             setTimeout(() => {
               window.location.href = '/login.html';
-            }, 1000);
+            }, 2000);
           }
+
+          // Avoid redirect loops when Clerk is active; let the caller handle it for first 401/403
+          if (!window.clerkAuth && window._api401Count < 2) {
+            // Only redirect if not already on login page
+            if (!window.location.pathname.includes('login.html')) {
+              setTimeout(() => {
+                window.location.href = '/login.html';
+              }, 1000);
+            }
+          }
+        } else {
+          // Reset 401 count on other errors
+          window._api401Count = 0;
         }
-        
+        // For non-auth errors, do NOT clear session or redirect
         throw new APIError(
           data.error?.message || data.error || 'Request failed',
           data.code || 'UNKNOWN_ERROR',
           response.status
         );
+      } else {
+        // Reset 401 count on success
+        window._api401Count = 0;
       }
 
       return data;

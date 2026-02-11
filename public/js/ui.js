@@ -404,8 +404,11 @@ class UIManager {
     // Check if message is own - compare by senderId OR by nickname if senderId doesn't match
     // This handles the case where socket.id changes after page reload
     const currentNickname = state?.get('user.nickname');
-    const isOwn = message.senderId === currentUserId || 
-                  (currentNickname && message.senderNickname === currentNickname);
+    const currentUsername = state?.get('user.username');
+    const senderName = message.senderNickname || message.senderUsername;
+    const isOwn = message.senderId === currentUserId ||
+            (currentNickname && senderName === currentNickname) ||
+            (currentUsername && senderName === currentUsername);
     
     const messageEl = this.createMessageElement(message, isOwn);
     
@@ -478,13 +481,13 @@ class UIManager {
     console.log('[UI] Creating own message content:', { id: message.id, type: message.type });
     
     const contentDiv = document.createElement('div');
-    contentDiv.className = 'flex flex-col gap-1 items-end';
+    contentDiv.className = 'flex flex-col gap-0 items-end';
 
     const bubbleWrapper = document.createElement('div');
     bubbleWrapper.className = 'relative';
 
     const bubbleEl = document.createElement('div');
-    bubbleEl.className = 'bg-gradient-to-r from-primary to-accent-cyan p-4 rounded-2xl rounded-tr-none shadow-md text-white text-sm leading-relaxed';
+    bubbleEl.className = 'bg-gradient-to-r from-primary to-accent-cyan px-4 pt-3 pb-2 rounded-2xl rounded-tr-none shadow-md text-white text-sm leading-relaxed';
     bubbleEl.dataset.messageBubble = 'true';
     
     // Handle different message types
@@ -776,11 +779,11 @@ class UIManager {
 
     // Message status row (time + read status)
     const statusRow = document.createElement('div');
-    statusRow.className = 'flex items-center gap-1 mt-1';
+    statusRow.className = 'flex items-center gap-1 mt-0.5 text-[10px] leading-none';
     
     // Timestamp
     const timeSpan = document.createElement('span');
-    timeSpan.className = 'text-xs text-slate-400';
+    timeSpan.className = 'text-[10px] text-slate-400';
     const msgTime = message.timestamp ? new Date(message.timestamp) : new Date();
     timeSpan.textContent = msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     statusRow.appendChild(timeSpan);
@@ -799,7 +802,7 @@ class UIManager {
     
     // Show checkmarks for own messages
     const checkmarks = document.createElement('span');
-    checkmarks.className = 'material-symbols-outlined text-[14px] ml-1 cursor-pointer';
+    checkmarks.className = 'material-symbols-outlined text-[12px] ml-1 cursor-pointer';
     checkmarks.dataset.messageId = message.id;
     
     // Determine read status
@@ -850,12 +853,12 @@ class UIManager {
 
     // Avatar
     const avatar = document.createElement('div');
-    avatar.className = 'w-10 h-10 rounded-full bg-surface-lighter shrink-0 mt-1 flex items-center justify-center overflow-hidden';
+    avatar.className = 'w-10 h-10 rounded-full bg-surface-lighter shrink-0 flex items-center justify-center overflow-hidden';
     
     // Check if it's an AI message
     if (message.type === 'ai' || message.isAI) {
       // AI avatar with special styling
-      avatar.className = 'w-10 h-10 rounded-full bg-surface-lighter shrink-0 mt-1 flex items-center justify-center overflow-hidden ring-2 ring-primary/30';
+      avatar.className = 'w-10 h-10 rounded-full bg-surface-lighter shrink-0 flex items-center justify-center overflow-hidden ring-2 ring-primary/30';
       avatar.innerHTML = '<img src="/wavechat.png" alt="Wave AI" class="w-full h-full object-cover" />';
     } else if (message.senderAvatar || message.avatar) {
       // Check if user has avatar
@@ -874,7 +877,7 @@ class UIManager {
 
     // Content
     const contentDiv = document.createElement('div');
-    contentDiv.className = 'flex flex-col gap-1';
+    contentDiv.className = 'flex flex-col gap-0';
 
     // Name
     const nameDiv = document.createElement('div');
@@ -904,9 +907,9 @@ class UIManager {
     
     // Special styling for AI messages
     if (message.type === 'ai' || message.isAI) {
-      bubbleEl.className = 'bg-gradient-to-br from-primary/10 to-accent-cyan/10 border border-primary/30 p-4 rounded-2xl rounded-tl-none shadow-lg text-slate-200 text-sm leading-relaxed';
+      bubbleEl.className = 'bg-gradient-to-br from-primary/10 to-accent-cyan/10 border border-primary/30 px-4 pt-3 pb-2 rounded-2xl rounded-tl-none shadow-lg text-slate-200 text-sm leading-relaxed';
     } else {
-      bubbleEl.className = 'bg-surface-dark p-4 rounded-2xl rounded-tl-none shadow-sm text-slate-200 text-sm leading-relaxed border border-slate-800';
+      bubbleEl.className = 'bg-surface-dark px-4 pt-3 pb-2 rounded-2xl rounded-tl-none shadow-sm text-slate-200 text-sm leading-relaxed border border-slate-800';
     }
     bubbleEl.dataset.messageBubble = 'true';
     
@@ -1332,8 +1335,11 @@ class UIManager {
     }
     const existing = this.messageContainer?.querySelector(`[data-message-id="${message.id}"]`);
     const currentNickname = state?.get('user.nickname');
+    const currentUsername = state?.get('user.username');
+    const senderName = message.senderNickname || message.senderUsername;
     const isOwn = message.senderId === currentUserId ||
-                  (currentNickname && message.senderNickname === currentNickname);
+            (currentNickname && senderName === currentNickname) ||
+            (currentUsername && senderName === currentUsername);
     const newEl = this.createMessageElement(message, isOwn);
     newEl.classList.add('message-enter');
 
@@ -1820,11 +1826,11 @@ class UIManager {
    */
   createReplyPreview(reply) {
     const replyEl = document.createElement('div');
-    replyEl.className = 'reply-preview mb-2 px-3 py-2 rounded-lg border-l-4 border-primary/70 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors';
+    replyEl.className = 'reply-preview mb-2 px-3 py-2 rounded-lg border-l-4 border-primary/70 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors max-w-[260px] w-fit';
     replyEl.dataset.replyToId = reply.id;
 
     replyEl.innerHTML = `
-      <div class="text-[11px] text-primary font-semibold">Reply to ${this.escapeHtml(reply.name || 'User')}</div>
+      <div class="text-[11px] text-primary font-semibold truncate">Reply to ${this.escapeHtml(reply.name || 'User')}</div>
       <div class="text-xs text-slate-300 truncate">${this.escapeHtml(reply.text || '')}</div>
     `;
 
