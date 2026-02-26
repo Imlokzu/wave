@@ -415,7 +415,15 @@
                 <div id="typingIndicator" class="mb-2 px-2 text-xs text-slate-400 italic hidden">
                     <span id="typingText"></span>
                 </div>
-                
+
+                <!-- Image Preview Container -->
+                <div id="imagePreviewContainer" class="hidden mb-2 px-2">
+                    <!-- Image previews will be rendered here -->
+                </div>
+
+                <!-- Hidden file input for images -->
+                <input type="file" id="imageInput" accept="image/*" multiple class="hidden" />
+
                 <div class="bg-surface-dark rounded-xl border border-slate-800 shadow-lg flex items-end p-2 gap-2 relative z-20">
                     <div class="relative">
                         <button id="attachmentBtn" class="size-9 shrink-0 flex items-center justify-center rounded-full bg-surface-dark border border-white/5 text-slate-400 hover:text-primary hover:border-primary/50 transition-all active:scale-95">
@@ -423,9 +431,12 @@
                         </button>
                         <!-- Inline attach menu (ai-chat style) -->
                         <div id="attachmentMenu" class="hidden absolute bottom-full left-0 mb-2 bg-surface-dark/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-2 min-w-[200px] transform origin-bottom-left scale-95 opacity-0 transition-all duration-200 ease-out">
-                            <button id="attachImage" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group">
+                            <button id="attachImage" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group" title="Upload image for AI analysis (Vision models only)">
                                 <span class="material-symbols-outlined text-primary text-[20px]">image</span>
-                                <span class="text-sm font-medium text-white">Image</span>
+                                <div class="flex-1">
+                                    <span class="text-sm font-medium text-white">Image</span>
+                                    <span class="text-xs text-slate-400 block">AI Vision (Qwen)</span>
+                                </div>
                             </button>
                             <button id="attachFile" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group mt-1">
                                 <span class="material-symbols-outlined text-orange-400 text-[20px]">attach_file</span>
@@ -827,6 +838,12 @@
     <script src="/js/state.js"></script>
     <script src="/js/ui.js"></script>
     <script src="/js/app.js"></script>
+    
+    <!-- NVIDIA NIM AI Client -->
+    <script type="module" src="/js/nvidiaClient.js"></script>
+    
+    <!-- AI Image Chat Module -->
+    <script type="module" src="/js/ai-image-chat.js"></script>
     
     <script>
         // Initialize i18n on page load

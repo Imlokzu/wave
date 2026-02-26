@@ -2060,7 +2060,14 @@ class App {
         menu.style.opacity = '0';
         menu.style.transform = 'scale(0.9) translateY(8px)';
         setTimeout(() => menu.classList.add('hidden'), 350);
-        this.openFilePicker('image/*');
+        
+        // Use AI image chat if available, otherwise fallback to file picker
+        const imageInput = document.getElementById('imageInput');
+        if (imageInput && window.aiImageChat) {
+          imageInput.click();
+        } else {
+          this.openFilePicker('image/*');
+        }
       };
     }
     

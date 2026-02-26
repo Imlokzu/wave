@@ -58,6 +58,18 @@ const MODEL_CONFIGS = {
     topK: 20,
     enableThinking: true
   },
+  'qwen3.5-397b-a17b': {
+    name: 'Qwen3.5-397B-A17B',
+    description: 'Multimodal foundation model with thinking',
+    hasVision: true,
+    speed: 'medium',
+    maxTokens: 32768,
+    temperature: 0.6,
+    topP: 0.95,
+    topK: 20,
+    enableThinking: true,
+    clearThinking: false
+  },
   'kimi-k2.5': {
     name: 'Kimi K2.5',
     description: 'Video, heavy multimodal',
@@ -264,25 +276,53 @@ export async function chat(modelId, messages, options = {}) {
 
 /**
  * Vision chat for image analysis
- * 
+ * Supports single or multiple images
+ *
  * @param {string} modelId - Model ID (should be a vision model)
  * @param {string} prompt - Text prompt
- * @param {File} imageFile - Image file to analyze
+ * @param {File|File[]} imageFile - Image file(s) to analyze
  * @param {Object} callbacks - Callback functions
  */
 export async function streamVisionChat(modelId, prompt, imageFile, callbacks = {}) {
-  // Convert image to base64
-  const base64Image = await fileToBase64(imageFile);
+  // Handle single file or array of files
+  const files = Array.isArray(imageFile) ? imageFile : [imageFile];
   
+  // Convert all images to base64
+  const imagePromises = files.map(file => fileToBase64(file));
+  const base64Images = await Promise.all(imagePromises);
+  
+  // Build content array with text first, then images
+  const content = [
+    { type: 'text', text: prompt }
+  ];
+  
+  // Add all images
+  base64Images.forEach((base64, index) => {
+    const fileType = files[index].type || 'image/jpeg';
+    content.push({
+      type: 'image_url',
+      image_url: { url: `data:${fileType};base64,${base64}` }
+    });
+  });
+
   const messages = [{
     role: 'user',
-    content: [
-      { type: 'text', text: prompt },
-      { type: 'image_url', image_url: { url: `data:${imageFile.type};base64,${base64Image}` } }
-    ]
+    content
   }];
 
   return streamChat(modelId, messages, callbacks);
+}
+
+/**
+ * Send image with optional text prompt (simplified wrapper)
+ *
+ * @param {string} modelId - Model ID
+ * @param {File|File[]} images - Image file(s)
+ * @param {string} prompt - Optional text prompt
+ * @param {Object} callbacks - Callback functions
+ */
+export async function sendImage(modelId, images, prompt = 'Describe this image.', callbacks = {}) {
+  return streamVisionChat(modelId, prompt, images, callbacks);
 }
 
 /**
