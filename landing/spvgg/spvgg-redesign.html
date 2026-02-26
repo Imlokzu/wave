@@ -1,0 +1,1035 @@
+<!doctype html>
+<html class="dark" lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="description" content="SpVgg Höhenkirchen e.V. - Seit 1945 Sport für die Gemeinschaft. 12 Abteilungen, 3000 Mitglieder, eine Leidenschaft." />
+    <meta name="theme-color" content="#DC2626" />
+    <title>SpVgg Höhenkirchen e.V. - Seit 1945</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        display: ["Outfit", "sans-serif"], 
+                        body: ["Plus Jakarta Sans", "sans-serif"] 
+                    },
+                    colors: {
+                        primary: {
+                            50: '#FEF2F2',
+                            100: '#FEE2E2',
+                            200: '#FECACA',
+                            300: '#FCA5A5',
+                            400: '#F87171',
+                            500: '#EF4444',
+                            600: '#DC2626',
+                            700: '#B91C1C',
+                            800: '#991B1B',
+                            900: '#7F1D1D',
+                        }
+                    }
+                },
+            },
+        };
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0a0a0a; overflow-x: hidden; }
+        .font-outfit { font-family: 'Outfit', sans-serif; }
+        
+        /* Custom Cursor */
+        .cursor { position: fixed; width: 20px; height: 20px; border: 2px solid #DC2626; border-radius: 50%; pointer-events: none; z-index: 9999; transition: transform 0.2s ease, background 0.2s ease; mix-blend-mode: difference; }
+        .cursor-dot { position: fixed; width: 6px; height: 6px; background: #DC2626; border-radius: 50%; pointer-events: none; z-index: 9999; }
+        .cursor.hover { transform: scale(3); background: rgba(220, 38, 38, 0.15); border-color: transparent; }
+        
+        /* Background Effects */
+        .bg-noise { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); opacity: 0.04; z-index: -1; }
+        .vignette { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, transparent 0%, transparent 30%, rgba(0,0,0,0.95) 100%); pointer-events: none; z-index: -1; }
+        .grid-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 80px 80px; z-index: -1; }
+        
+        /* Glass Effects */
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.06); }
+        .glass-strong { background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-card { background: rgba(255, 255, 255, 0.015); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.04); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card:hover { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.3); transform: translateY(-5px); }
+        
+        /* Text & Buttons */
+        .text-gradient { background: linear-gradient(180deg, #ffffff 0%, #DC2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .text-gradient-gold { background: linear-gradient(180deg, #FCD34D 0%, #D97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        
+        .btn-primary { position: relative; background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); color: #ffffff; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-primary:hover { transform: translateY(-4px); box-shadow: 0 15px 50px rgba(220, 38, 38, 0.4); }
+        .btn-outline { background: transparent; border: 1px solid rgba(220, 38, 38, 0.5); color: #ffffff; transition: all 0.3s ease; }
+        .btn-outline:hover { border-color: #DC2626; background: rgba(220, 38, 38, 0.1); transform: translateY(-3px); }
+        
+        /* Animations */
+        .reveal-up { opacity: 0; transform: translateY(100px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-up.active { opacity: 1; transform: translateY(0); }
+        .reveal-left { opacity: 0; transform: translateX(-100px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-left.active { opacity: 1; transform: translateX(0); }
+        .reveal-right { opacity: 0; transform: translateX(100px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-right.active { opacity: 1; transform: translateX(0); }
+        .reveal-scale { opacity: 0; transform: scale(0.9); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-scale.active { opacity: 1; transform: scale(1); }
+        
+        .nav-scrolled { background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(30px); border-color: rgba(220, 38, 38, 0.3); }
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: #DC2626; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-link:hover::after { width: 100%; }
+        
+        .scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #DC2626, #F87171, #DC2626); background-size: 200% 100%; animation: shimmer 2s linear infinite; z-index: 10000; width: 0%; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        .magnetic { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Loader */
+        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; display: flex; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.8s ease, visibility 0.8s ease; }
+        .loader.hidden { opacity: 0; visibility: hidden; }
+        .loader-content { text-align: center; }
+        .loader-logo { width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, #DC2626, #F87171); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse 2s ease-in-out infinite; }
+        .loader-text { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.5rem; color: #DC2626; overflow: hidden; }
+        .loader-text span { display: inline-block; opacity: 0; transform: translateY(100%); animation: loaderReveal 0.8s forwards; }
+        @keyframes loaderReveal { to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
+        
+        .page-content { opacity: 0; visibility: hidden; transition: opacity 0.8s ease, visibility 0.8s ease; }
+        .page-content.loaded { opacity: 1; visibility: visible; }
+        
+        /* Hero Animations */
+        .hero-anim { opacity: 0; transition: opacity 0.8s ease, transform 0.8s ease; }
+        .hero-anim.loaded { opacity: 1; }
+        #hero-badge { transform: translateY(20px); }
+        #hero-badge.loaded { transform: translateY(0); }
+        #hero-stats { transform: translateY(30px); }
+        #hero-stats.loaded { transform: translateY(0); }
+        .btn-primary, .btn-outline { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .btn-primary.loaded, .btn-outline.loaded { opacity: 1; transform: translateY(0); }
+        
+        /* Department Cards */
+        .dept-card { position: relative; overflow: hidden; }
+        .dept-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, transparent 0%, rgba(220, 38, 38, 0.2) 100%); opacity: 0; transition: opacity 0.5s ease; }
+        .dept-card:hover::before { opacity: 1; }
+        .dept-icon { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .dept-card:hover .dept-icon { transform: scale(1.2) rotate(5deg); }
+        
+        /* Timeline */
+        .timeline-item { position: relative; padding-left: 2rem; }
+        .timeline-item::before { content: ''; position: absolute; left: 0; top: 0; width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(135deg, #DC2626, #F87171); border: 3px solid #1a1a1a; }
+        .timeline-item::after { content: ''; position: absolute; left: 7px; top: 16px; width: 3px; height: calc(100% - 16px); background: linear-gradient(180deg, #DC2626, #333); }
+        .timeline-item:last-child::after { display: none; }
+        
+        /* News Card */
+        .news-card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .news-card:hover { transform: translateY(-8px); }
+        .news-card:hover .news-image { transform: scale(1.1); }
+        .news-image { transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #DC2626; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #F87171; }
+        
+        /* Floating shapes */
+        .shape { position: fixed; opacity: 0.08; pointer-events: none; z-index: -1; }
+        .shape-circle { width: 400px; height: 400px; border: 2px solid #DC2626; border-radius: 50%; }
+        .shape-square { width: 250px; height: 250px; border: 2px solid #DC2626; transform: rotate(45deg); }
+        .shape-triangle { width: 0; height: 0; border-left: 150px solid transparent; border-right: 150px solid transparent; border-bottom: 300px solid #DC2626; opacity: 0.05; }
+        
+        /* Counter animation */
+        .counter { font-variant-numeric: tabular-nums; }
+        
+        /* Parallax */
+        .parallax-element { transition: transform 0.3s ease-out; }
+        
+        /* Badge animations */
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-primary { background: rgba(220, 38, 38, 0.2); color: #DC2626; border: 1px solid rgba(220, 38, 38, 0.3); }
+        .badge-gold { background: rgba(252, 211, 77, 0.2); color: #FCD34D; border: 1px solid rgba(252, 211, 77, 0.3); }
+        .badge-new { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <span class="material-symbols-outlined text-4xl text-white">sports</span>
+            </div>
+            <div class="loader-text" id="loaderText"></div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="page-content" id="pageContent">
+        <!-- Custom Cursor -->
+        <div class="cursor" id="cursor"></div>
+        <div class="cursor-dot" id="cursor-dot"></div>
+        
+        <!-- Background Effects -->
+        <div class="bg-noise"></div>
+        <div class="vignette"></div>
+        <div class="grid-lines"></div>
+        <div class="shape shape-circle" style="top: 5%; right: 5%;"></div>
+        <div class="shape shape-square" style="top: 50%; left: 3%;"></div>
+        <div class="shape shape-triangle" style="top: 80%; right: 10%;"></div>
+        
+        <!-- Scroll Progress -->
+        <div class="scroll-progress" id="scrollProgress"></div>
+
+        <!-- Navigation -->
+        <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 glass-strong border-b transition-all duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-20">
+                    <div class="flex items-center gap-3 group cursor-pointer magnetic" data-magnetic>
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-primary-600/50 transition-all duration-500">
+                            <span class="material-sports-outlined text-2xl text-white">sports</span>
+                        </div>
+                        <div>
+                            <span class="font-outfit text-xl font-black tracking-wider block">SpVgg</span>
+                            <span class="text-xs text-gray-400 tracking-widest">HÖHENKIRCHEN</span>
+                        </div>
+                    </div>
+                    <div class="hidden md:flex items-center gap-8">
+                        <a href="#home" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Start</a>
+                        <a href="#aktuelles" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Aktuelles</a>
+                        <a href="#abteilungen" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Abteilungen</a>
+                        <a href="#verein" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Verein</a>
+                        <a href="#sportanlagen" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Sportanlagen</a>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <a href="#kontakt" class="hidden sm:block text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Kontakt</a>
+                        <a href="#shop" class="btn-primary px-6 py-2.5 rounded-full font-bold text-white" data-magnetic>
+                            <span class="material-symbols-outlined text-sm inline-block align-middle mr-1">shopping_bag</span>
+                            Fan-Shop
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section id="home" class="relative min-h-screen flex items-center justify-center px-4 pt-20 overflow-hidden">
+            <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+                <div class="text-center lg:text-left">
+                    <div class="reveal">
+                        <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass mb-8 border border-primary-600/30 hero-anim" id="hero-badge">
+                            <span class="material-symbols-outlined text-sm text-primary-500">celebration</span>
+                            <span class="text-sm font-semibold tracking-wide uppercase">Seit 1945 - 80 Jahre Sport</span>
+                        </div>
+                    </div>
+                    <h1 class="font-outfit text-5xl sm:text-6xl lg:text-7xl font-black leading-none mb-6">
+                        <span class="text-white block">SPORT FÜR</span>
+                        <span class="text-gradient block">GEMEINSCHAFT</span>
+                    </h1>
+                    <p class="text-xl text-gray-400 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed hero-anim" id="hero-subtitle">
+                        Ein herzliches Grüßgott bei der SpVgg Höhenkirchen e.V. 
+                        12 Abteilungen, 3.000 Mitglieder, eine Leidenschaft für Sport.
+                    </p>
+                    <div class="reveal flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
+                        <a href="#abteilungen" class="btn-primary px-10 py-4 rounded-full font-bold text-lg inline-flex items-center justify-center gap-2 group" data-magnetic>
+                            <span>Abteilungen entdecken</span>
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </a>
+                        <a href="#verein" class="btn-outline px-10 py-4 rounded-full font-bold text-lg inline-flex items-center justify-center gap-2" data-magnetic>
+                            <span class="material-symbols-outlined">info</span>
+                            <span>Über uns</span>
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-4 gap-6 mt-16 pt-10 border-t border-white/10 hero-anim" id="hero-stats">
+                        <div>
+                            <div class="font-outfit text-3xl lg:text-4xl font-bold text-white counter" data-target="3000">0</div>
+                            <div class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Mitglieder</div>
+                        </div>
+                        <div>
+                            <div class="font-outfit text-3xl lg:text-4xl font-bold text-white counter" data-target="12">0</div>
+                            <div class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Abteilungen</div>
+                        </div>
+                        <div>
+                            <div class="font-outfit text-3xl lg:text-4xl font-bold text-white counter" data-target="150">0</div>
+                            <div class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Trainer</div>
+                        </div>
+                        <div>
+                            <div class="font-outfit text-3xl lg:text-4xl font-bold text-white">80</div>
+                            <div class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Jahre</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Visual - Sports Collage -->
+                <div class="reveal-right lg:block relative parallax-wrapper" id="parallax-hero">
+                    <div class="relative">
+                        <div class="glass-strong rounded-[3rem] p-4 border border-white/10 shadow-2xl parallax-element" data-speed="0.5">
+                            <div class="bg-gradient-to-br from-primary-900/50 to-black rounded-[2.5rem] overflow-hidden h-[600px] relative">
+                                <!-- Sports Icons Grid -->
+                                <div class="absolute inset-0 p-8">
+                                    <div class="grid grid-cols-3 gap-4 h-full">
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="0">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">sports_soccer</span>
+                                        </div>
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="100">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">sports_basketball</span>
+                                        </div>
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="200">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">sports_tennis</span>
+                                        </div>
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="300">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">fitness_center</span>
+                                        </div>
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="400">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">sports_martial_arts</span>
+                                        </div>
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="500">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">sports_gymnastics</span>
+                                        </div>
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="600">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">directions_bike</span>
+                                        </div>
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="700">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">sports_kabaddi</span>
+                                        </div>
+                                        <div class="glass-card rounded-2xl flex items-center justify-center hero-sport" data-delay="800">
+                                            <span class="material-symbols-outlined text-4xl text-primary-500">chess</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Overlay Badge -->
+                                <div class="absolute bottom-6 left-6 right-6 glass rounded-2xl p-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-white text-xl">verified</span>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm">Gemeinnütziger Verein</div>
+                                            <div class="text-xs text-gray-400">e.V. seit 1945</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Floating Elements -->
+                        <div class="absolute -top-8 -right-8 glass rounded-2xl p-4 parallax-element" data-speed="0.3">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary-500">star</span>
+                                <span class="text-sm font-semibold">Premium</span>
+                            </div>
+                        </div>
+                        <div class="absolute -bottom-4 -left-8 glass rounded-2xl p-4 parallax-element" data-speed="0.7">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary-500">groups</span>
+                                <span class="text-sm font-semibold">3000+ Mitglieder</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+                <span class="material-symbols-outlined text-gray-600 text-3xl">keyboard_arrow_down</span>
+            </div>
+        </section>
+
+        <!-- Aktuelles / News Section -->
+        <section id="aktuelles" class="py-32 px-4 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20 reveal-up">
+                    <span class="badge badge-primary mb-4">NEWS</span>
+                    <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6">
+                        <span class="text-gradient">AKTUELLES</span>
+                    </h2>
+                    <p class="text-xl text-gray-400 max-w-2xl mx-auto">Bleiben Sie informiert über die neuesten Entwicklungen und Ereignisse im Verein.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- News Card 1 -->
+                    <article class="reveal-up news-card glass-strong rounded-3xl overflow-hidden border border-white/10">
+                        <div class="h-48 bg-gradient-to-br from-primary-900/50 to-black relative overflow-hidden">
+                            <div class="news-image absolute inset-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-6xl text-primary-500/50">celebration</span>
+                            </div>
+                            <div class="absolute top-4 left-4">
+                                <span class="badge badge-gold">Jubiläum</span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="text-xs text-gray-500 mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">calendar_today</span>
+                                05.07.2025
+                            </div>
+                            <h3 class="font-outfit text-xl font-bold mb-3">80 Jahre SpVgg Höhenkirchen</h3>
+                            <p class="text-gray-400 text-sm mb-4">Feiern Sie mit uns unser 80-jähriges Bestehen mit einem großen Fest für alle Mitglieder und Freunde des Vereins.</p>
+                            <a href="#" class="text-primary-500 hover:text-primary-400 text-sm font-semibold inline-flex items-center gap-1 group">
+                                Mehr erfahren
+                                <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- News Card 2 -->
+                    <article class="reveal-up news-card glass-strong rounded-3xl overflow-hidden border border-white/10" style="transition-delay: 100ms">
+                        <div class="h-48 bg-gradient-to-br from-primary-900/50 to-black relative overflow-hidden">
+                            <div class="news-image absolute inset-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-6xl text-primary-500/50">shopping_bag</span>
+                            </div>
+                            <div class="absolute top-4 left-4">
+                                <span class="badge badge-new">Neu</span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="text-xs text-gray-500 mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">calendar_today</span>
+                                17.02.2026
+                            </div>
+                            <h3 class="font-outfit text-xl font-bold mb-3">Neuer Fan-Shop eröffnet</h3>
+                            <p class="text-gray-400 text-sm mb-4">Entdecken Sie unsere exklusive Merchandise-Kollektion mit Trikots, Accessoires und mehr.</p>
+                            <a href="#" class="text-primary-500 hover:text-primary-400 text-sm font-semibold inline-flex items-center gap-1 group">
+                                Zum Shop
+                                <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- News Card 3 -->
+                    <article class="reveal-up news-card glass-strong rounded-3xl overflow-hidden border border-white/10" style="transition-delay: 200ms">
+                        <div class="h-48 bg-gradient-to-br from-primary-900/50 to-black relative overflow-hidden">
+                            <div class="news-image absolute inset-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-6xl text-primary-500/50">handshake</span>
+                            </div>
+                            <div class="absolute top-4 left-4">
+                                <span class="badge badge-primary">Sponsoring</span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="text-xs text-gray-500 mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">calendar_today</span>
+                                Aktualisiert
+                            </div>
+                            <h3 class="font-outfit text-xl font-bold mb-3">Edeka-Markt Alex Stefan spendet</h3>
+                            <p class="text-gray-400 text-sm mb-4">Großzügige Spende unseres Partners unterstützt die Jugendarbeit des Vereins.</p>
+                            <a href="#" class="text-primary-500 hover:text-primary-400 text-sm font-semibold inline-flex items-center gap-1 group">
+                                Mehr erfahren
+                                <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Abteilungen Section -->
+        <section id="abteilungen" class="py-32 px-4 relative bg-gradient-to-b from-transparent via-primary-950/20 to-transparent">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20 reveal-up">
+                    <span class="badge badge-primary mb-4">12 ABTEILUNGEN</span>
+                    <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6">
+                        <span class="text-gradient">FINDE DEINEN SPORT</span>
+                    </h2>
+                    <p class="text-xl text-gray-400 max-w-2xl mx-auto">Von Mannschaftssport bis Individualsport - bei uns findest du deine Leidenschaft.</p>
+                </div>
+                
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <!-- Department Cards -->
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">sports_soccer</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Fußball</h3>
+                        <p class="text-gray-500 text-sm">Mannschaftssport für alle Altersklassen</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 50ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">sports_basketball</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Basketball</h3>
+                        <p class="text-gray-500 text-sm">Dynamisch und teamorientiert</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 100ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">sports_tennis</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Feldhockey</h3>
+                        <p class="text-gray-500 text-sm">Schnell und technisch</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 150ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">fitness_center</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Gymnastik</h3>
+                        <p class="text-gray-500 text-sm">Fitness und Beweglichkeit</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 200ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">sports_martial_arts</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Karate</h3>
+                        <p class="text-gray-500 text-sm">Disziplin und Selbstverteidigung</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 250ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">directions_bike</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Rad-/Laufsport</h3>
+                        <p class="text-gray-500 text-sm">Ausdauer und Natur</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 300ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">archery</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Bogenschießen</h3>
+                        <p class="text-gray-500 text-sm">Präzision und Konzentration</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 350ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">chess</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Schach</h3>
+                        <p class="text-gray-500 text-sm">Strategie und Taktik</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 400ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">sports_handball</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Stockschießen</h3>
+                        <p class="text-gray-500 text-sm">Tradition und Präzision</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 450ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">table_bar</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Tischtennis</h3>
+                        <p class="text-gray-500 text-sm">Schnelligkeit und Reflexe</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 500ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">sports_volleyball</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Volleyball</h3>
+                        <p class="text-gray-500 text-sm">Teamwork an Netz und Strand</p>
+                    </div>
+
+                    <div class="reveal-up dept-card glass-card rounded-2xl p-6 cursor-pointer" data-magnetic style="transition-delay: 550ms">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-3xl text-primary-500 dept-icon">emoji_events</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Sportabzeichen</h3>
+                        <p class="text-gray-500 text-sm">Leistungsprüfung für alle</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Verein / About Section -->
+        <section id="verein" class="py-32 px-4 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <div class="reveal-left">
+                        <span class="badge badge-primary mb-4">ÜBER UNS</span>
+                        <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6">
+                            <span class="text-gradient">80 JAHRE</span>
+                            <span class="text-white block">TRADITION</span>
+                        </h2>
+                        <p class="text-xl text-gray-400 mb-8 leading-relaxed">
+                            Die SpVgg Höhenkirchen e.V. wurde 1945 gegründet und hat sich zu einem der 
+                            größten Sportvereine der Region entwickelt. Unser Motto: "Pflege und Förderung 
+                            des Sports für die Allgemeinheit".
+                        </p>
+                        <div class="space-y-4 mb-8">
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 rounded-full bg-primary-600/20 flex items-center justify-center flex-shrink-0">
+                                    <span class="material-symbols-outlined text-primary-500">check</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1">Gemeinnütziger Verein</h4>
+                                    <p class="text-gray-500 text-sm">Eingetragener Verein seit 1945</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 rounded-full bg-primary-600/20 flex items-center justify-center flex-shrink-0">
+                                    <span class="material-symbols-outlined text-primary-500">check</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1">Für alle Altersklassen</h4>
+                                    <p class="text-gray-500 text-sm">Sportangebote von Jung bis Alt</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 rounded-full bg-primary-600/20 flex items-center justify-center flex-shrink-0">
+                                    <span class="material-symbols-outlined text-primary-500">check</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1">Qualifizierte Trainer</h4>
+                                    <p class="text-gray-500 text-sm">Über 150 zertifizierte Instruktoren</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="#" class="btn-primary px-8 py-3 rounded-full font-bold" data-magnetic>
+                                Mitglied werden
+                            </a>
+                            <a href="#" class="btn-outline px-8 py-3 rounded-full font-bold" data-magnetic>
+                                Chronik lesen
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="reveal-right">
+                        <div class="glass-strong rounded-3xl p-8 border border-white/10">
+                            <h3 class="font-outfit text-2xl font-bold mb-6">Vereinsstruktur</h3>
+                            <div class="space-y-4">
+                                <div class="glass-card rounded-xl p-4 flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-white">leaderboard</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Vorstand</h4>
+                                        <p class="text-gray-500 text-sm">Geschäftsführender Vorstand</p>
+                                    </div>
+                                </div>
+                                <div class="glass-card rounded-xl p-4 flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-white">auto_stories</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Ehrenrat</h4>
+                                        <p class="text-gray-500 text-sm">Ehrenmitglieder und Berater</p>
+                                    </div>
+                                </div>
+                                <div class="glass-card rounded-xl p-4 flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-white">groups</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">Vereinsrat</h4>
+                                        <p class="text-gray-500 text-sm">Abteilungsleiter und Vertreter</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline / History -->
+        <section class="py-32 px-4 relative bg-gradient-to-b from-transparent via-primary-950/20 to-transparent">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-20 reveal-up">
+                    <span class="badge badge-gold mb-4">GESCHICHTE</span>
+                    <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6">
+                        <span class="text-gradient-gold">UNSERE CHRONIK</span>
+                    </h2>
+                </div>
+                
+                <div class="space-y-8">
+                    <div class="reveal-up timeline-item">
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="badge badge-gold">1945</span>
+                                <span class="text-gray-500 text-sm">Gründung</span>
+                            </div>
+                            <h3 class="font-outfit text-xl font-bold mb-2">Vereinsgründung</h3>
+                            <p class="text-gray-400">Die SpVgg Höhenkirchen e.V. wird gegründet mit dem Ziel, Sport für alle zugänglich zu machen.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="reveal-up timeline-item">
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="badge badge-primary">1970er</span>
+                                <span class="text-gray-500 text-sm">Expansion</span>
+                            </div>
+                            <h3 class="font-outfit text-xl font-bold mb-2">Wachstum der Abteilungen</h3>
+                            <p class="text-gray-400">Mehrere neue Sportabteilungen werden gegründet, Mitgliederzahl steigt kontinuierlich.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="reveal-up timeline-item">
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="badge badge-primary">1990er</span>
+                                <span class="text-gray-500 text-sm">Modernisierung</span>
+                            </div>
+                            <h3 class="font-outfit text-xl font-bold mb-2">Neue Sportanlagen</h3>
+                            <p class="text-gray-400">Bau und Erweiterung mehrerer Sportstätten, einschließlich Mehrzweckhalle und Beachvolleyball-Felder.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="reveal-up timeline-item">
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="badge badge-gold">2025</span>
+                                <span class="text-gray-500 text-sm">Jubiläum</span>
+                            </div>
+                            <h3 class="font-outfit text-xl font-bold mb-2">80 Jahre SpVgg</h3>
+                            <p class="text-gray-400">Großes Jubiläumsfest mit 3.000 Mitgliedern in 12 Abteilungen an 9 Sportstätten.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sportanlagen Section -->
+        <section id="sportanlagen" class="py-32 px-4 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20 reveal-up">
+                    <span class="badge badge-primary mb-4">INFRASTRUKTUR</span>
+                    <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6">
+                        <span class="text-gradient">SPORTANLAGEN</span>
+                    </h2>
+                    <p class="text-xl text-gray-400 max-w-2xl mx-auto">9 moderne Sportstätten für optimale Trainingsbedingungen.</p>
+                </div>
+                
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="reveal-up glass-card rounded-2xl p-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary-600/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-primary-500">sports_soccer</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Sportzentrum Sportplatzstraße</h3>
+                        <p class="text-gray-500 text-sm">Hauptanlage mit mehreren Spielfeldern</p>
+                    </div>
+                    
+                    <div class="reveal-up glass-card rounded-2xl p-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary-600/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-primary-500">apartment</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Mehrzweckhalle</h3>
+                        <p class="text-gray-500 text-sm">Indoor-Sport für alle Wetterbedingungen</p>
+                    </div>
+                    
+                    <div class="reveal-up glass-card rounded-2xl p-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary-600/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-primary-500">archery</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Bogenschießanlage</h3>
+                        <p class="text-gray-500 text-sm">Spezialisierte Anlage für Bogenschützen</p>
+                    </div>
+                    
+                    <div class="reveal-up glass-card rounded-2xl p-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary-600/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-primary-500">school</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Gymnasium Höhenkirchen</h3>
+                        <p class="text-gray-500 text-sm">Schulsporthalle für Vereinssport</p>
+                    </div>
+                    
+                    <div class="reveal-up glass-card rounded-2xl p-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary-600/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-primary-500">sports_tennis</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Beachvolleyball-Felder</h3>
+                        <p class="text-gray-500 text-sm">Sandplätze für Volleyball und Beachsport</p>
+                    </div>
+                    
+                    <div class="reveal-up glass-card rounded-2xl p-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary-600/20 flex items-center justify-center mb-4 border border-primary-600/30">
+                            <span class="material-symbols-outlined text-primary-500">location_on</span>
+                        </div>
+                        <h3 class="font-outfit text-lg font-bold mb-2">Weitere Standorte</h3>
+                        <p class="text-gray-500 text-sm">Erich Kästner Schule, Rathauskeller, Seniorenwohnheim</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-32 px-4 relative">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="reveal-up glass-strong rounded-[3rem] p-12 border border-primary-600/30 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary-600/10 to-transparent"></div>
+                    <div class="relative z-10">
+                        <span class="material-symbols-outlined text-6xl text-primary-500 mb-6">celebration</span>
+                        <h2 class="font-outfit text-4xl sm:text-5xl font-bold mb-6">
+                            <span class="text-gradient">WERDE TEIL DER FAMILIE</span>
+                        </h2>
+                        <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+                            Egal ob Anfänger oder Profi, Jung oder Alt - bei uns findest du deine Sportgemeinschaft.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <a href="#kontakt" class="btn-primary px-10 py-4 rounded-full font-bold text-lg inline-flex items-center justify-center gap-2 group" data-magnetic>
+                                <span class="material-symbols-outlined">person_add</span>
+                                <span>Mitglied werden</span>
+                            </a>
+                            <a href="#abteilungen" class="btn-outline px-10 py-4 rounded-full font-bold text-lg inline-flex items-center justify-center gap-2" data-magnetic>
+                                <span class="material-symbols-outlined">sports</span>
+                                <span>Sportarten entdecken</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kontakt / Footer -->
+        <footer id="kontakt" class="py-20 px-4 border-t border-white/10">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid md:grid-cols-4 gap-12 mb-12">
+                    <div class="reveal-up">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
+                                <span class="material-sports-outlined text-xl text-white">sports</span>
+                            </div>
+                            <div>
+                                <span class="font-outfit text-lg font-black tracking-wider block">SpVgg</span>
+                                <span class="text-xs text-gray-400 tracking-widest">HÖHENKIRCHEN</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-sm mb-4">
+                            Gemeinnütziger Sportverein seit 1945.<br>
+                            Pflege und Förderung des Sports für die Allgemeinheit.
+                        </p>
+                        <div class="flex gap-4">
+                            <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-primary-600/20 transition-colors" data-magnetic>
+                                <span class="material-symbols-outlined text-gray-400 hover:text-primary-500">facebook</span>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-primary-600/20 transition-colors" data-magnetic>
+                                <span class="material-symbols-outlined text-gray-400 hover:text-primary-500">alternate_email</span>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-primary-600/20 transition-colors" data-magnetic>
+                                <span class="material-symbols-outlined text-gray-400 hover:text-primary-500">photo_camera</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="reveal-up">
+                        <h4 class="font-outfit font-bold mb-4">Quick Links</h4>
+                        <ul class="space-y-2 text-gray-500 text-sm">
+                            <li><a href="#home" class="hover:text-primary-500 transition-colors">Start</a></li>
+                            <li><a href="#aktuelles" class="hover:text-primary-500 transition-colors">Aktuelles</a></li>
+                            <li><a href="#abteilungen" class="hover:text-primary-500 transition-colors">Abteilungen</a></li>
+                            <li><a href="#verein" class="hover:text-primary-500 transition-colors">Verein</a></li>
+                            <li><a href="#sportanlagen" class="hover:text-primary-500 transition-colors">Sportanlagen</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="reveal-up">
+                        <h4 class="font-outfit font-bold mb-4">Kontakt</h4>
+                        <ul class="space-y-3 text-gray-500 text-sm">
+                            <li class="flex items-start gap-3">
+                                <span class="material-symbols-outlined text-primary-500 text-sm">location_on</span>
+                                <span>Sportplatzstraße<br>Höhenkirchen, Deutschland</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary-500 text-sm">email</span>
+                                <a href="mailto:info@spvgg-hoehenkirchen.de" class="hover:text-primary-500 transition-colors">info@spvgg-hoehenkirchen.de</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="reveal-up">
+                        <h4 class="font-outfit font-bold mb-4">Rechtliches</h4>
+                        <ul class="space-y-2 text-gray-500 text-sm">
+                            <li><a href="#" class="hover:text-primary-500 transition-colors">Impressum</a></li>
+                            <li><a href="#" class="hover:text-primary-500 transition-colors">Datenschutz</a></li>
+                            <li><a href="#" class="hover:text-primary-500 transition-colors">Satzung</a></li>
+                            <li><a href="#" class="hover:text-primary-500 transition-colors">Beiträge</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="pt-8 border-t border-white/10 text-center text-gray-600 text-sm">
+                    <p>&copy; 2026 SpVgg Höhenkirchen e.V. - Alle Rechte vorbehalten.</p>
+                    <p class="mt-2">Made with ❤️ für den Sport</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize Lenis Smooth Scroll
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Custom Cursor
+        const cursor = document.getElementById('cursor');
+        const cursorDot = document.getElementById('cursor-dot');
+        let mouseX = 0, mouseY = 0;
+        let cursorX = 0, cursorY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursorDot.style.left = mouseX + 'px';
+            cursorDot.style.top = mouseY + 'px';
+        });
+
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Hover effect for interactive elements
+        const interactiveElements = document.querySelectorAll('a, button, [data-magnetic]');
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Loader Animation
+        const loaderText = document.getElementById('loaderText');
+        const text = 'SpVgg';
+        loaderText.innerHTML = text.split('').map((char, i) => 
+            `<span style="animation-delay: ${i * 0.1}s">${char}</span>`
+        ).join('');
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('pageContent').classList.add('loaded');
+                
+                // Hero animations
+                document.getElementById('hero-badge').classList.add('loaded');
+                document.getElementById('hero-subtitle').classList.add('loaded');
+                document.getElementById('hero-stats').classList.add('loaded');
+                document.querySelectorAll('.btn-primary, .btn-outline').forEach((btn, i) => {
+                    setTimeout(() => btn.classList.add('loaded'), i * 100);
+                });
+                document.getElementById('parallax-hero').classList.add('loaded');
+                
+                // Hero sports grid animation
+                document.querySelectorAll('.hero-sport').forEach((el, i) => {
+                    setTimeout(() => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, 800 + (i * 100));
+                });
+            }, 2000);
+        });
+
+        // Scroll Progress
+        const scrollProgress = document.getElementById('scrollProgress');
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.body.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            scrollProgress.style.width = scrollPercent + '%';
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('nav-scrolled');
+            } else {
+                navbar.classList.remove('nav-scrolled');
+            }
+        });
+
+        // Reveal animations
+        const revealElements = document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Counter animation
+        const counters = document.querySelectorAll('.counter');
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.getAttribute('data-target'));
+                    const duration = 2000;
+                    const increment = target / (duration / 16);
+                    let current = 0;
+                    
+                    const updateCounter = () => {
+                        current += increment;
+                        if (current < target) {
+                            counter.textContent = Math.floor(current);
+                            requestAnimationFrame(updateCounter);
+                        } else {
+                            counter.textContent = target;
+                        }
+                    };
+                    updateCounter();
+                    counterObserver.unobserve(counter);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(counter => counterObserver.observe(counter));
+
+        // Parallax effect
+        const parallaxElements = document.querySelectorAll('.parallax-element');
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY;
+            parallaxElements.forEach(el => {
+                const speed = el.getAttribute('data-speed') || 0.5;
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    const yPos = (scrolled * speed) / 10;
+                    el.style.transform = `translateY(${yPos}px)`;
+                }
+            });
+        });
+
+        // Magnetic effect
+        const magneticElements = document.querySelectorAll('[data-magnetic]');
+        magneticElements.forEach(el => {
+            el.addEventListener('mousemove', (e) => {
+                const rect = el.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                el.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'translate(0, 0)';
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    lenis.scrollTo(target, { offset: -80 });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

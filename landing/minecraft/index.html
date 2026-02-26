@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>CraftLand</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"]
+                    }
+                },
+            },
+        };
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #000; overflow-x: hidden; color: #fff; }
+        body.locked { overflow: hidden; }
+
+        /* 3D Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Intro */
+        .intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .intro.hidden {
+            transform: translateY(-100%);
+            transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+        .intro-title {
+            font-size: clamp(3rem, 12vw, 8rem);
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            color: #fff;
+            opacity: 0;
+        }
+        .intro-subtitle {
+            margin-top: 1rem;
+            font-size: clamp(0.875rem, 2vw, 1.25rem);
+            color: #666;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            opacity: 0;
+        }
+        .intro-hint {
+            position: absolute;
+            bottom: 3rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #444;
+            opacity: 0;
+        }
+
+        /* Navigation */
+        .nav-scrolled { 
+            background: rgba(0, 0, 0, 0.8); 
+            backdrop-filter: blur(20px);
+        }
+        .nav-link { 
+            color: #666; 
+            transition: color 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .nav-link:hover { color: #fff; }
+
+        /* Buttons */
+        .btn-white {
+            background: #fff;
+            color: #000;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-white:hover {
+            background: #e5e5e5;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            border-color: #fff;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
+        }
+        .card:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Section spacing */
+        .section { padding: 10rem 0; }
+        @media (max-width: 768px) { .section { padding: 6rem 0; } }
+
+        /* Mobile menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: #000;
+            z-index: 1000;
+            transition: right 0.4s ease;
+        }
+        .mobile-menu.active { right: 0; }
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+        .mobile-menu-overlay.active { opacity: 1; visibility: visible; }
+
+        /* Reveal */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="locked">
+    <!-- 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Intro -->
+    <div class="intro" id="intro">
+        <h1 class="intro-title" id="introTitle">CRAFTLAND</h1>
+        <p class="intro-subtitle" id="introSubtitle">Minecraft Server</p>
+        <div class="intro-hint" id="introHint">Click or scroll to enter</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 py-6 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between">
+                <a href="#" class="text-sm font-medium tracking-widest">CRAFTLAND</a>
+                <div class="hidden md:flex items-center gap-12">
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="#modes" class="nav-link">Modes</a>
+                    <a href="#community" class="nav-link">Community</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="#discord" class="hidden md:block btn-outline px-5 py-2 rounded-full text-sm">Discord</a>
+                    <button id="mobileMenuBtn" class="md:hidden p-2">
+                        <span class="material-symbols-outlined text-xl">menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="p-6 pt-24">
+            <nav class="space-y-4">
+                <a href="#about" class="block py-4 hover:text-gray-400 transition-colors">About</a>
+                <a href="#modes" class="block py-4 hover:text-gray-400 transition-colors">Modes</a>
+                <a href="#community" class="block py-4 hover:text-gray-400 transition-colors">Community</a>
+                <a href="#discord" class="block py-4 hover:text-gray-400 transition-colors">Discord</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="min-h-screen flex items-center relative px-4">
+        <div class="max-w-7xl mx-auto w-full">
+            <div class="grid lg:grid-cols-2 gap-8 items-center">
+                <div class="reveal order-2 lg:order-1">
+                    <p class="text-sm text-gray-500 uppercase tracking-widest mb-6">Welcome to</p>
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-semibold mb-6">CraftLand</h1>
+                    <p class="text-lg text-gray-400 mb-8 max-w-md">
+                        A Minecraft server built for players who value community, creativity, and genuine gameplay.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#play" class="btn-white px-8 py-4 rounded-full inline-flex items-center justify-center gap-2">
+                            <span>Start Playing</span>
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                        <a href="#discord" class="btn-outline px-8 py-4 rounded-full inline-flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-sm">groups</span>
+                            <span>Join Discord</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="order-1 lg:order-2"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Server IP -->
+    <section id="play" class="section px-4">
+        <div class="max-w-3xl mx-auto">
+            <div class="card rounded-2xl p-8 reveal">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl">dns</span>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-xs text-gray-500 uppercase mb-1">Server Address</p>
+                            <p class="text-2xl font-mono" id="serverIP">play.craftland.gg</p>
+                        </div>
+                    </div>
+                    <button onclick="copyIP()" class="btn-outline px-6 py-3 rounded-xl whitespace-nowrap">
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">content_copy</span>
+                            Copy
+                        </span>
+                    </button>
+                </div>
+                <div class="mt-6 pt-6 border-t border-white/5 flex items-center justify-center gap-6 text-sm text-gray-500">
+                    <span class="flex items-center gap-2 text-green-500">
+                        <span class="material-symbols-outlined text-sm">check_circle</span>
+                        <span id="onlineCount">2,847</span> online
+                    </span>
+                    <span>Version 1.20.4</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="section px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="reveal">
+                    <p class="text-sm text-gray-500 uppercase tracking-widest mb-4">About</p>
+                    <h2 class="text-4xl sm:text-5xl font-semibold mb-6">Built Different</h2>
+                    <p class="text-lg text-gray-400 mb-8 leading-relaxed">
+                        We focus on what matters: fair gameplay, active community, and stable performance. 
+                        No pay-to-win mechanics, no excessive donations, just pure Minecraft.
+                    </p>
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <p class="text-3xl font-semibold counter" data-target="50000">0</p>
+                            <p class="text-sm text-gray-500 mt-1">Total Players</p>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-semibold counter" data-target="99">0</p>
+                            <p class="text-sm text-gray-500 mt-1">Uptime %</p>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-semibold counter" data-target="12">0</p>
+                            <p class="text-sm text-gray-500 mt-1">Game Modes</p>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-semibold">24/7</p>
+                            <p class="text-sm text-gray-500 mt-1">Support</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 reveal">
+                    <div class="card rounded-xl p-6">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">bolt</span>
+                        </div>
+                        <p class="font-medium mb-2">No Lag</p>
+                        <p class="text-sm text-gray-500">Dedicated hardware</p>
+                    </div>
+                    <div class="card rounded-xl p-6">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">shield</span>
+                        </div>
+                        <p class="font-medium mb-2">Fair Play</p>
+                        <p class="text-sm text-gray-500">Anti-cheat protection</p>
+                    </div>
+                    <div class="card rounded-xl p-6">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">groups</span>
+                        </div>
+                        <p class="font-medium mb-2">Community</p>
+                        <p class="text-sm text-gray-500">50K+ members</p>
+                    </div>
+                    <div class="card rounded-xl p-6">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">support_agent</span>
+                        </div>
+                        <p class="font-medium mb-2">Support</p>
+                        <p class="text-sm text-gray-500">Always available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modes -->
+    <section id="modes" class="section px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal">
+                <p class="text-sm text-gray-500 uppercase tracking-widest mb-4">Game Modes</p>
+                <h2 class="text-4xl sm:text-5xl font-semibold">Choose Your Path</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card rounded-2xl reveal">
+                    <div class="p-8">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">grass</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Survival</h3>
+                        <p class="text-gray-500 text-sm mb-4">Classic Minecraft with economy and land claims.</p>
+                        <p class="text-xs text-gray-600">1,247 playing</p>
+                    </div>
+                </div>
+
+                <div class="card rounded-2xl reveal">
+                    <div class="p-8">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">cloud</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Skyblock</h3>
+                        <p class="text-gray-500 text-sm mb-4">Start small, build your island empire.</p>
+                        <p class="text-xs text-gray-600">892 playing</p>
+                    </div>
+                </div>
+
+                <div class="card rounded-2xl reveal">
+                    <div class="p-8">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">sports_esports</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">PvP</h3>
+                        <p class="text-gray-500 text-sm mb-4">Competitive arena battles and tournaments.</p>
+                        <p class="text-xs text-gray-600">654 playing</p>
+                    </div>
+                </div>
+
+                <div class="card rounded-2xl reveal">
+                    <div class="p-8">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">palette</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Creative</h3>
+                        <p class="text-gray-500 text-sm mb-4">Unlimited resources for your builds.</p>
+                        <p class="text-xs text-gray-600">421 playing</p>
+                    </div>
+                </div>
+
+                <div class="card rounded-2xl reveal">
+                    <div class="p-8">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">celebration</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Minigames</h3>
+                        <p class="text-gray-500 text-sm mb-4">BedWars, SkyWars, and more.</p>
+                        <p class="text-xs text-gray-600">1,033 playing</p>
+                    </div>
+                </div>
+
+                <div class="card rounded-2xl reveal">
+                    <div class="p-8">
+                        <div class="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-2xl">psychology</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">RPG</h3>
+                        <p class="text-gray-500 text-sm mb-4">Custom quests and progression.</p>
+                        <p class="text-xs text-yellow-600">Coming Soon</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community -->
+    <section id="community" class="section px-4">
+        <div class="max-w-4xl mx-auto text-center reveal">
+            <p class="text-sm text-gray-500 uppercase tracking-widest mb-4">Community</p>
+            <h2 class="text-4xl sm:text-5xl font-semibold mb-6">Join 50,000+ Players</h2>
+            <p class="text-lg text-gray-400 mb-8 max-w-xl mx-auto">
+                Be part of a thriving community. Daily events, active Discord, and players from around the world.
+            </p>
+            <a href="https://discord.gg/craftland" class="btn-white px-8 py-4 rounded-full inline-flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">groups</span>
+                Join Discord
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-4 border-t border-white/5">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-white rounded flex items-center justify-center">
+                    <span class="material-symbols-outlined text-sm">casino</span>
+                </div>
+                <span class="text-sm font-medium">CraftLand</span>
+            </div>
+            <p class="text-sm text-gray-500">© 2026 CraftLand. Not affiliated with Mojang AB.</p>
+            <div class="flex gap-6 text-sm text-gray-500">
+                <a href="#" class="hover:text-white transition-colors">Rules</a>
+                <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="hover:text-white transition-colors">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Three.js World/Globe Animation
+        let scene, camera, renderer, globe, atmosphere, particles;
+        let time = 0;
+        
+        function init() {
+            const canvas = document.getElementById('bg-canvas');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            // Create large globe sphere
+            const globeGeometry = new THREE.SphereGeometry(18, 48, 48);
+            
+            // Create wireframe globe
+            const wireframeMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.05,
+                wireframe: true
+            });
+            globe = new THREE.Mesh(globeGeometry, wireframeMaterial);
+            scene.add(globe);
+            
+            // Add latitude/longitude lines (visible grid)
+            const linesMaterial = new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.15
+            });
+            
+            // Latitude lines
+            for (let lat = -80; lat <= 80; lat += 20) {
+                const phi = (90 - lat) * Math.PI / 180;
+                const y = 18 * Math.cos(phi);
+                const radius = 18 * Math.sin(phi);
+                
+                const lineGeometry = new THREE.BufferGeometry();
+                const points = [];
+                for (let i = 0; i <= 64; i++) {
+                    const theta = (i / 64) * Math.PI * 2;
+                    const x = radius * Math.cos(theta);
+                    const z = radius * Math.sin(theta);
+                    points.push(new THREE.Vector3(x, y, z));
+                }
+                lineGeometry.setFromPoints(points);
+                const line = new THREE.Line(lineGeometry, linesMaterial);
+                globe.add(line);
+            }
+            
+            // Longitude lines
+            for (let lon = 0; lon < 360; lon += 30) {
+                const theta = lon * Math.PI / 180;
+                const lineGeometry = new THREE.BufferGeometry();
+                const points = [];
+                for (let i = 0; i <= 32; i++) {
+                    const phi = (i / 32) * Math.PI;
+                    const x = 18 * Math.sin(phi) * Math.cos(theta);
+                    const y = 18 * Math.cos(phi);
+                    const z = 18 * Math.sin(phi) * Math.sin(theta);
+                    points.push(new THREE.Vector3(x, y, z));
+                }
+                lineGeometry.setFromPoints(points);
+                const line = new THREE.Line(lineGeometry, linesMaterial);
+                globe.add(line);
+            }
+            
+            // Add random "continents" - scattered points on sphere surface
+            const continentGeometry = new THREE.BufferGeometry();
+            const continentCount = 400;
+            const continentPositions = [];
+            
+            for (let i = 0; i < continentCount; i++) {
+                const phi = Math.acos(2 * Math.random() - 1);
+                const theta = Math.random() * Math.PI * 2;
+                const r = 18.05;
+                
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = r * Math.cos(phi);
+                const z = r * Math.sin(phi) * Math.sin(theta);
+                
+                continentPositions.push(x, y, z);
+            }
+            
+            continentGeometry.setAttribute('position', new THREE.Float32BufferAttribute(continentPositions, 3));
+            const continentMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.12,
+                transparent: true,
+                opacity: 0.4
+            });
+            const continents = new THREE.Points(continentGeometry, continentMaterial);
+            globe.add(continents);
+            
+            // Atmosphere glow (outer sphere)
+            const atmosphereGeometry = new THREE.SphereGeometry(20, 32, 32);
+            const atmosphereMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.02,
+                side: THREE.BackSide
+            });
+            atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+            scene.add(atmosphere);
+            
+            // Floating particles around globe
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleCount = 800;
+            const particlePositions = [];
+            
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 18 + Math.random() * 25;
+                particlePositions[i] = Math.cos(angle) * radius;
+                particlePositions[i + 1] = (Math.random() - 0.5) * 50;
+                particlePositions[i + 2] = Math.sin(angle) * radius;
+            }
+            
+            particleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
+            const particleMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.06,
+                transparent: true,
+                opacity: 0.3
+            });
+            
+            particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+            
+            // Set initial position - globe starts on the right side, bigger
+            globe.position.set(8, 0, -8);
+            globe.scale.set(1.2, 1.2, 1.2);
+            
+            camera.position.z = 45;
+            camera.position.x = 5;
+            
+            animate();
+        }
+        
+        function initScrollAnimation() {
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Create timeline with smooth scrubbing
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 0.8
+                }
+            });
+            
+            // Stage 1: Grow and move further right
+            tl.fromTo(globe.position, 
+                { x: 8, y: 0, z: -8 }, 
+                { x: 18, y: -5, z: -15, ease: "power1.inOut", immediateRender: false }, 0)
+              .fromTo(globe.scale, 
+                { x: 1.2, y: 1.2, z: 1.2 }, 
+                { x: 1.5, y: 1.5, z: 1.5, ease: "power1.inOut", immediateRender: false }, 0);
+            
+            // Stage 2: Shrink and move left
+            tl.to(globe.scale, { x: 0.25, y: 0.25, z: 0.25, ease: "power1.inOut" })
+              .to(globe.position, { x: -12, y: 8, z: -25, ease: "power1.inOut" }, "<");
+            
+            // Stage 3: Settle in corner
+            tl.to(globe.position, { x: -22, y: 12, z: -35, ease: "power1.inOut" })
+              .to(globe.rotation, { x: 0.8, z: -0.3, ease: "power1.inOut" }, 0);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            time += 0.0003;
+            
+            // Rotate globe very slowly
+            if (globe) {
+                globe.rotation.y += 0.0003;
+            }
+            
+            // Rotate particles slowly
+            if (particles) {
+                particles.rotation.y += 0.00008;
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            init();
+            
+            setTimeout(() => {
+                gsap.to('#introTitle', { opacity: 1, duration: 1.5 });
+            }, 300);
+            
+            setTimeout(() => {
+                gsap.to('#introSubtitle', { opacity: 1, duration: 1 });
+            }, 800);
+            
+            setTimeout(() => {
+                gsap.to('#introHint', { opacity: 1, duration: 0.5 });
+            }, 1500);
+        });
+        
+        // Enter
+        let entered = false;
+        
+        function enter() {
+            if (entered) return;
+            entered = true;
+
+            document.getElementById('intro').classList.add('hidden');
+
+            setTimeout(() => {
+                document.body.classList.remove('locked');
+                initScrollAnimation();
+            }, 800);
+        }
+        
+        document.getElementById('intro').addEventListener('click', enter);
+        document.getElementById('intro').addEventListener('wheel', (e) => {
+            if (e.deltaY > 0) enter();
+        });
+        
+        // Lenis
+        const lenis = new Lenis({
+            duration: 1.2,
+            smooth: true,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // Reveal
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Counters
+        const counters = document.querySelectorAll('.counter');
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.getAttribute('data-target'));
+                    const duration = 2000;
+                    const increment = target / (duration / 16);
+                    let current = 0;
+
+                    const updateCounter = () => {
+                        current += increment;
+                        if (current < target) {
+                            counter.textContent = Math.floor(current).toLocaleString();
+                            requestAnimationFrame(updateCounter);
+                        } else {
+                            counter.textContent = target.toLocaleString();
+                        }
+                    };
+                    updateCounter();
+                    counterObserver.unobserve(counter);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(counter => counterObserver.observe(counter));
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const href = this.getAttribute('href');
+                if (href === '#') return;
+                const target = document.querySelector(href);
+                if (target) {
+                    lenis.scrollTo(target, { offset: -80 });
+                }
+            });
+        });
+
+        // Mobile menu
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        function closeMobileMenuFn() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        closeMobileMenu.addEventListener('click', closeMobileMenuFn);
+        mobileMenuOverlay.addEventListener('click', closeMobileMenuFn);
+
+        // Copy IP
+        function copyIP() {
+            const ip = document.getElementById('serverIP').textContent;
+            navigator.clipboard.writeText(ip);
+        }
+
+        // Online count
+        setInterval(() => {
+            const onlineCount = document.getElementById('onlineCount');
+            const current = parseInt(onlineCount.textContent.replace(',', ''));
+            const change = Math.floor(Math.random() * 21) - 10;
+            const newCount = Math.max(2500, Math.min(4000, current + change));
+            onlineCount.textContent = newCount.toLocaleString();
+        }, 5000);
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

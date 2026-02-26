@@ -1,0 +1,486 @@
+{
+  "gpus": [
+    {
+      "id": "rtx-5090",
+      "name": "NVIDIA GeForce RTX 5090",
+      "brand": "NVIDIA",
+      "price": 1599,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4090/GEFORCE-RTX-4090-1-500x500@2x.png",
+      "specs": { "vram": "32GB GDDR7", "cuda_cores": 24576, "boost_clock": "2900 MHz", "tdp": "450W" },
+      "category": "enthusiast"
+    },
+    {
+      "id": "rtx-5080",
+      "name": "NVIDIA GeForce RTX 5080",
+      "brand": "NVIDIA",
+      "price": 999,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4080-super/GEFORCE-RTX-4080-SUPER-1-500x500@2x.png",
+      "specs": { "vram": "16GB GDDR7", "cuda_cores": 10752, "boost_clock": "2600 MHz", "tdp": "360W" },
+      "category": "high-end"
+    },
+    {
+      "id": "rtx-5070",
+      "name": "NVIDIA GeForce RTX 5070",
+      "brand": "NVIDIA",
+      "price": 549,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4070-super/GEFORCE-RTX-4070-SUPER-1-500x500@2x.png",
+      "specs": { "vram": "12GB GDDR6X", "cuda_cores": 7168, "boost_clock": "2500 MHz", "tdp": "220W" },
+      "category": "mid-range"
+    },
+    {
+      "id": "rtx-5060",
+      "name": "NVIDIA GeForce RTX 5060",
+      "brand": "NVIDIA",
+      "price": 399,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4060/GEFORCE-RTX-4060-1-500x500@2x.png",
+      "specs": { "vram": "8GB GDDR6", "cuda_cores": 3072, "boost_clock": "2400 MHz", "tdp": "115W" },
+      "category": "budget"
+    },
+    {
+      "id": "rtx-4090",
+      "name": "NVIDIA GeForce RTX 4090",
+      "brand": "NVIDIA",
+      "price": 1599,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4090/GEFORCE-RTX-4090-1-500x500@2x.png",
+      "specs": { "vram": "24GB GDDR6X", "cuda_cores": 16384, "boost_clock": "2520 MHz", "tdp": "450W" },
+      "category": "enthusiast"
+    },
+    {
+      "id": "rtx-4080-super",
+      "name": "NVIDIA GeForce RTX 4080 SUPER",
+      "brand": "NVIDIA",
+      "price": 999,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4080-super/GEFORCE-RTX-4080-SUPER-1-500x500@2x.png",
+      "specs": { "vram": "16GB GDDR6X", "cuda_cores": 10240, "boost_clock": "2550 MHz", "tdp": "320W" },
+      "category": "high-end"
+    },
+    {
+      "id": "rtx-4070-super",
+      "name": "NVIDIA GeForce RTX 4070 SUPER",
+      "brand": "NVIDIA",
+      "price": 599,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4070-super/GEFORCE-RTX-4070-SUPER-1-500x500@2x.png",
+      "specs": { "vram": "12GB GDDR6X", "cuda_cores": 7168, "boost_clock": "2475 MHz", "tdp": "220W" },
+      "category": "mid-range"
+    },
+    {
+      "id": "rtx-4070",
+      "name": "NVIDIA GeForce RTX 4070",
+      "brand": "NVIDIA",
+      "price": 549,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4070/GEFORCE-RTX-4070-1-500x500@2x.png",
+      "specs": { "vram": "12GB GDDR6X", "cuda_cores": 5888, "boost_clock": "2475 MHz", "tdp": "200W" },
+      "category": "mid-range"
+    },
+    {
+      "id": "rtx-4060-ti",
+      "name": "NVIDIA GeForce RTX 4060 Ti",
+      "brand": "NVIDIA",
+      "price": 399,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4060-ti/GEFORCE-RTX-4060-TI-1-500x500@2x.png",
+      "specs": { "vram": "8GB GDDR6", "cuda_cores": 4352, "boost_clock": "2535 MHz", "tdp": "160W" },
+      "category": "budget"
+    },
+    {
+      "id": "rtx-4060",
+      "name": "NVIDIA GeForce RTX 4060",
+      "brand": "NVIDIA",
+      "price": 299,
+      "image": "https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4060/GEFORCE-RTX-4060-1-500x500@2x.png",
+      "specs": { "vram": "8GB GDDR6", "cuda_cores": 3072, "boost_clock": "2460 MHz", "tdp": "115W" },
+      "category": "budget"
+    },
+    {
+      "id": "rx-8900-xtx",
+      "name": "AMD Radeon RX 8900 XTX",
+      "brand": "AMD",
+      "price": 999,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/radeon/rx-7900-series/rx-7900-xtx-500x500.png",
+      "specs": { "vram": "24GB GDDR7", "cuda_cores": 6144, "boost_clock": "2700 MHz", "tdp": "355W" },
+      "category": "high-end"
+    },
+    {
+      "id": "rx-8800-xt",
+      "name": "AMD Radeon RX 8800 XT",
+      "brand": "AMD",
+      "price": 599,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/radeon/rx-7900-series/rx-7900-gre-500x500.png",
+      "specs": { "vram": "16GB GDDR6X", "cuda_cores": 4608, "boost_clock": "2500 MHz", "tdp": "263W" },
+      "category": "mid-range"
+    },
+    {
+      "id": "rx-8700-xt",
+      "name": "AMD Radeon RX 8700 XT",
+      "brand": "AMD",
+      "price": 449,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/radeon/rx-7800-xt/rx-7800-xt-500x500.png",
+      "specs": { "vram": "16GB GDDR6", "cuda_cores": 3840, "boost_clock": "2450 MHz", "tdp": "245W" },
+      "category": "mid-range"
+    },
+    {
+      "id": "rx-7900-xtx",
+      "name": "AMD Radeon RX 7900 XTX",
+      "brand": "AMD",
+      "price": 999,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/radeon/rx-7900-series/rx-7900-xtx-500x500.png",
+      "specs": { "vram": "24GB GDDR6", "cuda_cores": 6144, "boost_clock": "2500 MHz", "tdp": "355W" },
+      "category": "high-end"
+    },
+    {
+      "id": "rx-7800-xt",
+      "name": "AMD Radeon RX 7800 XT",
+      "brand": "AMD",
+      "price": 499,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/radeon/rx-7800-xt/rx-7800-xt-500x500.png",
+      "specs": { "vram": "16GB GDDR6", "cuda_cores": 3840, "boost_clock": "2430 MHz", "tdp": "263W" },
+      "category": "mid-range"
+    },
+    {
+      "id": "rx-7700-xt",
+      "name": "AMD Radeon RX 7700 XT",
+      "brand": "AMD",
+      "price": 419,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/radeon/rx-7700-xt/rx-7700-xt-500x500.png",
+      "specs": { "vram": "12GB GDDR6", "cuda_cores": 3456, "boost_clock": "2544 MHz", "tdp": "245W" },
+      "category": "budget"
+    }
+  ],
+  "cpus": [
+    {
+      "id": "i9-14900k",
+      "name": "Intel Core i9-14900K",
+      "brand": "Intel",
+      "price": 589,
+      "image": "https://www.intel.com/content/dam/www/central-libraries/us/en/images/core-i9-14900k.png",
+      "specs": { "cores": 24, "threads": 32, "boost_clock": "6.0 GHz", "tdp": "125W", "socket": "LGA1700" },
+      "category": "enthusiast"
+    },
+    {
+      "id": "i7-14700k",
+      "name": "Intel Core i7-14700K",
+      "brand": "Intel",
+      "price": 409,
+      "image": "https://www.intel.com/content/dam/www/central-libraries/us/en/images/core-i7-14700k.png",
+      "specs": { "cores": 20, "threads": 28, "boost_clock": "5.6 GHz", "tdp": "125W", "socket": "LGA1700" },
+      "category": "high-end"
+    },
+    {
+      "id": "i5-14600k",
+      "name": "Intel Core i5-14600K",
+      "brand": "Intel",
+      "price": 319,
+      "image": "https://www.intel.com/content/dam/www/central-libraries/us/en/images/core-i5-14600k.png",
+      "specs": { "cores": 14, "threads": 20, "boost_clock": "5.3 GHz", "tdp": "125W", "socket": "LGA1700" },
+      "category": "mid-range"
+    },
+    {
+      "id": "ryzen-9-7950x",
+      "name": "AMD Ryzen 9 7950X",
+      "brand": "AMD",
+      "price": 599,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/desktop/ryzen-9-7950x-500x500.png",
+      "specs": { "cores": 16, "threads": 32, "boost_clock": "5.7 GHz", "tdp": "170W", "socket": "AM5" },
+      "category": "enthusiast"
+    },
+    {
+      "id": "ryzen-7-7800x3d",
+      "name": "AMD Ryzen 7 7800X3D",
+      "brand": "AMD",
+      "price": 449,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/desktop/ryzen-7-7800x3d-500x500.png",
+      "specs": { "cores": 8, "threads": 16, "boost_clock": "5.0 GHz", "tdp": "120W", "socket": "AM5" },
+      "category": "high-end"
+    },
+    {
+      "id": "ryzen-5-7600x",
+      "name": "AMD Ryzen 5 7600X",
+      "brand": "AMD",
+      "price": 259,
+      "image": "https://www.amd.com/content/dam/amd/en/images/products/gaming/desktop/ryzen-5-7600x-500x500.png",
+      "specs": { "cores": 6, "threads": 12, "boost_clock": "5.3 GHz", "tdp": "105W", "socket": "AM5" },
+      "category": "mid-range"
+    }
+  ],
+  "ram": [
+    {
+      "id": "ddr5-64gb-6000-rgb",
+      "name": "64GB DDR5-6000 RGB",
+      "brand": "Corsair",
+      "price": 299,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Memory/CMH32GX5M2B6000C30/Gallery/VENGEANCE_RGB_DDR5_32GB_6000MHz_C30_Black_01.png",
+      "specs": { "capacity": "64GB", "speed": "6000 MT/s", "type": "DDR5", "rgb": true },
+      "category": "high-end"
+    },
+    {
+      "id": "ddr5-64gb-5200",
+      "name": "64GB DDR5-5200",
+      "brand": "Corsair",
+      "price": 249,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Memory/CMK64GX5M2B5200C40/Gallery/VENGEANCE_DDR5_64GB_5200MHz_C40_Black_01.png",
+      "specs": { "capacity": "64GB", "speed": "5200 MT/s", "type": "DDR5", "rgb": false },
+      "category": "high-end"
+    },
+    {
+      "id": "ddr5-32gb-6000-rgb",
+      "name": "32GB DDR5-6000 RGB",
+      "brand": "Corsair",
+      "price": 169,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Memory/CMH32GX5M2B6000C30/Gallery/VENGEANCE_RGB_DDR5_32GB_6000MHz_C30_Black_01.png",
+      "specs": { "capacity": "32GB", "speed": "6000 MT/s", "type": "DDR5", "rgb": true },
+      "category": "mid-range"
+    },
+    {
+      "id": "ddr5-32gb-5200",
+      "name": "32GB DDR5-5200",
+      "brand": "Corsair",
+      "price": 139,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Memory/CMK32GX5M2B5200C40/Gallery/VENGEANCE_DDR5_32GB_5200MHz_C40_Black_01.png",
+      "specs": { "capacity": "32GB", "speed": "5200 MT/s", "type": "DDR5", "rgb": false },
+      "category": "mid-range"
+    },
+    {
+      "id": "ddr5-16gb-5200",
+      "name": "16GB DDR5-5200",
+      "brand": "Corsair",
+      "price": 79,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Memory/CMK16GX5M1B5200C40/Gallery/VENGEANCE_DDR5_16GB_5200MHz_C40_Black_01.png",
+      "specs": { "capacity": "16GB", "speed": "5200 MT/s", "type": "DDR5", "rgb": false },
+      "category": "budget"
+    }
+  ],
+  "storage": [
+    {
+      "id": "nvme-4tb",
+      "name": "4TB NVMe SSD",
+      "brand": "Samsung",
+      "price": 299,
+      "image": "https://image-us.samsung.com/us/computing/memory-storage/solid-state-drives/mz-v9p4t0b_am/990-PRO-SSD-MZ-V9P4T0B-AM-0021-400x400.png",
+      "specs": { "capacity": "4TB", "type": "NVMe PCIe 4.0", "read": "7450 MB/s", "write": "6900 MB/s" },
+      "category": "high-end"
+    },
+    {
+      "id": "nvme-2tb",
+      "name": "2TB NVMe SSD",
+      "brand": "Samsung",
+      "price": 149,
+      "image": "https://image-us.samsung.com/us/computing/memory-storage/solid-state-drives/mz-v9p2t0b_am/990-PRO-SSD-MZ-V9P2T0B-AM-0021-400x400.png",
+      "specs": { "capacity": "2TB", "type": "NVMe PCIe 4.0", "read": "7450 MB/s", "write": "6900 MB/s" },
+      "category": "mid-range"
+    },
+    {
+      "id": "nvme-1tb",
+      "name": "1TB NVMe SSD",
+      "brand": "Samsung",
+      "price": 79,
+      "image": "https://image-us.samsung.com/us/computing/memory-storage/solid-state-drives/mz-v9p1t0b_am/990-PRO-SSD-MZ-V9P1T0B-AM-0021-400x400.png",
+      "specs": { "capacity": "1TB", "type": "NVMe PCIe 4.0", "read": "7450 MB/s", "write": "6900 MB/s" },
+      "category": "budget"
+    },
+    {
+      "id": "nvme-500gb",
+      "name": "500GB NVMe SSD",
+      "brand": "Samsung",
+      "price": 49,
+      "image": "https://image-us.samsung.com/us/computing/memory-storage/solid-state-drives/mz-v9p500b_am/990-PRO-SSD-MZ-V9P500B-AM-0021-400x400.png",
+      "specs": { "capacity": "500GB", "type": "NVMe PCIe 4.0", "read": "7450 MB/s", "write": "6900 MB/s" },
+      "category": "budget"
+    }
+  ],
+  "motherboards": [
+    {
+      "id": "z790-premium",
+      "name": "Intel Z790 Premium",
+      "brand": "ASUS",
+      "price": 449,
+      "image": "https://dlcdnwebimgs.asus.com/gain/3D7B8E0C-8E0C-4E0C-8E0C-8E0C8E0C8E0C/",
+      "specs": { "socket": "LGA1700", "chipset": "Z790", "form_factor": "ATX", "ddr": "DDR5" },
+      "category": "high-end"
+    },
+    {
+      "id": "z790",
+      "name": "Intel Z790 ATX",
+      "brand": "ASUS",
+      "price": 249,
+      "image": "https://dlcdnwebimgs.asus.com/gain/3D7B8E0C-8E0C-4E0C-8E0C-8E0C8E0C8E0C/",
+      "specs": { "socket": "LGA1700", "chipset": "Z790", "form_factor": "ATX", "ddr": "DDR5" },
+      "category": "mid-range"
+    },
+    {
+      "id": "b760",
+      "name": "Intel B760 ATX",
+      "brand": "MSI",
+      "price": 159,
+      "image": "https://asset.msi.com/resize/image/global/product/product_1674018804a6d9a5a7.png",
+      "specs": { "socket": "LGA1700", "chipset": "B760", "form_factor": "ATX", "ddr": "DDR5" },
+      "category": "budget"
+    },
+    {
+      "id": "x670e",
+      "name": "AMD X670E ATX",
+      "brand": "ASUS",
+      "price": 349,
+      "image": "https://dlcdnwebimgs.asus.com/gain/3D7B8E0C-8E0C-4E0C-8E0C-8E0C8E0C8E0C/",
+      "specs": { "socket": "AM5", "chipset": "X670E", "form_factor": "ATX", "ddr": "DDR5" },
+      "category": "high-end"
+    },
+    {
+      "id": "b650e",
+      "name": "AMD B650E ATX",
+      "brand": "Gigabyte",
+      "price": 249,
+      "image": "https://static.gigabyte.com/StaticFile/ImageGlobal/55b6e6d7-4d4d-4d4d-4d4d-4d4d4d4d4d4d/Product/12345/png/500",
+      "specs": { "socket": "AM5", "chipset": "B650E", "form_factor": "ATX", "ddr": "DDR5" },
+      "category": "mid-range"
+    },
+    {
+      "id": "b650",
+      "name": "AMD B650 ATX",
+      "brand": "MSI",
+      "price": 169,
+      "image": "https://asset.msi.com/resize/image/global/product/product_1674018804a6d9a5a7.png",
+      "specs": { "socket": "AM5", "chipset": "B650", "form_factor": "ATX", "ddr": "DDR5" },
+      "category": "budget"
+    }
+  ],
+  "psus": [
+    {
+      "id": "psu-1000w-platinum",
+      "name": "1000W 80+ Platinum",
+      "brand": "Corsair",
+      "price": 199,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Power-Supplies/CP-9020202-NA/Gallery/RM1000x_01.png",
+      "specs": { "wattage": "1000W", "efficiency": "80+ Platinum", "modular": true },
+      "category": "high-end"
+    },
+    {
+      "id": "psu-1000w-gold",
+      "name": "1000W 80+ Gold",
+      "brand": "Corsair",
+      "price": 169,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Power-Supplies/CP-9020202-NA/Gallery/RM1000x_01.png",
+      "specs": { "wattage": "1000W", "efficiency": "80+ Gold", "modular": true },
+      "category": "high-end"
+    },
+    {
+      "id": "psu-850w-platinum",
+      "name": "850W 80+ Platinum",
+      "brand": "Corsair",
+      "price": 159,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Power-Supplies/CP-9020201-NA/Gallery/RM850x_01.png",
+      "specs": { "wattage": "850W", "efficiency": "80+ Platinum", "modular": true },
+      "category": "high-end"
+    },
+    {
+      "id": "psu-850w-gold",
+      "name": "850W 80+ Gold",
+      "brand": "Corsair",
+      "price": 129,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Power-Supplies/CP-9020201-NA/Gallery/RM850x_01.png",
+      "specs": { "wattage": "850W", "efficiency": "80+ Gold", "modular": true },
+      "category": "mid-range"
+    },
+    {
+      "id": "psu-750w-gold",
+      "name": "750W 80+ Gold",
+      "brand": "Corsair",
+      "price": 109,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Power-Supplies/CP-9020200-NA/Gallery/RM750x_01.png",
+      "specs": { "wattage": "750W", "efficiency": "80+ Gold", "modular": true },
+      "category": "mid-range"
+    },
+    {
+      "id": "psu-650w-gold",
+      "name": "650W 80+ Gold",
+      "brand": "Corsair",
+      "price": 89,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Power-Supplies/CP-9020199-NA/Gallery/RM650x_01.png",
+      "specs": { "wattage": "650W", "efficiency": "80+ Gold", "modular": true },
+      "category": "budget"
+    }
+  ],
+  "cases": [
+    {
+      "id": "full-tower-premium",
+      "name": "Full Tower Premium",
+      "brand": "Lian Li",
+      "price": 249,
+      "image": "https://cdn.lian-li.com/wp-content/uploads/2021/05/O11-DYNAMIC-EVO-BLACK-1.png",
+      "specs": { "form_factor": "Full Tower", "rgb": true, "tempered_glass": true },
+      "category": "high-end"
+    },
+    {
+      "id": "full-tower-black",
+      "name": "Full Tower Black",
+      "brand": "Fractal Design",
+      "price": 149,
+      "image": "https://www.fractal-design.com/wp-content/uploads/2020/09/Define-7-Black-Solid-1.png",
+      "specs": { "form_factor": "Full Tower", "rgb": false, "tempered_glass": true },
+      "category": "mid-range"
+    },
+    {
+      "id": "mid-tower-rgb",
+      "name": "Mid Tower RGB",
+      "brand": "NZXT",
+      "price": 109,
+      "image": "https://assets.nzxt.com/products/cases/h510-elite/CA-H51EB-01/gallery/H510-Elite-White-1.png",
+      "specs": { "form_factor": "Mid Tower", "rgb": true, "tempered_glass": true },
+      "category": "mid-range"
+    },
+    {
+      "id": "mid-tower-white",
+      "name": "Mid Tower White",
+      "brand": "NZXT",
+      "price": 89,
+      "image": "https://assets.nzxt.com/products/cases/h510/CA-H51BW-01/gallery/H510-White-1.png",
+      "specs": { "form_factor": "Mid Tower", "rgb": false, "tempered_glass": false },
+      "category": "budget"
+    },
+    {
+      "id": "mid-tower-black",
+      "name": "Mid Tower Black",
+      "brand": "NZXT",
+      "price": 79,
+      "image": "https://assets.nzxt.com/products/cases/h510/CA-H51BW-01/gallery/H510-Black-1.png",
+      "specs": { "form_factor": "Mid Tower", "rgb": false, "tempered_glass": false },
+      "category": "budget"
+    }
+  ],
+  "coolers": [
+    {
+      "id": " aio-360mm",
+      "name": "360mm AIO",
+      "brand": "Corsair",
+      "price": 149,
+      "image": "https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024/products/Cooling/iCUE-H150i-ELITE-CAPPELLIX/Gallery/iCUE-H150i-ELITE-CAPPELLIX-01.png",
+      "specs": { "type": "AIO Liquid", "radiator": "360mm", "rgb": true },
+      "category": "high-end"
+    },
+    {
+      "id": " aio-240mm",
+      "name": "240mm AIO",
+      "brand": "NZXT",
+      "price": 89,
+      "image": "https://assets.nzxt.com/products/cooling/kraken-x63/RL-KRX63-01/gallery/Kraken-X63-1.png",
+      "specs": { "type": "AIO Liquid", "radiator": "240mm", "rgb": true },
+      "category": "mid-range"
+    },
+    {
+      "id": "air-cooler",
+      "name": "Air Cooler",
+      "brand": "Noctua",
+      "price": 39,
+      "image": "https://noctua.at/pub/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb2469f417a8/n/h/nh-u12s_1.png",
+      "specs": { "type": "Air", "tdp": "160W", "rgb": false },
+      "category": "budget"
+    },
+    {
+      "id": "stock-cooler",
+      "name": "Stock Cooler",
+      "brand": "AMD/Intel",
+      "price": 0,
+      "image": "",
+      "specs": { "type": "Stock", "tdp": "65W", "rgb": false },
+      "category": "stock"
+    }
+  ]
+}

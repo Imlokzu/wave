@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Login - Wave Messenger</title>
+    <link href="/css/theme.css" rel="stylesheet" />
+    <link href="/css/theme-config.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0db9f2',
+                        'primary-dark': '#0a8fc4',
+                        'background-dark': '#0a0f12',
+                        'surface-dark': '#0f1419',
+                        'surface-hover': '#151b21',
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Mobile optimizations */
+        body {
+            min-height: 100dvh;
+            -webkit-tap-highlight-color: rgba(13, 185, 242, 0.2);
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Allow text selection in inputs */
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+            font-size: 16px; /* Prevent zoom on iOS */
+        }
+
+        /* Touch targets */
+        button, .touch-target {
+            min-height: 48px;
+            min-width: 48px;
+        }
+
+        /* Smooth animations */
+        .transition-all {
+            transition-duration: 200ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Safe area insets for notched devices */
+        .safe-top {
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Glass morphism */
+        .glass-panel {
+            background: rgba(15, 20, 25, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Input focus states */
+        input:focus {
+            outline: none;
+            border-color: rgba(13, 185, 242, 0.5);
+            box-shadow: 0 0 0 3px rgba(13, 185, 242, 0.1);
+        }
+
+        /* Button press effect */
+        .btn-press:active {
+            transform: scale(0.98);
+        }
+
+        /* Loading animation */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        /* Keyboard aware container */
+        .keyboard-aware {
+            transition: padding-bottom 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] min-h-screen flex flex-col items-center justify-center p-4">
+    
+    <!-- Background gradient -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Main container -->
+    <div class="relative w-full max-w-md z-10">
+        
+        <!-- Logo Section -->
+        <div class="text-center mb-8 fade-in">
+            <div class="relative inline-block">
+                <div class="absolute -inset-4 bg-primary/20 rounded-full blur-2xl"></div>
+                <div class="relative w-20 h-20 rounded-2xl bg-gradient-to-tr from-surface-dark to-primary flex items-center justify-center shadow-2xl mb-4 mx-auto">
+                    <span class="material-symbols-outlined text-primary text-5xl">waves</span>
+                </div>
+            </div>
+            <h1 class="text-white text-4xl font-black mb-2 tracking-tight">WAVE</h1>
+            <p class="text-slate-400 text-sm">Sign in to your account</p>
+        </div>
+
+        <!-- Login Form Card -->
+        <div class="relative glass-panel rounded-3xl p-6 overflow-hidden fade-in" style="animation-delay: 0.1s;">
+            <!-- Top gradient line -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+
+            <!-- Step 1: Username/Password -->
+            <div id="loginStep1" class="space-y-4">
+                <!-- Username Input -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">
+                        Username or Email
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-slate-500 text-2xl">person</span>
+                        </div>
+                        <input
+                            type="text"
+                            id="username"
+                            autocomplete="username"
+                            class="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-600 transition-all"
+                            placeholder="Enter your username or email"
+                        />
+                    </div>
+                </div>
+
+                <!-- Password Input -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-slate-500 text-2xl">lock</span>
+                        </div>
+                        <input
+                            type="password"
+                            id="password"
+                            autocomplete="current-password"
+                            class="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-600 transition-all"
+                            placeholder="Enter your password"
+                        />
+                        <button 
+                            type="button" 
+                            id="togglePasswordBtn"
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-primary transition-colors touch-target"
+                        >
+                            <span class="material-symbols-outlined text-2xl" id="togglePasswordIcon">visibility_off</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Link -->
+                <div class="text-right">
+                    <button 
+                        type="button" 
+                        id="forgotPasswordBtn"
+                        class="text-sm text-primary hover:text-primary-dark transition-colors font-medium"
+                    >
+                        Forgot Password?
+                    </button>
+                </div>
+
+                <!-- Sign In Button -->
+                <button
+                    id="signInBtn"
+                    class="group relative w-full py-4 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 btn-press overflow-hidden"
+                >
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        Sign In
+                        <span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </button>
+
+                <!-- Divider -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-white/10"></div>
+                    </div>
+                    <div class="relative flex justify-center text-xs uppercase">
+                        <span class="bg-[#0a0a0a]/80 px-4 text-slate-500">Or continue with</span>
+                    </div>
+                </div>
+
+                <!-- Magic Link Form -->
+                <form id="magicLinkForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">
+                            Email for Magic Link
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-slate-500 text-2xl">email</span>
+                            </div>
+                            <input
+                                type="email"
+                                id="magicLinkEmail"
+                                required
+                                class="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-600 transition-all"
+                                placeholder="your@email.com"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="group relative w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-2xl transition-all btn-press"
+                    >
+                        <span class="relative z-10 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-xl">magic_button</span>
+                            Send Magic Link
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Sign Up Link -->
+                <p class="text-center text-slate-500 mt-6 text-sm">
+                    Don't have an account?
+                    <a href="/signup.html" class="text-primary hover:text-primary-dark font-semibold transition-colors">Sign up</a>
+                </p>
+            </div>
+
+            <!-- Step 2: Email Verification Code -->
+            <div id="loginStep2" class="hidden space-y-4">
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/20 border border-primary/30 rounded-full mb-4">
+                        <span class="material-symbols-outlined text-primary text-4xl">mark_email_read</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Check Your Email</h3>
+                    <p class="text-slate-400 text-sm">
+                        We sent a verification code to 
+                        <span id="verificationEmail" class="text-primary font-semibold"></span>
+                    </p>
+                    <button 
+                        type="button" 
+                        id="editEmailBtn"
+                        class="text-xs text-primary hover:text-primary-dark mt-2 underline font-medium"
+                    >
+                        Wrong email? Change it
+                    </button>
+                </div>
+
+                <!-- Verification Code Input -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">
+                        Verification Code
+                    </label>
+                    <input
+                        type="text"
+                        id="verificationCode"
+                        required
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        class="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white text-center text-3xl tracking-[0.5em] placeholder-slate-600 transition-all font-mono"
+                        placeholder="000000"
+                    />
+                </div>
+
+                <!-- Verify Button -->
+                <button
+                    id="verifyBtn"
+                    class="group relative w-full py-4 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 btn-press overflow-hidden"
+                >
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        Verify & Continue
+                        <span class="material-symbols-outlined text-xl">check_circle</span>
+                    </span>
+                </button>
+
+                <!-- Resend Code -->
+                <button
+                    type="button"
+                    id="resendCodeBtn"
+                    class="w-full py-4 text-slate-400 hover:text-white text-sm transition-colors font-medium"
+                >
+                    Resend Code
+                </button>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messageContainer" class="hidden mt-4 space-y-2">
+                <div id="errorMessage" class="hidden p-4 bg-red-500/10 border border-red-500/20 rounded-2xl fade-in">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-red-400 text-xl flex-shrink-0 mt-0.5">error</span>
+                        <p class="text-red-400 text-sm flex-1" id="errorText"></p>
+                    </div>
+                </div>
+                <div id="successMessage" class="hidden p-4 bg-green-500/10 border border-green-500/20 rounded-2xl fade-in">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-400 text-xl flex-shrink-0 mt-0.5">check_circle</span>
+                        <p class="text-green-400 text-sm flex-1" id="successText"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="hidden mt-4 text-center fade-in">
+                <div class="inline-flex items-center gap-3 text-slate-400 text-sm">
+                    <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span id="loadingText" class="font-medium">Signing in...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-slate-600 text-xs fade-in" style="animation-delay: 0.2s;">
+            <p>© 2024 Wave Messenger. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="relative w-full max-w-md glass-panel rounded-3xl p-6 overflow-hidden fade-in">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+            
+            <button 
+                type="button" 
+                id="closeForgotModal"
+                class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors touch-target"
+            >
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+
+            <div class="text-center mb-6 mt-4">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/20 border border-primary/30 rounded-full mb-4">
+                    <span class="material-symbols-outlined text-primary text-4xl">lock_reset</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Reset Password</h3>
+                <p class="text-slate-400 text-sm">Enter your email and we'll send you a password reset link</p>
+            </div>
+
+            <form id="resetPasswordForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">
+                        Email Address
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-slate-500 text-2xl">email</span>
+                        </div>
+                        <input
+                            type="email"
+                            id="resetEmail"
+                            required
+                            class="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-600 transition-all"
+                            placeholder="your@email.com"
+                        />
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    class="group relative w-full py-4 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 btn-press overflow-hidden"
+                >
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        Send Reset Link
+                        <span class="material-symbols-outlined text-xl">send</span>
+                    </span>
+                </button>
+            </form>
+
+            <div id="resetMessage" class="hidden mt-4 p-4 rounded-2xl border fade-in">
+                <p class="text-sm"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        // DOM Elements
+        const loginStep1 = document.getElementById('loginStep1');
+        const loginStep2 = document.getElementById('loginStep2');
+        const usernameLoginForm = document.getElementById('usernameLoginForm') || { reset: () => {} };
+        const magicLinkForm = document.getElementById('magicLinkForm');
+        const verificationForm = document.getElementById('verificationForm') || { reset: () => {} };
+        const messageContainer = document.getElementById('messageContainer');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const successMessage = document.getElementById('successMessage');
+        const successText = document.getElementById('successText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingText = document.getElementById('loadingText');
+        const signInBtn = document.getElementById('signInBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+        const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+        const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+        const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+        const closeForgotModal = document.getElementById('closeForgotModal');
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
+        const resetMessage = document.getElementById('resetMessage');
+        const resendCodeBtn = document.getElementById('resendCodeBtn');
+        const editEmailBtn = document.getElementById('editEmailBtn');
+
+        let loginCredentials = { username: '', password: '' };
+
+        // Check if already logged in
+        if (window.auth && window.auth.isAuthenticated()) {
+            window.location.href = '/chat.html';
+        }
+
+        // Toggle password visibility
+        togglePasswordBtn.addEventListener('click', () => {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePasswordIcon.textContent = type === 'password' ? 'visibility_off' : 'visibility';
+        });
+
+        // Edit email button - go back to step 1
+        editEmailBtn.addEventListener('click', () => {
+            loginStep2.classList.add('hidden');
+            loginStep1.classList.remove('hidden');
+            loginCredentials = { username: '', password: '' };
+        });
+
+        // Forgot password button
+        forgotPasswordBtn.addEventListener('click', () => {
+            forgotPasswordModal.classList.remove('hidden');
+        });
+
+        // Close forgot password modal
+        closeForgotModal.addEventListener('click', () => {
+            forgotPasswordModal.classList.add('hidden');
+            resetMessage.classList.add('hidden');
+            resetPasswordForm.reset();
+        });
+
+        // Close modal on backdrop click
+        forgotPasswordModal.addEventListener('click', (e) => {
+            if (e.target === forgotPasswordModal) {
+                forgotPasswordModal.classList.add('hidden');
+                resetMessage.classList.add('hidden');
+                resetPasswordForm.reset();
+            }
+        });
+
+        // Reset password form
+        resetPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value.trim();
+            const submitBtn = resetPasswordForm.querySelector('button[type="submit"]');
+
+            if (!email || !email.includes('@') || !email.includes('.')) {
+                showResetMessage('error', 'Please enter a valid email');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="relative z-10 flex items-center justify-center gap-2">Sending...</span>';
+
+            try {
+                const response = await fetch('/api/auth/magic-link/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, mode: 'reset-password' })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResetMessage('success', 'Password reset link sent to your email! Check your inbox.');
+                    resetPasswordForm.reset();
+                } else {
+                    showResetMessage('error', data.error || 'Failed to send reset link');
+                }
+            } catch (error) {
+                showResetMessage('error', 'Network error. Please try again.');
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `
+                <span class="relative z-10 flex items-center justify-center gap-2">
+                    Send Reset Link
+                    <span class="material-symbols-outlined text-xl">send</span>
+                </span>
+            `;
+        });
+
+        function showResetMessage(type, message) {
+            resetMessage.classList.remove('hidden');
+            resetMessage.className = `mt-4 p-4 rounded-2xl border fade-in ${
+                type === 'success'
+                    ? 'bg-green-500/10 border-green-500/30'
+                    : 'bg-red-500/10 border-red-500/30'
+            }`;
+            resetMessage.querySelector('p').className = `text-sm ${
+                type === 'success' ? 'text-green-400' : 'text-red-400'
+            }`;
+            resetMessage.querySelector('p').textContent = message;
+        }
+
+        // Helper functions
+        function showError(message) {
+            messageContainer.classList.remove('hidden');
+            errorMessage.classList.remove('hidden');
+            successMessage.classList.add('hidden');
+            errorText.textContent = message;
+        }
+
+        function showSuccess(message) {
+            messageContainer.classList.remove('hidden');
+            successMessage.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+            successText.textContent = message;
+        }
+
+        function hideMessage() {
+            messageContainer.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+        }
+
+        function showLoading(isLoading, text = 'Signing in...') {
+            if (isLoading) {
+                loadingSpinner.classList.remove('hidden');
+                loadingText.textContent = text;
+                signInBtn.disabled = true;
+                signInBtn.style.opacity = '0.5';
+            } else {
+                loadingSpinner.classList.add('hidden');
+                signInBtn.disabled = false;
+                signInBtn.style.opacity = '1';
+            }
+        }
+
+        // Username/Password Login
+        if (usernameLoginForm.addEventListener) {
+            usernameLoginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+
+                if (!username || !password) {
+                    showError('Please enter username/email and password');
+                    return;
+                }
+
+                showLoading(true, 'Signing in...');
+                hideMessage();
+
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        if (data.requiresVerification) {
+                            loginCredentials = { username, password };
+                            document.getElementById('verificationEmail').textContent = data.email;
+                            loginStep1.classList.add('hidden');
+                            loginStep2.classList.remove('hidden');
+                            hideMessage();
+                        } else {
+                            localStorage.setItem('authToken', data.token);
+                            localStorage.setItem('userId', data.user.id);
+                            localStorage.setItem('username', data.user.username);
+                            localStorage.setItem('nickname', data.user.nickname);
+                            window.location.href = '/chat.html';
+                        }
+                    } else {
+                        showError(data.error || 'Login failed');
+                    }
+                } catch (error) {
+                    showError('Network error. Please try again.');
+                }
+
+                showLoading(false);
+            });
+        }
+
+        // Magic Link Login
+        magicLinkForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('magicLinkEmail').value.trim();
+            const submitBtn = magicLinkForm.querySelector('button[type="submit"]');
+
+            if (!email || !email.includes('@') || !email.includes('.')) {
+                showError('Please enter a valid email');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="relative z-10 flex items-center justify-center gap-2">Sending...</span>';
+            hideMessage();
+
+            try {
+                const response = await fetch('/api/auth/magic-link/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, mode: 'login' })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Magic link sent! Check your email to sign in instantly.');
+                    magicLinkForm.reset();
+                } else {
+                    showError(data.error || 'Failed to send magic link');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `
+                <span class="relative z-10 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-xl">magic_button</span>
+                    Send Magic Link
+                </span>
+            `;
+        });
+
+        // Verification Form
+        if (verificationForm.addEventListener) {
+            verificationForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const code = document.getElementById('verificationCode').value.trim();
+                
+                if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+                    showError('Please enter a valid 6-digit code');
+                    return;
+                }
+
+                verifyBtn.disabled = true;
+                verifyBtn.innerHTML = '<span class="relative z-10 flex items-center justify-center gap-2">Verifying...</span>';
+                hideMessage();
+
+                try {
+                    const response = await fetch('/api/auth/verify-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: loginCredentials.username,
+                            code
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('userId', data.user.id);
+                        localStorage.setItem('username', data.user.username);
+                        localStorage.setItem('nickname', data.user.nickname);
+                        window.location.href = '/chat.html';
+                    } else {
+                        showError(data.error || 'Invalid verification code');
+                    }
+                } catch (error) {
+                    showError('Network error. Please try again.');
+                }
+
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = `
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        Verify & Continue
+                        <span class="material-symbols-outlined text-xl">check_circle</span>
+                    </span>
+                `;
+            });
+        }
+
+        // Resend Code
+        resendCodeBtn.addEventListener('click', async () => {
+            resendCodeBtn.disabled = true;
+            resendCodeBtn.textContent = 'Sending...';
+            hideMessage();
+
+            try {
+                const response = await fetch('/api/auth/resend-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: loginCredentials.username })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Verification code resent! Check your email.');
+                } else {
+                    showError(data.error || 'Failed to resend code');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+
+            resendCodeBtn.disabled = false;
+            resendCodeBtn.textContent = 'Resend Code';
+        });
+
+        // Keyboard handling for better mobile UX
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement.tagName === 'INPUT') {
+                    const nextInput = activeElement.form?.querySelector('input:not([type="hidden"]):not([disabled])');
+                    if (nextInput && nextInput !== activeElement) {
+                        nextInput.focus();
+                    } else if (activeElement.form) {
+                        activeElement.form.dispatchEvent(new Event('submit', { cancelable: true }));
+                    }
+                }
+            }
+        });
+
+        // Prevent double-tap zoom on iOS
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>

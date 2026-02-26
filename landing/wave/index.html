@@ -1,0 +1,378 @@
+<!doctype html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="description" content="WaveChat - Modern real-time messaging with AI assistance" />
+    <meta name="theme-color" content="#000000" />
+    <title>WaveChat - The Future of Messaging</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: { display: ["Outfit", "sans-serif"], body: ["Plus Jakarta Sans", "sans-serif"] },
+                },
+            },
+        };
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000000; overflow-x: hidden; }
+        .font-outfit { font-family: 'Outfit', sans-serif; }
+        .cursor { position: fixed; width: 20px; height: 20px; border: 2px solid #ffffff; border-radius: 50%; pointer-events: none; z-index: 9999; transition: transform 0.2s ease, background 0.2s ease; mix-blend-mode: difference; }
+        .cursor-dot { position: fixed; width: 6px; height: 6px; background: #ffffff; border-radius: 50%; pointer-events: none; z-index: 9999; }
+        .cursor.hover { transform: scale(3); background: rgba(255, 255, 255, 0.15); border-color: transparent; }
+        .bg-noise { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); opacity: 0.04; z-index: -1; }
+        .vignette { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, transparent 0%, transparent 30%, rgba(0,0,0,0.95) 100%); pointer-events: none; z-index: -1; }
+        .grid-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 80px 80px; z-index: -1; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.06); }
+        .glass-strong { background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-card { background: rgba(255, 255, 255, 0.015); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.04); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.2); transform: translateY(-5px); }
+        .text-gradient { background: linear-gradient(180deg, #ffffff 0%, #444444 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .char { display: inline-block; opacity: 0; transform: translateY(100%); transition: opacity 0.8s ease, transform 0.8s ease; }
+        .char.visible { opacity: 1; transform: translateY(0); }
+        .btn-white { position: relative; background: #ffffff; color: #000000; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-white:hover { transform: translateY(-4px); box-shadow: 0 15px 50px rgba(255, 255, 255, 0.25); }
+        .btn-outline { background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff; transition: all 0.3s ease; }
+        .btn-outline:hover { border-color: #ffffff; background: rgba(255, 255, 255, 0.05); transform: translateY(-3px); }
+        .reveal-up { opacity: 0; transform: translateY(100px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-up.active { opacity: 1; transform: translateY(0); }
+        .reveal-left { opacity: 0; transform: translateX(-100px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-left.active { opacity: 1; transform: translateX(0); }
+        .reveal-right { opacity: 0; transform: translateX(100px); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-right.active { opacity: 1; transform: translateX(0); }
+        .reveal-scale { opacity: 0; transform: scale(0.9); transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal-scale.active { opacity: 1; transform: scale(1); }
+        .nav-scrolled { background: rgba(0, 0, 0, 0.98); backdrop-filter: blur(30px); border-color: rgba(255, 255, 255, 0.15); }
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: #ffffff; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-link:hover::after { width: 100%; }
+        .scroll-progress { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, #ffffff, #666666, #ffffff); background-size: 200% 100%; animation: shimmer 2s linear infinite; z-index: 10000; width: 0%; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .magnetic { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; display: flex; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.8s ease, visibility 0.8s ease; }
+        .loader.hidden { opacity: 0; visibility: hidden; }
+        .loader-text { font-family: 'Outfit', sans-serif; font-size: 4rem; font-weight: 900; letter-spacing: 1rem; overflow: hidden; }
+        .loader-text span { display: inline-block; opacity: 0; transform: translateY(100%); animation: loaderReveal 0.8s forwards; }
+        @keyframes loaderReveal { to { opacity: 1; transform: translateY(0); } }
+        .page-content { opacity: 0; visibility: hidden; transition: opacity 0.8s ease, visibility 0.8s ease; }
+        .page-content.loaded { opacity: 1; visibility: visible; }
+        .hero-anim { opacity: 0; transition: opacity 0.8s ease, transform 0.8s ease; }
+        .hero-anim.loaded { opacity: 1; }
+        #hero-badge { transform: translateY(20px); }
+        #hero-badge.loaded { transform: translateY(0); }
+        #hero-stats { transform: translateY(30px); }
+        #hero-stats.loaded { transform: translateY(0); }
+        .btn-white, .btn-outline { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .btn-white.loaded, .btn-outline.loaded { opacity: 1; transform: translateY(0); }
+        .reveal.flex { opacity: 0; }
+        .reveal.flex.loaded { opacity: 1; }
+        #parallax-hero { opacity: 0; transform: translateX(50px); transition: opacity 1s ease, transform 1s ease; }
+        #parallax-hero.loaded { opacity: 1; transform: translateX(0); }
+        .shape { position: fixed; opacity: 0.08; pointer-events: none; z-index: -1; }
+        .shape-circle { width: 400px; height: 400px; border: 1px solid #ffffff; border-radius: 50%; }
+        .shape-square { width: 250px; height: 250px; border: 1px solid #ffffff; transform: rotate(45deg); }
+        .message-appear { opacity: 0; transform: translateY(20px); animation: messageAppear 0.6s forwards; }
+        @keyframes messageAppear { to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .model-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin: 0.25rem; }
+        .model-premium { background: rgba(255,255,255,0.15); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); }
+        .model-fast { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+        .model-vision { background: rgba(139,92,246,0.15); color: #a855f7; border: 1px solid rgba(139,92,246,0.3); }
+        .timeline-item { position: relative; padding-left: 2rem; }
+        .timeline-item::before { content: ''; position: absolute; left: 0; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #ffffff; border: 2px solid #333; }
+        .timeline-item::after { content: ''; position: absolute; left: 5px; top: 12px; width: 2px; height: calc(100% - 12px); background: #333; }
+        .timeline-item:last-child::after { display: none; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.98); } }
+    </style>
+</head>
+<body class="text-white">
+    <div class="loader" id="loader"><div class="loader-text" id="loaderText"></div></div>
+    <div class="page-content" id="pageContent">
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="bg-noise"></div>
+    <div class="vignette"></div>
+    <div class="grid-lines"></div>
+    <div class="shape shape-circle" style="top: 5%; right: 5%;"></div>
+    <div class="shape shape-square" style="top: 50%; left: 3%;"></div>
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 glass-strong border-b transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3 group cursor-pointer magnetic" data-magnetic>
+                    <img src="wavechat.png" alt="Wave" class="h-10 w-10 object-contain grayscale group-hover:grayscale-0 transition-all duration-500" />
+                    <span class="font-outfit text-xl font-black tracking-wider">WAVE</span>
+                </div>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#features" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Features</a>
+                    <a href="#ai-models" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>AI Models</a>
+                    <a href="#about" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>About</a>
+                    <a href="#roadmap" class="nav-link text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Roadmap</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="../public/login.html" class="hidden sm:block text-gray-400 hover:text-white font-medium transition-colors" data-magnetic>Sign In</a>
+                    <a href="../public/signup.html" class="btn-white px-6 py-2.5 rounded-full font-bold text-black" data-magnetic>Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="relative min-h-screen flex items-center justify-center px-4 pt-20 overflow-hidden">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+            <div class="text-center lg:text-left">
+                <div class="reveal">
+                    <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass mb-8 border border-white/10 hero-anim" id="hero-badge">
+                        <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                        <span class="text-sm font-semibold tracking-wide uppercase">Next Generation Messaging</span>
+                    </div>
+                </div>
+                <h1 class="font-outfit text-6xl sm:text-7xl lg:text-8xl font-black leading-none mb-8">
+                    <span class="text-gradient block" id="hero-title-1"></span>
+                    <span class="text-gradient block" id="hero-title-2"></span>
+                </h1>
+                <p class="text-xl text-gray-500 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed hero-anim" id="hero-subtitle"></p>
+                <div class="reveal flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
+                    <a href="../public/signup.html" class="btn-white px-10 py-4 rounded-full font-bold text-lg inline-flex items-center justify-center gap-2 group" data-magnetic>
+                        <span>Start Free Now</span>
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </a>
+                    <a href="#features" class="btn-outline px-10 py-4 rounded-full font-bold text-lg inline-flex items-center justify-center gap-2" data-magnetic>
+                        <span class="material-symbols-outlined">play_arrow</span>
+                        <span>Discover More</span>
+                    </a>
+                </div>
+                <div class="grid grid-cols-3 gap-8 mt-16 pt-10 border-t border-white/10 hero-anim" id="hero-stats">
+                    <div><div class="font-outfit text-4xl font-bold text-white counter" data-target="6">0</div><div class="text-sm text-gray-600 mt-2 uppercase tracking-wider">AI Models</div></div>
+                    <div><div class="font-outfit text-4xl font-bold text-white">< 100</div><div class="text-sm text-gray-600 mt-2 uppercase tracking-wider">ms Latency</div></div>
+                    <div><div class="font-outfit text-4xl font-bold text-white">100%</div><div class="text-sm text-gray-600 mt-2 uppercase tracking-wider">Uptime</div></div>
+                </div>
+            </div>
+
+            <div class="reveal-right lg:block relative parallax-wrapper" id="parallax-hero">
+                <div class="relative">
+                    <div class="glass-strong rounded-[3rem] p-4 border border-white/10 shadow-2xl parallax-element" data-speed="0.5">
+                        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-black rounded-b-2xl z-20"></div>
+                        <div class="bg-black rounded-[2.5rem] overflow-hidden h-[600px]">
+                            <div class="flex items-center gap-3 p-5 border-b border-white/5">
+                                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center"><span class="material-symbols-outlined text-black text-sm">smart_toy</span></div>
+                                <div><div class="font-semibold text-sm">AI Assistant</div><div class="text-xs text-gray-400">Online</div></div>
+                            </div>
+                            <div class="p-5 space-y-4" id="chat-messages"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/5 bg-black/80 backdrop-blur">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-1 glass rounded-full px-4 py-3"><span class="text-xs text-gray-500 typing-text"></span></div>
+                                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center"><span class="material-symbols-outlined text-black text-sm">send</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute -top-8 -right-8 glass rounded-2xl p-4 parallax-element" data-speed="0.3"><div class="flex items-center gap-3"><span class="material-symbols-outlined">verified</span><span class="text-sm font-semibold">Secure</span></div></div>
+                    <div class="absolute -bottom-4 -left-8 glass rounded-2xl p-4 parallax-element" data-speed="0.7"><div class="flex items-center gap-3"><span class="material-symbols-outlined">bolt</span><span class="text-sm font-semibold">Fast</span></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce"><span class="material-symbols-outlined text-gray-600 text-3xl">keyboard_arrow_down</span></div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-32 px-4 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 reveal-up">
+                <span class="inline-block text-gray-500 text-sm font-semibold tracking-widest uppercase mb-4">Features</span>
+                <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6"><span class="text-gradient">EVERYTHING YOU NEED</span></h2>
+                <p class="text-xl text-gray-500 max-w-2xl mx-auto">A complete messaging platform built for the modern web.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">chat</span></div><h3 class="font-outfit text-2xl font-bold mb-3">Real-Time Chat</h3><p class="text-gray-500 leading-relaxed">Socket.io powered messaging with read receipts, typing indicators, message editing, reactions, and zero latency.</p></div>
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">smart_toy</span></div><h3 class="font-outfit text-2xl font-bold mb-3">AI Assistant</h3><p class="text-gray-500 leading-relaxed">6 specialized AI models including DeepSeek V3.2, MiMo V2, Qwen-VL for vision, and ultra-fast Nano.</p></div>
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">search</span></div><h3 class="font-outfit text-2xl font-bold mb-3">Web Search</h3><p class="text-gray-500 leading-relaxed">AI-powered DuckDuckGo search integration for up-to-date information and current events.</p></div>
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">folder_zip</span></div><h3 class="font-outfit text-2xl font-bold mb-3">File Sharing</h3><p class="text-gray-500 leading-relaxed">Share images, documents, and files up to 10MB with drag-and-drop simplicity via Supabase Storage.</p></div>
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">palette</span></div><h3 class="font-outfit text-2xl font-bold mb-3">Custom Themes</h3><p class="text-gray-500 leading-relaxed">Personalize with custom backgrounds, colors, transparency modes, and dark/light theme switching.</p></div>
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">shield</span></div><h3 class="font-outfit text-2xl font-bold mb-3">Enterprise Security</h3><p class="text-gray-500 leading-relaxed">Supabase-powered security with JWT authentication, bcrypt hashing, CORS, and XSS prevention.</p></div>
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">rss_feed</span></div><h3 class="font-outfit text-2xl font-bold mb-3">Telegram Feeds</h3><p class="text-gray-500 leading-relaxed">Python-based Telethon scraper bot that aggregates content from Telegram channels with auto-sync.</p></div>
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">groups</span></div><h3 class="font-outfit text-2xl font-bold mb-3">Rooms & DMs</h3><p class="text-gray-500 leading-relaxed">Create private rooms, group chats, direct messages with participant management controls.</p></div>
+                <div class="reveal-up feature-card glass-card rounded-3xl p-8"><div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10"><span class="material-symbols-outlined text-3xl">cloud</span></div><h3 class="font-outfit text-2xl font-bold mb-3">Cloud Sync</h3><p class="text-gray-500 leading-relaxed">All messages, settings, and preferences synced across devices in real-time via PostgreSQL.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Models -->
+    <section id="ai-models" class="py-32 px-4 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 reveal-up">
+                <span class="inline-block text-gray-500 text-sm font-semibold tracking-widest uppercase mb-4">AI Models</span>
+                <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6"><span class="text-gradient">CHOOSE YOUR AI</span></h2>
+                <p class="text-xl text-gray-500 max-w-2xl mx-auto">6 specialized models for different tasks.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                <div class="reveal-up glass-strong rounded-3xl p-8 border border-white/10"><div class="flex items-center justify-between mb-4"><h3 class="font-outfit text-xl font-bold text-white">DeepSeek V3.2</h3><span class="model-badge model-premium">PREMIUM</span></div><p class="text-gray-500 text-sm mb-4">Most powerful reasoning model for complex tasks and analysis.</p><div class="flex flex-wrap gap-2"><span class="model-badge model-premium">Reasoning</span><span class="model-badge model-premium">Code</span><span class="model-badge model-premium">Analysis</span></div></div>
+                <div class="reveal-up glass-strong rounded-3xl p-8 border border-white/10"><div class="flex items-center justify-between mb-4"><h3 class="font-outfit text-xl font-bold text-white">MiMo V2</h3><span class="model-badge model-premium">PREMIUM</span></div><p class="text-gray-500 text-sm mb-4">Advanced multimodal model for creative writing and translation.</p><div class="flex flex-wrap gap-2"><span class="model-badge model-premium">Creative</span><span class="model-badge model-premium">Translation</span><span class="model-badge model-premium">General</span></div></div>
+                <div class="reveal-up glass-strong rounded-3xl p-8 border border-white/10"><div class="flex items-center justify-between mb-4"><h3 class="font-outfit text-xl font-bold text-white">Qwen-VL</h3><span class="model-badge model-vision">VISION</span></div><p class="text-gray-500 text-sm mb-4">Vision-language model that understands images and diagrams.</p><div class="flex flex-wrap gap-2"><span class="model-badge model-vision">Images</span><span class="model-badge model-vision">Diagrams</span><span class="model-badge model-vision">OCR</span></div></div>
+                <div class="reveal-up glass-strong rounded-3xl p-8 border border-white/10"><div class="flex items-center justify-between mb-4"><h3 class="font-outfit text-xl font-bold text-white">Gemini Flash</h3><span class="model-badge model-fast">FAST</span></div><p class="text-gray-500 text-sm mb-4">Google's fast model for quick responses and conversations.</p><div class="flex flex-wrap gap-2"><span class="model-badge model-fast">Quick</span><span class="model-badge model-fast">Chat</span><span class="model-badge model-fast">Summary</span></div></div>
+                <div class="reveal-up glass-strong rounded-3xl p-8 border border-white/10"><div class="flex items-center justify-between mb-4"><h3 class="font-outfit text-xl font-bold text-white">Llama 3.1</h3><span class="model-badge model-fast">BALANCED</span></div><p class="text-gray-500 text-sm mb-4">Meta's open-source model balancing performance and speed.</p><div class="flex flex-wrap gap-2"><span class="model-badge model-fast">Balanced</span><span class="model-badge model-fast">Versatile</span><span class="model-badge model-fast">Open</span></div></div>
+                <div class="reveal-up glass-strong rounded-3xl p-8 border border-white/10"><div class="flex items-center justify-between mb-4"><h3 class="font-outfit text-xl font-bold text-white">Nano</h3><span class="model-badge model-fast">ULTRA FAST</span></div><p class="text-gray-500 text-sm mb-4">Super cheap and fast model for simple queries.</p><div class="flex flex-wrap gap-2"><span class="model-badge model-fast">&lt;50ms</span><span class="model-badge model-fast">Cheap</span><span class="model-badge model-fast">Simple</span></div></div>
+            </div>
+            <div class="reveal-up glass-strong rounded-3xl p-12 border border-white/10">
+                <h3 class="font-outfit text-3xl font-bold mb-8 text-center">AI Capabilities</h3>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="text-center"><div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10"><span class="material-symbols-outlined text-3xl">code</span></div><h4 class="font-bold mb-2">Code Generation</h4><p class="text-gray-500 text-sm">Python, JavaScript, TypeScript</p></div>
+                    <div class="text-center"><div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10"><span class="material-symbols-outlined text-3xl">translate</span></div><h4 class="font-bold mb-2">Translation</h4><p class="text-gray-500 text-sm">50+ languages</p></div>
+                    <div class="text-center"><div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10"><span class="material-symbols-outlined text-3xl">search</span></div><h4 class="font-bold mb-2">Web Search</h4><p class="text-gray-500 text-sm">Real-time information</p></div>
+                    <div class="text-center"><div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10"><span class="material-symbols-outlined text-3xl">visibility</span></div><h4 class="font-bold mb-2">Vision</h4><p class="text-gray-500 text-sm">Image understanding</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="py-32 px-4 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 reveal-up">
+                <span class="inline-block text-gray-500 text-sm font-semibold tracking-widest uppercase mb-4">About WaveChat</span>
+                <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6"><span class="text-gradient">WHY CHOOSE US</span></h2>
+                <p class="text-xl text-gray-500 max-w-2xl mx-auto">Built with modern technologies.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-12 mb-16">
+                <div class="reveal-left glass-strong rounded-3xl p-8 border border-white/10">
+                    <h3 class="font-outfit text-2xl font-bold mb-6 text-white">Technology Stack</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10"><span class="material-symbols-outlined text-primary">check_circle</span></div><div><h4 class="font-bold text-white mb-1">Node.js & Express</h4><p class="text-gray-500 text-sm">Fast, scalable backend</p></div></div>
+                        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10"><span class="material-symbols-outlined text-primary">check_circle</span></div><div><h4 class="font-bold text-white mb-1">Socket.io</h4><p class="text-gray-500 text-sm">Real-time communication</p></div></div>
+                        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10"><span class="material-symbols-outlined text-primary">check_circle</span></div><div><h4 class="font-bold text-white mb-1">Supabase</h4><p class="text-gray-500 text-sm">PostgreSQL with auth</p></div></div>
+                        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10"><span class="material-symbols-outlined text-primary">check_circle</span></div><div><h4 class="font-bold text-white mb-1">OpenRouter</h4><p class="text-gray-500 text-sm">6+ AI models</p></div></div>
+                    </div>
+                </div>
+                <div class="reveal-right glass-strong rounded-3xl p-8 border border-white/10">
+                    <h3 class="font-outfit text-2xl font-bold mb-6 text-white">What Makes Us Different</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10"><span class="material-symbols-outlined text-secondary">stars</span></div><div><h4 class="font-bold text-white mb-1">No Framework Overhead</h4><p class="text-gray-500 text-sm">Pure vanilla JavaScript</p></div></div>
+                        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10"><span class="material-symbols-outlined text-secondary">stars</span></div><div><h4 class="font-bold text-white mb-1">AI-Powered Everything</h4><p class="text-gray-500 text-sm">Built-in AI assistant</p></div></div>
+                        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10"><span class="material-symbols-outlined text-secondary">stars</span></div><div><h4 class="font-bold text-white mb-1">Telegram Integration</h4><p class="text-gray-500 text-sm">Channel aggregation</p></div></div>
+                        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10"><span class="material-symbols-outlined text-secondary">stars</span></div><div><h4 class="font-bold text-white mb-1">Beautiful Design</h4><p class="text-gray-500 text-sm">Liquid glass UI</p></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal-scale glass-strong rounded-3xl p-12 border border-white/10">
+                <h3 class="font-outfit text-3xl font-bold mb-8 text-center">Our Ambitions</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center"><div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10"><span class="material-symbols-outlined text-4xl">public</span></div><h4 class="font-bold text-xl mb-3">Global Reach</h4><p class="text-gray-500">Connect people worldwide with AI-enhanced communication.</p></div>
+                    <div class="text-center"><div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10"><span class="material-symbols-outlined text-4xl">psychology</span></div><h4 class="font-bold text-xl mb-3">AI for Everyone</h4><p class="text-gray-500">Democratizing access to advanced AI models.</p></div>
+                    <div class="text-center"><div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10"><span class="material-symbols-outlined text-4xl">security</span></div><h4 class="font-bold text-xl mb-3">Privacy First</h4><p class="text-gray-500">Enterprise-grade security and encryption.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap -->
+    <section id="roadmap" class="py-32 px-4 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 reveal-up">
+                <span class="inline-block text-gray-500 text-sm font-semibold tracking-widest uppercase mb-4">Roadmap</span>
+                <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6"><span class="text-gradient">THE FUTURE</span></h2>
+                <p class="text-xl text-gray-500 max-w-2xl mx-auto">What we're building next.</p>
+            </div>
+            <div class="max-w-3xl mx-auto">
+                <div class="reveal-left timeline-item pb-8"><h4 class="font-bold text-xl mb-2 text-white">Q2 2026 - Mobile Apps</h4><p class="text-gray-500">Native iOS and Android with offline support and push notifications.</p></div>
+                <div class="reveal-left timeline-item pb-8"><h4 class="font-bold text-xl mb-2 text-white">Q3 2026 - Voice & Video Calls</h4><p class="text-gray-500">WebRTC-powered calls with AI noise cancellation.</p></div>
+                <div class="reveal-left timeline-item pb-8"><h4 class="font-bold text-xl mb-2 text-white">Q4 2026 - Advanced AI Features</h4><p class="text-gray-500">Message summarization, smart replies, conversation insights.</p></div>
+                <div class="reveal-left timeline-item pb-8"><h4 class="font-bold text-xl mb-2 text-white">Q1 2027 - Team Collaboration</h4><p class="text-gray-500">Team workspaces, project channels, task management.</p></div>
+                <div class="reveal-left timeline-item pb-8"><h4 class="font-bold text-xl mb-2 text-white">Q2 2027 - API & Integrations</h4><p class="text-gray-500">Public API, Slack/Discord integrations, webhooks.</p></div>
+                <div class="reveal-left timeline-item"><h4 class="font-bold text-xl mb-2 text-white">Future - Decentralized Network</h4><p class="text-gray-500">Blockchain-based messaging with crypto payments.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-32 px-4 relative">
+        <div class="max-w-5xl mx-auto">
+            <div class="reveal-scale glass-strong rounded-[3rem] p-16 text-center border border-white/10">
+                <h2 class="font-outfit text-5xl sm:text-6xl font-bold mb-6"><span class="text-gradient">READY TO BEGIN?</span></h2>
+                <p class="text-xl text-gray-500 mb-10 max-w-2xl mx-auto">Join the future of messaging. Free to start, impossible to leave.</p>
+                <div class="flex flex-col sm:flex-row gap-5 justify-center">
+                    <a href="../public/signup.html" class="btn-white px-10 py-4 rounded-full font-bold text-lg inline-flex items-center justify-center gap-2 group" data-magnetic><span>Create Free Account</span><span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span></a>
+                    <a href="../public/login.html" class="btn-outline px-10 py-4 rounded-full font-bold text-lg inline-flex items-center justify-center gap-2" data-magnetic><span>Sign In</span></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-2 md:col-span-1"><div class="flex items-center gap-3 mb-6"><img src="wavechat.png" alt="Wave" class="h-10 w-10 object-contain grayscale" /><span class="font-outfit text-xl font-black tracking-wider">WAVE</span></div><p class="text-gray-600 text-sm">The future of messaging.</p></div>
+                <div><h4 class="font-outfit text-base font-bold mb-6">Product</h4><ul class="space-y-3"><li><a href="#features" class="text-gray-600 hover:text-white text-sm">Features</a></li><li><a href="#ai-models" class="text-gray-600 hover:text-white text-sm">AI Models</a></li><li><a href="#about" class="text-gray-600 hover:text-white text-sm">About</a></li><li><a href="#roadmap" class="text-gray-600 hover:text-white text-sm">Roadmap</a></li></ul></div>
+                <div><h4 class="font-outfit text-base font-bold mb-6">Resources</h4><ul class="space-y-3"><li><a href="../public/help.html" class="text-gray-600 hover:text-white text-sm">Help</a></li><li><a href="../public/privacy.html" class="text-gray-600 hover:text-white text-sm">Privacy</a></li><li><a href="../public/terms.html" class="text-gray-600 hover:text-white text-sm">Terms</a></li></ul></div>
+                <div><h4 class="font-outfit text-base font-bold mb-6">Connect</h4><div class="flex gap-3"><a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-white/10"><span class="material-symbols-outlined text-gray-500">share</span></a><a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-white/10"><span class="material-symbols-outlined text-gray-500">mail</span></a></div></div>
+            </div>
+            <div class="border-t border-white/10 pt-8 flex justify-between items-center"><p class="text-gray-700 text-sm">© 2026 WaveChat.</p><div class="flex gap-6"><a href="../public/privacy.html" class="text-gray-700 hover:text-gray-500 text-sm">Privacy</a><a href="../public/terms.html" class="text-gray-700 hover:text-gray-500 text-sm">Terms</a></div></div>
+        </div>
+    </footer>
+    </div>
+
+    <script>
+        // LOADING
+        const loaderText = document.getElementById('loaderText');
+        const loader = document.getElementById('loader');
+        const pageContent = document.getElementById('pageContent');
+        'WAVECHAT'.split('').forEach((char, i) => { const span = document.createElement('span'); span.textContent = char; span.style.animationDelay = `${i * 0.08}s`; loaderText.appendChild(span); });
+        setTimeout(() => { loader.classList.add('hidden'); pageContent.classList.add('loaded'); setTimeout(() => { const b = document.getElementById('hero-badge'); if(b) b.classList.add('loaded'); }, 400); setTimeout(initTitleAnimation, 600); setTimeout(initSubtitleAnimation, 1600); setTimeout(initButtonsAnimation, 2400); setTimeout(initStatsAnimation, 3000); setTimeout(() => { animateChatMessages(); initScrollAnimations(); }, 3800); }, 2000);
+
+        // TITLE
+        function initTitleAnimation() { const t1 = document.getElementById('hero-title-1'); const t2 = document.getElementById('hero-title-2'); if (t1) { t1.classList.add('hero-anim', 'loaded'); t1.innerHTML = '<span class="char">THE</span> <span class="char" style="transition-delay:0.1s">FUTURE</span>'; setTimeout(() => t1.querySelectorAll('.char').forEach(c => c.classList.add('visible')), 100); } if (t2) { setTimeout(() => { t2.classList.add('hero-anim', 'loaded'); t2.innerHTML = '<span class="char">IS</span> <span class="char" style="transition-delay:0.1s">NOW</span>'; t2.querySelectorAll('.char').forEach((c,i) => setTimeout(() => c.classList.add('visible'), i*100)); }, 800); } }
+
+        // SUBTITLE
+        function initSubtitleAnimation() { const sub = document.getElementById('hero-subtitle'); if (sub) { sub.classList.add('hero-anim', 'loaded'); typeText(sub, 'Experience messaging reimagined. AI-powered conversations, real-time collaboration, and stunning minimal design.', 30); } }
+
+        // BUTTONS
+        function initButtonsAnimation() { const c = document.querySelector('.reveal.flex'); if (c) c.classList.add('loaded'); document.querySelectorAll('.btn-white, .btn-outline').forEach((b,i) => setTimeout(() => b.classList.add('loaded'), i*200)); }
+
+        // STATS
+        function initStatsAnimation() { const s = document.getElementById('hero-stats'); if (s) s.classList.add('loaded'); document.querySelectorAll('.counter').forEach((s,i) => setTimeout(() => { s.classList.add('loaded'); animateCounter(s); }, i*300)); }
+        function animateCounter(c) { const t = +c.getAttribute('data-target'); let n = 0; const u = () => { const inc = t/100; if (n < t) { n += inc; c.innerText = Math.ceil(n); setTimeout(u, 10); } else { c.innerText = t + (t===6?'+':''); } }; u(); }
+
+        // TYPING
+        function typeText(e, t, s, cb) { let i = 0; function type() { if (i < t.length) { e.textContent += t.charAt(i); i++; setTimeout(type, s); } else if (cb) cb(); } type(); }
+
+        // CHAT
+        function animateChatMessages() { const p = document.getElementById('parallax-hero'); if (p) p.classList.add('loaded'); const c = document.getElementById('chat-messages'); const msgs = [{s:'ai',t:'Hey! I\'m your AI assistant. What can I help you with today?'},{s:'user',t:'Show me the future of chat'},{s:'ai',t:'Welcome to WaveChat - where messaging meets intelligence.'}]; let d = 500; msgs.forEach((m,i) => { setTimeout(() => { const d = document.createElement('div'); d.className = `flex items-start gap-3 message-appear ${m.s==='user'?'flex-row-reverse':''}`; const a = document.createElement('div'); a.className = `w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${m.s==='ai'?'bg-white':'bg-gray-700'}`; a.innerHTML = `<span class="material-symbols-outlined text-${m.s==='ai'?'black':'white'} text-xs">${m.s==='ai'?'smart_toy':'person'}</span>`; const b = document.createElement('div'); b.className = `${m.s==='ai'?'glass':'bg-white/10 border border-white/20'} rounded-2xl ${m.s==='ai'?'rounded-tl-none':'rounded-tr-none'} px-4 py-2.5 flex-1`; b.innerHTML = `<p class="text-xs text-${m.s==='ai'?'gray-300':'white'}">${m.t}</p>`; d.appendChild(a); d.appendChild(b); c.appendChild(d); }, d); d += 1500; }); }
+
+        // CURSOR
+        const cursor = document.getElementById('cursor'), cursorDot = document.getElementById('cursor-dot'); let mX=0,mY=0,cX=0,cY=0,dX=0,dY=0; document.addEventListener('mousemove', e => { mX=e.clientX; mY=e.clientY; }); function animateCursor() { cX+=(mX-cX)*0.15; cY+=(mY-cY)*0.15; dX+=(mX-dX)*0.3; dY+=(mY-dY)*0.3; cursor.style.left=cX-10+'px'; cursor.style.top=cY-10+'px'; cursorDot.style.left=dX-3+'px'; cursorDot.style.top=dY-3+'px'; requestAnimationFrame(animateCursor); } animateCursor(); document.querySelectorAll('a,button,[data-magnetic]').forEach(e => { e.addEventListener('mouseenter',()=>cursor.classList.add('hover')); e.addEventListener('mouseleave',()=>cursor.classList.remove('hover')); });
+
+        // MAGNETIC
+        document.querySelectorAll('[data-magnetic]').forEach(e => { e.addEventListener('mousemove',f => { const r=e.getBoundingClientRect(),x=f.clientX-r.left-r.width/2,y=f.clientY-r.top-r.height/2; e.style.transform=`translate(${x*0.3}px,${y*0.3}px)`; }); e.addEventListener('mouseleave',()=>{e.style.transform='translate(0,0)';}); });
+
+        // SMOOTH SCROLL
+        const lenis = new Lenis({ duration:1.2, easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)), direction:'vertical', smooth:true }); function raf(t) { lenis.raf(t); requestAnimationFrame(raf); } requestAnimationFrame(raf);
+
+        // NAV
+        window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('nav-scrolled', window.scrollY>50); });
+
+        // SCROLL PROGRESS
+        window.addEventListener('scroll', () => { const d=document.documentElement,h=d.scrollTop,s=d.scrollHeight-d.clientHeight; document.getElementById('scrollProgress').style.width=(h/s*100)+'%'; });
+
+        // GSAP
+        function initScrollAnimations() { gsap.registerPlugin(ScrollTrigger); gsap.utils.toArray('.reveal-up').forEach(e => { gsap.to(e,{scrollTrigger:{trigger:e,start:'top 90%',once:false},opacity:1,y:0,duration:0.6,ease:'power3.out'}); }); gsap.utils.toArray('.reveal-left').forEach(e => { gsap.to(e,{scrollTrigger:{trigger:e,start:'top 90%',once:false},opacity:1,x:0,duration:0.6,ease:'power3.out'}); }); gsap.utils.toArray('.reveal-right').forEach(e => { gsap.to(e,{scrollTrigger:{trigger:e,start:'top 90%',once:false},opacity:1,x:0,duration:0.6,ease:'power3.out'}); }); gsap.utils.toArray('.reveal-scale').forEach(e => { gsap.to(e,{scrollTrigger:{trigger:e,start:'top 90%',once:false},opacity:1,scale:1,duration:0.6,ease:'power3.out'}); }); gsap.fromTo('.feature-card',{opacity:0,y:60},{scrollTrigger:{trigger:'#features',start:'top 85%'},opacity:1,y:0,duration:0.5,stagger:0.08,ease:'power3.out'}); }
+
+        // ANCHORS
+        document.querySelectorAll('a[href^="#"]').forEach(a => { a.addEventListener('click',e => { e.preventDefault(); const t=document.querySelector(a.getAttribute('href')); if(t) lenis.scrollTo(t); }); });
+    </script>
+</body>
+</html>

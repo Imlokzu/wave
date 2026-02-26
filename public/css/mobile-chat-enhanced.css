@@ -1,0 +1,962 @@
+/**
+ * Mobile Chat Optimizations - Enhanced
+ * Complete mobile-first responsive design for WaveChat
+ * 
+ * Features:
+ * - Touch-optimized UI elements (44px minimum)
+ * - Safe area support for notched devices
+ * - Keyboard-aware input handling
+ * - Swipe gestures for navigation
+ * - Performance optimizations
+ * - Accessibility enhancements
+ */
+
+/* =============================================================================
+   Mobile Base Styles
+   ============================================================================= */
+
+:root {
+    --mobile-header-height: 64px;
+    --mobile-bottom-nav-height: 80px;
+    --mobile-safe-top: env(safe-area-inset-top, 0px);
+    --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --mobile-safe-left: env(safe-area-inset-left, 0px);
+    --mobile-safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* Prevent pull-to-refresh on mobile */
+body {
+    overscroll-behavior-y: contain;
+}
+
+/* Ensure full height on mobile */
+.mobile-container {
+    height: 100dvh;
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+}
+
+/* Safe area padding for notched devices */
+.safe-top {
+    padding-top: max(env(safe-area-inset-top), 10px);
+}
+
+.safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 10px);
+}
+
+.safe-left {
+    padding-left: max(env(safe-area-inset-left), 10px);
+}
+
+.safe-right {
+    padding-right: max(env(safe-area-inset-right), 10px);
+}
+
+/* =============================================================================
+   Touch Optimizations
+   ============================================================================= */
+
+/* Minimum touch target size (iOS HIG: 44x44pt) */
+button, 
+.touch-target,
+a,
+input,
+select,
+textarea {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Prevent text selection on UI elements */
+button, 
+.nav-item,
+.tab-btn {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: rgba(13, 185, 242, 0.2);
+}
+
+/* Allow text selection in messages and inputs */
+.message-bubble, 
+input[type="text"], 
+input[type="email"], 
+input[type="password"],
+textarea,
+.message-content {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* Prevent zoom on input focus (iOS) */
+input, textarea, select {
+    font-size: 16px !important;
+}
+
+/* =============================================================================
+   Mobile Header Optimizations
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+    header {
+        height: max(var(--mobile-header-height), var(--mobile-safe-top));
+        padding-top: var(--mobile-safe-top);
+        padding-left: max(var(--mobile-safe-left), 16px);
+        padding-right: max(var(--mobile-safe-right), 16px);
+    }
+
+    .header-title {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .header-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .header-btn {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* =============================================================================
+   Mobile Message Styles
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+    .message-bubble {
+        max-width: calc(100% - 80px);
+        padding: 12px 16px;
+        border-radius: 18px;
+        font-size: 15px;
+        line-height: 1.4;
+    }
+
+    .message-bubble.own {
+        max-width: calc(100% - 80px);
+        margin-left: auto;
+    }
+
+    .message-avatar {
+        width: 36px;
+        height: 36px;
+        margin-right: 8px;
+    }
+
+    .message-sender {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .message-timestamp {
+        font-size: 11px;
+        margin-top: 4px;
+        opacity: 0.7;
+    }
+
+    .message-group {
+        margin-bottom: 16px;
+    }
+
+    /* Message reactions on mobile */
+    .message-reactions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    .reaction-item {
+        background: rgba(13, 185, 242, 0.2);
+        border: 1px solid rgba(13, 185, 242, 0.3);
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .reaction-item:active {
+        transform: scale(0.9);
+        background: rgba(13, 185, 242, 0.3);
+    }
+}
+
+/* =============================================================================
+   Mobile Input Area
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+    .input-area {
+        padding: 12px max(var(--mobile-safe-left), 16px) max(12px, var(--mobile-safe-bottom)) max(var(--mobile-safe-right), 16px);
+        min-height: max(64px, var(--mobile-safe-bottom));
+    }
+
+    .input-container {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        background: rgba(15, 20, 25, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 8px;
+    }
+
+    .message-input {
+        flex: 1;
+        min-height: 44px;
+        max-height: 120px;
+        padding: 10px 16px;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 15px;
+        line-height: 1.4;
+        resize: none;
+        outline: none;
+    }
+
+    .message-input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .input-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .input-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .input-btn:active {
+        background: rgba(13, 185, 242, 0.2);
+        color: var(--color-primary);
+        transform: scale(0.95);
+    }
+
+    .send-btn {
+        background: var(--color-primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(13, 185, 242, 0.3);
+    }
+
+    .send-btn:active {
+        background: var(--color-primary-dark);
+        transform: scale(0.95);
+        box-shadow: 0 2px 8px rgba(13, 185, 242, 0.4);
+    }
+}
+
+/* =============================================================================
+   Mobile Bottom Navigation
+   ============================================================================= */
+
+#mobileBottomNav {
+    height: max(var(--mobile-bottom-nav-height), var(--mobile-safe-bottom));
+    padding-bottom: var(--mobile-safe-bottom);
+    background: rgba(15, 20, 25, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 1024px) {
+    #mobileBottomNav {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1023px) {
+    .mobile-tab-btn {
+        -webkit-tap-highlight-color: transparent;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-tab-btn:active {
+        transform: scale(0.95);
+    }
+
+    .mobile-tab-btn .nav-icon-container {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-tab-btn.active .nav-icon-container {
+        background: rgba(13, 185, 242, 0.15);
+    }
+
+    .mobile-tab-btn .nav-label {
+        font-size: 10px;
+        font-weight: 600;
+        margin-top: 4px;
+        letter-spacing: 0.3px;
+    }
+
+    /* Center feed button */
+    .mobile-tab-btn.feed-btn {
+        margin-top: -24px;
+    }
+
+    .mobile-tab-btn.feed-btn .nav-icon-container {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--color-primary), #3b82f6);
+        box-shadow: 0 8px 24px rgba(13, 185, 242, 0.4);
+    }
+
+    .mobile-tab-btn.feed-btn:active .nav-icon-container {
+        transform: scale(0.95);
+        box-shadow: 0 4px 16px rgba(13, 185, 242, 0.5);
+    }
+}
+
+/* =============================================================================
+   Mobile Chat List
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+    .chat-list-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 16px;
+        margin-bottom: 4px;
+        -webkit-tap-highlight-color: transparent;
+        transition: all 0.2s ease;
+    }
+
+    .chat-list-item:active {
+        background: rgba(13, 185, 242, 0.1);
+        transform: scale(0.98);
+    }
+
+    .chat-list-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .chat-list-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .chat-list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+
+    .chat-list-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .chat-list-time {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        flex-shrink: 0;
+        margin-left: 8px;
+    }
+
+    .chat-list-preview {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.5);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .chat-list-unread {
+        min-width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        background: var(--color-primary);
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
+    }
+}
+
+/* =============================================================================
+   Mobile Modals
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 100;
+    }
+
+    .modal-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 85vh;
+        background: rgba(15, 20, 25, 0.98);
+        border-radius: 24px 24px 0 0;
+        padding: 24px;
+        z-index: 101;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .modal-close {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .modal-close:active {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(0.95);
+    }
+
+    .modal-content {
+        margin-bottom: 24px;
+    }
+
+    /* Handle bar for bottom sheets */
+    .modal-handle {
+        width: 40px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        margin: 0 auto 20px;
+    }
+}
+
+/* =============================================================================
+   Mobile Buttons & Inputs
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+    .btn-primary {
+        min-height: 52px;
+        padding: 0 24px;
+        border-radius: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-primary:active {
+        transform: scale(0.96);
+        opacity: 0.9;
+    }
+
+    .btn-secondary {
+        min-height: 52px;
+        padding: 0 24px;
+        border-radius: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-secondary:active {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(0.96);
+    }
+
+    .input-field {
+        min-height: 52px;
+        padding: 0 16px;
+        border-radius: 16px;
+        font-size: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+        border-color: var(--color-primary);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 0 3px rgba(13, 185, 242, 0.1);
+    }
+
+    .input-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+}
+
+/* =============================================================================
+   Mobile Tabs
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+    .tab-container {
+        display: flex;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 4px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+    }
+
+    .tab-btn {
+        flex: 1;
+        min-height: 44px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-btn:active {
+        transform: scale(0.96);
+    }
+
+    .tab-btn.active {
+        background: var(--color-primary);
+        color: white;
+    }
+}
+
+/* =============================================================================
+   Mobile Loading States
+   ============================================================================= */
+
+.loading-skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 25%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@media (max-width: 1023px) {
+    .loading-message {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .loading-spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid rgba(13, 185, 242, 0.2);
+        border-top-color: var(--color-primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* =============================================================================
+   Mobile Empty States
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 24px;
+        text-align: center;
+    }
+
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(13, 185, 242, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .empty-state-icon .material-symbols-outlined {
+        font-size: 40px;
+        color: var(--color-primary);
+    }
+
+    .empty-state-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 8px;
+    }
+
+    .empty-state-description {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 24px;
+        line-height: 1.5;
+    }
+}
+
+/* =============================================================================
+   Mobile Toast Notifications
+   ============================================================================= */
+
+.mobile-toast {
+    position: fixed;
+    bottom: calc(var(--mobile-bottom-nav-height) + 20px);
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(15, 20, 25, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 12px 24px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: calc(100% - 32px);
+    text-align: center;
+}
+
+.mobile-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+@media (min-width: 1024px) {
+    .mobile-toast {
+        bottom: 40px;
+    }
+}
+
+/* =============================================================================
+   Mobile Swipe Actions
+   ============================================================================= */
+
+.swipeable-item {
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.swipe-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 16px;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.swipeable-item.swiping .swipe-actions {
+    transform: translateX(0);
+}
+
+.swipe-action-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s ease;
+}
+
+.swipe-action-btn:active {
+    transform: scale(0.9);
+}
+
+.swipe-action-btn.delete {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.swipe-action-btn.archive {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+/* =============================================================================
+   Landscape Mode Optimizations
+   ============================================================================= */
+
+@media (max-width: 1023px) and (orientation: landscape) {
+    .mobile-container {
+        height: 100vh;
+    }
+
+    header {
+        height: 56px;
+    }
+
+    .message-bubble {
+        max-width: calc(100% - 100px);
+    }
+
+    .input-area {
+        padding: 8px 16px;
+    }
+
+    #mobileBottomNav {
+        height: 64px;
+    }
+
+    .mobile-tab-btn.feed-btn {
+        margin-top: -16px;
+    }
+
+    .modal-container {
+        max-height: 70vh;
+    }
+}
+
+/* =============================================================================
+   Very Small Screens (< 360px)
+   ============================================================================= */
+
+@media (max-width: 359px) {
+    .message-bubble {
+        max-width: calc(100% - 60px);
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .chat-list-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+
+    .chat-list-name {
+        font-size: 15px;
+    }
+
+    .chat-list-preview {
+        font-size: 13px;
+    }
+
+    header {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .input-area {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+/* =============================================================================
+   Tablet Optimizations (768px - 1023px)
+   ============================================================================= */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .message-bubble {
+        max-width: calc(100% - 120px);
+    }
+
+    .chat-list-item {
+        padding: 14px 20px;
+    }
+
+    .chat-list-avatar {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+    }
+
+    .modal-container {
+        max-width: 500px;
+        margin: 0 auto;
+        border-radius: 24px;
+    }
+}
+
+/* =============================================================================
+   Reduced Motion Preferences
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .loading-skeleton {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* =============================================================================
+   High Contrast Mode
+   ============================================================================= */
+
+@media (prefers-contrast: high) {
+    .btn-primary,
+    .btn-secondary {
+        border: 2px solid currentColor;
+    }
+
+    .input-field {
+        border-width: 2px;
+    }
+
+    .message-bubble {
+        border: 1px solid currentColor;
+    }
+}
+
+/* =============================================================================
+   Dark Mode Optimizations
+   ============================================================================= */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary: #0a0f12;
+        --bg-surface: #0f1419;
+        --bg-surface-hover: #151b21;
+        --text-primary: #ffffff;
+        --text-secondary: #9ca3af;
+    }
+}
+
+/* =============================================================================
+   Print Styles
+   ============================================================================= */
+
+@media print {
+    #mobileBottomNav,
+    .mobile-only,
+    .swipe-actions,
+    .modal-backdrop,
+    .modal-container {
+        display: none !important;
+    }
+
+    .message-bubble {
+        max-width: 100%;
+        break-inside: avoid;
+    }
+}
