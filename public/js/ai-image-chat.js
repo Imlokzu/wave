@@ -102,6 +102,65 @@ class AIImageChat {
     }
 
     /**
+     * Check if user has Pro access
+     */
+    async checkProStatus() {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return false;
+
+            const response = await fetch('/api/subscription/status', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) return false;
+
+            const data = await response.json();
+            return data.isPro || false;
+        } catch (error) {
+            console.error('[AIImageChat] Pro status check failed:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Show Pro upgrade prompt
+     */
+    showProUpgradePrompt(featureName) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm';
+        modal.innerHTML = `
+            <div class="bg-surface-dark rounded-2xl border border-primary/30 p-8 max-w-md shadow-2xl shadow-primary/20">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="material-symbols-outlined text-primary text-3xl">workspace_premium</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Pro Feature</h3>
+                    <p class="text-slate-400 mb-6">
+                        ${featureName} is available for Pro subscribers. Upgrade to unlock this and other premium features.
+                    </p>
+                    <div class="flex gap-3 justify-center">
+                        <button onclick="this.closest('.fixed').remove()" class="px-6 py-2.5 rounded-xl border border-slate-700 text-white hover:bg-surface-lighter transition-colors">
+                            Maybe Later
+                        </button>
+                        <button onclick="window.location.href='/settings?tab=pro'" class="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-colors shadow-lg shadow-primary/20">
+                            Upgrade to Pro
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    /**
      * Handle image file selection
      */
     handleImageSelect(event) {
@@ -118,7 +177,7 @@ class AIImageChat {
     /**
      * Handle files (from input or drag-drop)
      */
-    handleFiles(files) {
+    async handleFiles(files) {
         const imageFiles = Array.from(files).filter(file => 
             file.type.startsWith('image/')
         );
@@ -128,9 +187,19 @@ class AIImageChat {
             return;
         }
 
+        // Check if vision model is selected
         if (!this.isVisionModelSelected()) {
             alert('Please select a vision-enabled AI model (Qwen3.5-VL or Qwen3.5-397B-A17B) to analyze images.');
             return;
+        }
+
+        // Check if model is Pro-only and user has Pro access
+        if (window.modelIsPro && window.modelIsPro(this.currentModel)) {
+            const isPro = await this.checkProStatus();
+            if (!isPro) {
+                this.showProUpgradePrompt('AI Vision with Qwen3.5-VL and Qwen3.5-397B-A17B');
+                return;
+            }
         }
 
         const remainingSlots = this.maxImages - this.attachedImages.length;
@@ -208,17 +277,26 @@ class AIImageChat {
     /**
      * Update UI based on model selection
      */
-    updateImageUI() {
+    async updateImageUI() {
         const imageInput = document.getElementById('imageInput');
         const imageLabel = document.getElementById('imageLabel');
         
         if (!imageInput || !imageLabel) return;
 
         const isVision = this.isVisionModelSelected();
+        const isProModel = window.modelIsPro && window.modelIsPro(this.currentModel);
+        const isPro = await this.checkProStatus();
         
         if (isVision) {
-            imageLabel.classList.remove('opacity-50', 'cursor-not-allowed');
-            imageLabel.title = 'Upload image for AI analysis';
+            if (isProModel && !isPro) {
+                // Show Pro locked state
+                imageLabel.classList.add('opacity-50', 'cursor-not-allowed');
+                imageLabel.title = 'Pro feature - Upgrade to unlock AI Vision';
+            } else {
+                // User has Pro or model is free
+                imageLabel.classList.remove('opacity-50', 'cursor-not-allowed');
+                imageLabel.title = 'Upload image for AI analysis';
+            }
         } else {
             imageLabel.classList.add('opacity-50', 'cursor-not-allowed');
             imageLabel.title = 'Select a vision model (Qwen3.5-VL or Qwen3.5-397B-A17B) to enable image upload';

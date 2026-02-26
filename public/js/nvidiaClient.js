@@ -34,7 +34,8 @@ const MODEL_CONFIGS = {
     speed: 'fast',
     maxTokens: 16384,
     temperature: 1,
-    topP: 0.9
+    topP: 0.9,
+    isPro: false
   },
   'glm5': {
     name: 'GLM-5',
@@ -45,7 +46,8 @@ const MODEL_CONFIGS = {
     temperature: 1,
     topP: 1,
     enableThinking: true,
-    clearThinking: false
+    clearThinking: false,
+    isPro: false
   },
   'qwen3.5-vl': {
     name: 'Qwen3.5-VL',
@@ -56,7 +58,8 @@ const MODEL_CONFIGS = {
     temperature: 0.6,
     topP: 0.95,
     topK: 20,
-    enableThinking: true
+    enableThinking: true,
+    isPro: true  // Pro feature
   },
   'qwen3.5-397b-a17b': {
     name: 'Qwen3.5-397B-A17B',
@@ -68,7 +71,8 @@ const MODEL_CONFIGS = {
     topP: 0.95,
     topK: 20,
     enableThinking: true,
-    clearThinking: false
+    clearThinking: false,
+    isPro: true  // Pro feature
   },
   'kimi-k2.5': {
     name: 'Kimi K2.5',
@@ -78,7 +82,8 @@ const MODEL_CONFIGS = {
     maxTokens: 16384,
     temperature: 1,
     topP: 1,
-    thinking: true
+    thinking: true,
+    isPro: true  // Pro feature
   }
 };
 
@@ -387,10 +392,23 @@ function fileToBase64(file) {
 }
 
 /**
- * Get available models
+ * Check if model is Pro-only
  */
-export function getAvailableModels() {
-  return Object.values(MODEL_CONFIGS);
+export function modelIsPro(modelId) {
+  const model = MODEL_CONFIGS[modelId];
+  return model?.isPro || false;
+}
+
+/**
+ * Get available models (filter by Pro status)
+ */
+export function getAvailableModels(userIsPro = false) {
+  const models = Object.values(MODEL_CONFIGS);
+  if (userIsPro) {
+    return models;
+  }
+  // Filter out Pro-only models for free users
+  return models.filter(model => !model.isPro);
 }
 
 /**
