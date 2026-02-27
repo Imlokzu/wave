@@ -34,7 +34,8 @@ const MODEL_CONFIGS = {
     speed: 'fast',
     maxTokens: 16384,
     temperature: 1,
-    topP: 0.9
+    topP: 0.9,
+    isPro: false
   },
   'glm5': {
     name: 'GLM-5',
@@ -45,7 +46,8 @@ const MODEL_CONFIGS = {
     temperature: 1,
     topP: 1,
     enableThinking: true,
-    clearThinking: false
+    clearThinking: false,
+    isPro: false
   },
   'qwen3.5-vl': {
     name: 'Qwen3.5-VL',
@@ -56,7 +58,21 @@ const MODEL_CONFIGS = {
     temperature: 0.6,
     topP: 0.95,
     topK: 20,
-    enableThinking: true
+    enableThinking: true,
+    isPro: true  // Pro feature
+  },
+  'qwen3.5-397b-a17b': {
+    name: 'Qwen3.5-397B-A17B',
+    description: 'Multimodal foundation model with thinking',
+    hasVision: true,
+    speed: 'medium',
+    maxTokens: 32768,
+    temperature: 0.6,
+    topP: 0.95,
+    topK: 20,
+    enableThinking: true,
+    clearThinking: false,
+    isPro: true  // Pro feature
   },
   'kimi-k2.5': {
     name: 'Kimi K2.5',
@@ -66,7 +82,8 @@ const MODEL_CONFIGS = {
     maxTokens: 16384,
     temperature: 1,
     topP: 1,
-    thinking: true
+    thinking: true,
+    isPro: true  // Pro feature
   }
 };
 
@@ -264,25 +281,53 @@ export async function chat(modelId, messages, options = {}) {
 
 /**
  * Vision chat for image analysis
- * 
+ * Supports single or multiple images
+ *
  * @param {string} modelId - Model ID (should be a vision model)
  * @param {string} prompt - Text prompt
- * @param {File} imageFile - Image file to analyze
+ * @param {File|File[]} imageFile - Image file(s) to analyze
  * @param {Object} callbacks - Callback functions
  */
 export async function streamVisionChat(modelId, prompt, imageFile, callbacks = {}) {
-  // Convert image to base64
-  const base64Image = await fileToBase64(imageFile);
+  // Handle single file or array of files
+  const files = Array.isArray(imageFile) ? imageFile : [imageFile];
   
+  // Convert all images to base64
+  const imagePromises = files.map(file => fileToBase64(file));
+  const base64Images = await Promise.all(imagePromises);
+  
+  // Build content array with text first, then images
+  const content = [
+    { type: 'text', text: prompt }
+  ];
+  
+  // Add all images
+  base64Images.forEach((base64, index) => {
+    const fileType = files[index].type || 'image/jpeg';
+    content.push({
+      type: 'image_url',
+      image_url: { url: `data:${fileType};base64,${base64}` }
+    });
+  });
+
   const messages = [{
     role: 'user',
-    content: [
-      { type: 'text', text: prompt },
-      { type: 'image_url', image_url: { url: `data:${imageFile.type};base64,${base64Image}` } }
-    ]
+    content
   }];
 
   return streamChat(modelId, messages, callbacks);
+}
+
+/**
+ * Send image with optional text prompt (simplified wrapper)
+ *
+ * @param {string} modelId - Model ID
+ * @param {File|File[]} images - Image file(s)
+ * @param {string} prompt - Optional text prompt
+ * @param {Object} callbacks - Callback functions
+ */
+export async function sendImage(modelId, images, prompt = 'Describe this image.', callbacks = {}) {
+  return streamVisionChat(modelId, prompt, images, callbacks);
 }
 
 /**
@@ -347,10 +392,23 @@ function fileToBase64(file) {
 }
 
 /**
- * Get available models
+ * Check if model is Pro-only
  */
-export function getAvailableModels() {
-  return Object.values(MODEL_CONFIGS);
+export function modelIsPro(modelId) {
+  const model = MODEL_CONFIGS[modelId];
+  return model?.isPro || false;
+}
+
+/**
+ * Get available models (filter by Pro status)
+ */
+export function getAvailableModels(userIsPro = false) {
+  const models = Object.values(MODEL_CONFIGS);
+  if (userIsPro) {
+    return models;
+  }
+  // Filter out Pro-only models for free users
+  return models.filter(model => !model.isPro);
 }
 
 /**

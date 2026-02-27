@@ -23,6 +23,16 @@ Pro users get access to 11 additional AI models (14 total vs 3 free):
 - **Wave O4** - Expert research with very strong reasoning
 - **Wave O5** - Premium analysis with deepest reasoning
 
+### AI Vision (Image Analysis) 🔥
+- **Qwen3.5-VL** - Vision-language model for image understanding
+- **Qwen3.5-397B-A17B** - Premium multimodal foundation model
+  - 397B parameters (17B active)
+  - Advanced reasoning with thinking mode
+  - Multi-image analysis (up to 5 images)
+  - 262K context window
+  - 201 languages support
+- **Kimi K2.5** - Video and heavy multimodal understanding
+
 ### AI Feed Summarization
 - **Feature**: AI-powered summarization of feed posts
 - **Location**: Feed page
@@ -67,6 +77,7 @@ Pro users get access to 11 additional AI models (14 total vs 3 free):
 | Feature | Free | Pro |
 |---------|------|-----|
 | AI Models | 3 basic models | 14 models (3 free + 11 pro) |
+| AI Vision (Image Analysis) | ❌ | ✅ (Qwen3.5-VL, Qwen3.5-397B-A17B) |
 | AI Feed Summarization | ❌ | ✅ |
 | Music Upload | ❌ | ✅ (50MB/track) |
 | Music Storage | ❌ | ✅ Unlimited |
