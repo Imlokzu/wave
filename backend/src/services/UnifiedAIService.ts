@@ -3,9 +3,9 @@ import { getSearchService, SearchService } from './SearchService';
 import { AI_MODELS, AIModel } from './AIModelConfig';
 
 // Constants
-const DEFAULT_MODEL_ID = 'wave-flash-2';
+const DEFAULT_MODEL_ID = 'glm5';
 const DEFAULT_SEARCH_RESULTS_LIMIT = 5;
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+const NVIDIA_NIM_BASE_URL = 'https://integrate.api.nvidia.com/v1';
 
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant' | 'tool';
@@ -32,7 +32,7 @@ export class UnifiedAIService {
   constructor(
     apiKey: string,
     searchService?: SearchService,
-    baseUrl: string = OPENROUTER_BASE_URL
+    baseUrl: string = NVIDIA_NIM_BASE_URL
   ) {
     this.apiKey = apiKey;
     this.searchService = searchService || getSearchService();

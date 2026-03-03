@@ -152,6 +152,43 @@ export function createUserRouter(userManager: IUserManager) {
   });
 
   /**
+   * GET /api/users/:username/avatar - Get user avatar URL
+   */
+  router.get('/:username/avatar', async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+
+      // Query Supabase directly for avatar_url
+      const { data, error } = await supabase
+        .from('flux_users')
+        .select('avatar_url')
+        .eq('username', username.toLowerCase())
+        .single();
+
+      if (error || !data) {
+        return res.status(404).json({
+          error: {
+            code: 'USER_NOT_FOUND',
+            message: 'User not found',
+          },
+        });
+      }
+
+      res.json({
+        success: true,
+        avatarUrl: data.avatar_url || null,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        error: {
+          code: 'SERVER_ERROR',
+          message: error.message,
+        },
+      });
+    }
+  });
+
+  /**
    * POST /api/users/check - Check if username is available
    */
   router.post('/check', async (req: Request, res: Response) => {
