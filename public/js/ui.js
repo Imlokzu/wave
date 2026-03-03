@@ -368,26 +368,61 @@ class UIManager {
 
     console.log('[UI] Rendering', uniqueMembers.length, 'unique members:', uniqueMembers.map(m => `${m.nickname}${m.isAway ? ' (away)' : ''}`));
 
-    // Determine status based on isAway flag
-    membersList.innerHTML = uniqueMembers.map(member => {
+    // Clear list
+    membersList.innerHTML = '';
+
+    // Render each member
+    uniqueMembers.forEach(member => {
       const isAway = member.isAway === true;
       const statusColor = isAway ? 'bg-yellow-500' : 'bg-green-500';
       const statusText = isAway ? 'Away' : 'Online';
-      
       const memberName = member.nickname || member.username || 'User';
-      return `
-        <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-lighter transition-colors" data-member-name="${memberName}">
-          <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 relative">
-            <span class="material-symbols-outlined text-primary text-[16px]">person</span>
-            <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 ${statusColor} rounded-full border-2 border-surface-dark"></div>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-sm font-medium text-white truncate">${memberName}</div>
-            <div class="text-xs ${isAway ? 'text-yellow-400' : 'text-green-400'} truncate">${statusText}</div>
-          </div>
-        </div>
+      
+      const memberDiv = document.createElement('div');
+      memberDiv.className = 'flex items-center gap-2 p-2 rounded-lg hover:bg-surface-lighter transition-colors';
+      memberDiv.setAttribute('data-member-name', memberName);
+      
+      // Create avatar container
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 relative overflow-hidden';
+      
+      // Create avatar image
+      const avatarImg = document.createElement('img');
+      avatarImg.className = 'w-full h-full object-cover';
+      avatarImg.src = `data:image/svg+xml,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <circle fill="#3b82f6" cx="50" cy="50" r="50"/>
+          <text x="50" y="65" text-anchor="middle" fill="white" font-size="40">${memberName.charAt(0).toUpperCase()}</text>
+        </svg>
+      `)}`;
+      avatarImg.alt = memberName;
+      
+      // Load actual profile picture
+      if (window.profilePictureService) {
+        window.profilePictureService.getProfilePicture(memberName).then(url => {
+          avatarImg.src = url;
+        });
+      }
+      
+      avatarDiv.appendChild(avatarImg);
+      
+      // Create status indicator
+      const statusIndicator = document.createElement('div');
+      statusIndicator.className = `absolute -bottom-0.5 -right-0.5 w-3 h-3 ${statusColor} rounded-full border-2 border-surface-dark`;
+      avatarDiv.appendChild(statusIndicator);
+      
+      // Create info container
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'flex-1 min-w-0';
+      infoDiv.innerHTML = `
+        <div class="text-sm font-medium text-white truncate">${memberName}</div>
+        <div class="text-xs ${isAway ? 'text-yellow-400' : 'text-green-400'} truncate">${statusText}</div>
       `;
-    }).join('');
+      
+      memberDiv.appendChild(avatarDiv);
+      memberDiv.appendChild(infoDiv);
+      membersList.appendChild(memberDiv);
+    });
     
     console.log('[UI] Members list updated successfully');
   }
@@ -860,19 +895,34 @@ class UIManager {
       // AI avatar with special styling
       avatar.className = 'w-10 h-10 rounded-full bg-surface-lighter shrink-0 flex items-center justify-center overflow-hidden ring-2 ring-primary/30';
       avatar.innerHTML = '<img src="/wavechat.png" alt="Wave AI" class="w-full h-full object-cover" />';
-    } else if (message.senderAvatar || message.avatar) {
-      // Check if user has avatar
-      const avatarImg = document.createElement('img');
-      avatarImg.src = message.senderAvatar || message.avatar;
-      avatarImg.alt = message.senderNickname || 'User';
-      avatarImg.className = 'w-full h-full object-cover';
-      avatarImg.onerror = function() {
-        // Fallback to icon if image fails to load
-        this.parentElement.innerHTML = '<span class="material-symbols-outlined text-slate-400">person</span>';
-      };
-      avatar.appendChild(avatarImg);
     } else {
-      avatar.innerHTML = '<span class="material-symbols-outlined text-slate-400">person</span>';
+      // Get profile picture from bio profile (async, but don't block rendering)
+      const username = message.senderUsername || message.senderNickname;
+      
+      // Start with default colored circle with initial
+      if (username) {
+        const avatarImg = document.createElement('img');
+        avatarImg.src = `data:image/svg+xml,${encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <circle fill="#3b82f6" cx="50" cy="50" r="50"/>
+            <text x="50" y="65" text-anchor="middle" fill="white" font-size="40">${username.charAt(0).toUpperCase()}</text>
+          </svg>
+        `)}`;
+        avatarImg.alt = username || 'User';
+        avatarImg.className = 'w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity';
+        
+        // Replace the default icon with the image
+        avatar.innerHTML = '';
+        avatar.appendChild(avatarImg);
+        
+        // Load actual profile picture asynchronously and make clickable
+        if (window.makeProfileClickable) {
+          window.makeProfileClickable(avatarImg, username);
+        }
+      } else {
+        // No username, show default icon
+        avatar.innerHTML = '<span class="material-symbols-outlined text-slate-400">person</span>';
+      }
     }
 
     // Content

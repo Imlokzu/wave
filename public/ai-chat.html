@@ -537,6 +537,18 @@
                             <!-- Attach Menu with Animation -->
                             <div id="attachMenu"
                                 class="hidden absolute bottom-full left-0 mb-2 bg-surface-dark/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-2 min-w-[200px] transform origin-bottom-left transition-all duration-200 ease-out scale-95 opacity-0">
+                                <!-- AI Vision Image Upload -->
+                                <button id="attachImageBtn"
+                                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group">
+                                    <div class="size-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-primary text-[20px]">image</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-white group-hover:text-primary transition-colors">
+                                            AI Vision</div>
+                                        <div class="text-xs text-slate-400">Upload image for analysis</div>
+                                    </div>
+                                </button>
                                 <button onclick="openCodeEditor()"
                                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all text-left group">
                                     <div class="size-8 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -591,6 +603,12 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Image Preview Container (ABOVE input) -->
+            <div id="imagePreviewContainer" class="hidden mx-6 mt-2 mb-0 px-2"></div>
+            
+            <!-- Hidden file input for images -->
+            <input type="file" id="imageInput" accept="image/*" multiple class="hidden" />
 
             <!-- AI Command Modal -->
             <div id="aiCommandModal"
@@ -904,7 +922,28 @@
                 </div>
             </div>
 
-
+            <!-- NVIDIA NIM AI Client for Vision Support -->
+            <script type="module">
+              import * as nvidiaClient from '/js/nvidiaClient.js';
+              
+              // Export to window for use by ai-chat.html
+              window.streamChat = nvidiaClient.streamChat;
+              window.streamVisionChat = nvidiaClient.streamVisionChat;
+              window.runAgent = nvidiaClient.runAgent;
+              window.modelIsPro = nvidiaClient.modelIsPro;
+              window.getAvailableModels = nvidiaClient.getAvailableModels;
+              window.modelSupportsVision = nvidiaClient.modelSupportsVision;
+              window.modelSupportsThinking = nvidiaClient.modelSupportsThinking;
+              
+              // Set NVIDIA API key from backend (already configured in .env)
+              // The backend proxies requests, so frontend doesn't need the key
+              if (!localStorage.getItem('nvidiaApiKey')) {
+                  // Use a placeholder - actual calls will go through backend
+                  localStorage.setItem('nvidiaApiKey', 'backend-proxy');
+              }
+              
+              console.log('[AI Chat] NVIDIA NIM Client loaded');
+            </script>
 
             <script src="/js/features-api.js"></script>
             <script>
@@ -1266,6 +1305,85 @@
                             menu.classList.add('hidden');
                         }, 200);
                     }
+                }
+
+                // AI Vision Image Upload Button (in attachment menu)
+                const attachImageBtn = document.getElementById('attachImageBtn');
+                if (attachImageBtn) {
+                    attachImageBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('[AI Chat] AI Vision button clicked');
+                        
+                        // Close attachment menu
+                        const attachMenu = document.getElementById('attachMenu');
+                        if (attachMenu) {
+                            attachMenu.classList.add('scale-95', 'opacity-0');
+                            attachMenu.classList.remove('scale-100', 'opacity-100');
+                            setTimeout(() => {
+                                attachMenu.classList.add('hidden');
+                            }, 200);
+                        }
+                        
+                        // Trigger image input click
+                        const imageInput = document.getElementById('imageInput');
+                        if (imageInput) {
+                            imageInput.click();
+                        }
+                    });
+                }
+
+                // Handle image file selection
+                const imageInput = document.getElementById('imageInput');
+                if (imageInput) {
+                    imageInput.addEventListener('change', function(e) {
+                        const files = e.target.files;
+                        if (files && files.length > 0) {
+                            handleImageUpload(files);
+                        }
+                        // Reset input so same file can be selected again
+                        this.value = '';
+                    });
+                }
+
+                // Handle image upload - OPTIMIZED FOR SPEED
+                function handleImageUpload(files) {
+                    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+                    if (imageFiles.length === 0) {
+                        console.warn('[AI Chat] No image files selected');
+                        return;
+                    }
+
+                    // Check if vision model is selected
+                    const selectedModel = localStorage.getItem('preferredAIModel') || 'auto';
+                    const visionModels = ['qwen3.5-vl', 'qwen3.5-397b-a17b', 'kimi-k2.5'];
+                    const isVisionModel = visionModels.includes(selectedModel) || 
+                                         (window.modelSupportsVision && window.modelSupportsVision(selectedModel));
+
+                    if (!isVisionModel) {
+                        // Auto-switch to Qwen3.5-VL for vision
+                        localStorage.setItem('preferredAIModel', 'qwen3.5-vl');
+                        showToast('Auto-switched to Qwen3.5-VL for image analysis', 'info');
+                    }
+
+                    // Show preview instantly
+                    const previewContainer = document.getElementById('imagePreviewContainer');
+                    if (previewContainer) {
+                        previewContainer.classList.remove('hidden');
+                        previewContainer.innerHTML = imageFiles.map(file => `
+                            <div class="relative group inline-block m-1">
+                                <img src="${URL.createObjectURL(file)}" alt="Preview" class="h-20 w-20 object-cover rounded-lg border border-primary/30" />
+                            </div>
+                        `).join('');
+                    }
+
+                    // Store images for sending with message
+                    window.pendingImages = imageFiles;
+                    messageInput.placeholder = `🖼️ ${imageFiles.length} image(s) ready - Ask anything!`;
+                    messageInput.classList.add('text-primary');
+                    messageInput.focus();
+                    
+                    console.log('[AI Chat] Images ready:', imageFiles.length);
                 }
 
                 // Close attach menu when clicking outside
@@ -1637,6 +1755,13 @@ Text to translate: ${text}`;
                         input.classList.remove('text-primary');
                     }
 
+                    // Handle attached images
+                    let hasImages = window.pendingImages && window.pendingImages.length > 0;
+                    if (hasImages) {
+                        userMessage = `🖼️ ${window.pendingImages.length} image(s) attached\n${content}`;
+                        // Images will be sent separately to the vision API
+                    }
+
                     // Add user message to UI (shows attachment summary)
                     addMessage(userMessage, true);
 
@@ -1672,7 +1797,84 @@ Text to translate: ${text}`;
                 async function sendToQwenAI(content, skipAddingToHistory = false) {
                     try {
                         console.log('sendToQwenAI called with content:', content);
-                        
+
+                        // Check if we have images to send (VISION MODE - FAST PATH)
+                        if (window.pendingImages && window.pendingImages.length > 0) {
+                            console.log('[AI Chat] 🖼️ VISION MODE: Sending', window.pendingImages.length, 'image(s)');
+                            
+                            // Convert image to base64
+                            const file = window.pendingImages[0];
+                            const reader = new FileReader();
+                            
+                            reader.onload = async function(e) {
+                                const base64Image = e.target.result.split(',')[1];
+                                const selectedModel = localStorage.getItem('preferredAIModel') || 'qwen3.5-vl';
+                                const visionModel = selectedModel.includes('qwen') ? selectedModel : 'qwen3.5-vl';
+                                
+                                console.log('[AI Chat] Using vision model:', visionModel);
+                                
+                                // Don't show "image attached" text - just send the question
+                                const userMsg = content || 'Analyze this image';
+                                
+                                // Add user message to UI (normal style, no image mention)
+                                addMessage(userMsg, true);
+                                
+                                // Call backend vision API and get response
+                                try {
+                                    const response = await fetch('/api/ai-chat', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            messages: [{
+                                                role: 'user',
+                                                content: [
+                                                    { type: 'text', text: content || 'What is in this image?' },
+                                                    { type: 'image_url', image_url: { url: `data:${file.type};base64,${base64Image}` } }
+                                                ]
+                                            }],
+                                            model: visionModel,
+                                            enableSearch: false,
+                                            thinking: false
+                                        })
+                                    });
+                                    
+                                    if (!response.ok) {
+                                        throw new Error('Vision API request failed');
+                                    }
+                                    
+                                    const data = await response.json();
+                                    const aiResponse = data.response || data.content || 'No response from AI';
+                                    
+                                    // Add AI response using NORMAL addMessage (same as text chat)
+                                    addMessage(aiResponse, false);
+                                    
+                                    // Clear pending images and preview
+                                    const previewContainer = document.getElementById('imagePreviewContainer');
+                                    if (previewContainer) {
+                                        previewContainer.classList.add('hidden');
+                                        previewContainer.innerHTML = '';
+                                    }
+                                    window.pendingImages = null;
+                                    
+                                    // Add to history
+                                    if (!skipAddingToHistory) {
+                                        conversationHistory.push({ role: 'model', parts: [{ text: aiResponse }] });
+                                        saveConversation();
+                                    }
+                                    
+                                    console.log('[AI Chat] Vision response complete');
+                                } catch (error) {
+                                    console.error('[AI Chat] Vision error:', error);
+                                    addMessage(`Error: ${error.message}`, false);
+                                }
+                            };
+                            
+                            reader.readAsDataURL(file);
+                            return; // Exit early - vision API handled it
+                        }
+
                         // Load saved settings from localStorage
                         const savedSettings = JSON.parse(localStorage.getItem('aiSettings') || '{}');
                         console.log('Loaded settings:', savedSettings);
@@ -2557,7 +2759,47 @@ You're here to help users with anything they need - from answering questions to 
                 }
 
                 function formatAIContent(content) {
-                    // 1. Remove systemic junk (Fallback notices, etc)
+                    // Basic markdown formatting
+                    content = content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                    content = content.replace(/\*(.+?)\*/g, '<em>$1</em>');
+                    content = content.replace(/`(.+?)`/g, '<code class="bg-black/30 px-1 py-0.5 rounded text-xs">$1</code>');
+                    content = content.replace(/```(\w+)?\n([\s\S]+?)```/g, '<pre class="bg-black/30 p-3 rounded-lg mt-2 mb-2 overflow-x-auto"><code>$2</code></pre>');
+                    return content;
+                }
+
+                function createStreamingMessage() {
+                    const chatContainer = document.getElementById('chatContainer') || document.querySelector('.flex-1.overflow-y-auto');
+                    const div = document.createElement('div');
+                    div.className = 'flex gap-3 group my-2';
+                    div.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-white text-[18px]">smart_toy</span>
+                        </div>
+                        <div class="flex flex-col gap-1 max-w-[85%]">
+                            <p class="text-[10px] font-medium text-slate-400 ml-1">AI</p>
+                            <div class="bg-surface-dark p-3 rounded-2xl rounded-bl-none border border-white/5">
+                                <div class="streaming-content text-sm leading-relaxed text-slate-200">
+                                    <span class="inline-block w-2 h-4 bg-primary animate-pulse"></span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    if (chatContainer) {
+                        chatContainer.appendChild(div);
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                    return div;
+                }
+
+                function scrollToBottom() {
+                    const chatContainer = document.getElementById('chatContainer') || document.querySelector('.flex-1.overflow-y-auto');
+                    if (chatContainer) {
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                }
+
+                // 1. Remove systemic junk (Fallback notices, etc)
+                function cleanAIResponse(content) {
                     let cleanContent = content.replace(/⚠️ Notice: The requested model was temporarily unavailable\..*?\n*/g, '').trim();
 
                     // 2. Try to extract JSON for special cards (Translation, etc)

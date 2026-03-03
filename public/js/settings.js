@@ -143,7 +143,17 @@ async function loadSubscriptionStatus() {
 // Load AI models
 async function loadAIModels() {
   try {
-    const data = await getSubscriptionStatus();
+    // Fetch from /api/settings which includes models
+    const response = await fetch(`${API_BASE}/api/settings`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to load settings');
+    }
+    
+    const result = await response.json();
+    const data = result.data || result;
     const isPro = data.isPro;
     const allModels = data.allModels || data.availableModels || [];
 
@@ -188,21 +198,49 @@ async function loadAIModels() {
       </label>
     `;
 
-    // Group models by type
-    const flashModels = allModels.filter(m => m.id.startsWith('wave-flash-'));
-    const standardModels = allModels.filter(m => m.id.startsWith('wave-') && !m.id.startsWith('wave-flash-') && !m.id.startsWith('wave-o'));
-    const oModels = allModels.filter(m => m.id.startsWith('wave-o'));
+    // Group models by type (NVIDIA NIM models)
+    const freeModels = allModels.filter(m => m.tier === 'free');
+    const proModels = allModels.filter(m => m.tier === 'pro');
 
-    // Wave Flash section
-    if (flashModels.length > 0) {
+    // Free models section
+    if (freeModels.length > 0) {
       html += `
         <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">${t('settings.waveFlashTitle')}</div>
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Free Models</div>
       `;
 
-      flashModels.forEach(model => {
+      freeModels.forEach(model => {
         const isSelected = savedModel === model.id;
-        const isLocked = model.tier === 'pro' && !isPro;
+
+        html += `
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/50 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(91,141,239,0.1)]' : 'border-slate-700'} cursor-pointer hover:bg-slate-800 hover:border-slate-600 transition-all mb-2 group">
+            <div class="flex items-center gap-3 flex-1">
+              <input type="radio" name="aiModel" value="${model.id}" ${isSelected ? 'checked' : ''} onchange="selectAIModel('${model.id}')" class="w-4 h-4 text-primary"/>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold text-white">${model.name}</span>
+                </div>
+                <div class="text-xs text-slate-400 mt-0.5">${model.useCase || model.reasoning || 'AI model'}</div>
+              </div>
+            </div>
+            ${isSelected ? '<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>' : ''}
+          </label>
+        `;
+      });
+
+      html += `</div>`;
+    }
+
+    // Pro models section
+    if (proModels.length > 0) {
+      html += `
+        <div class="pt-2">
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Pro Models 🔒</div>
+      `;
+
+      proModels.forEach(model => {
+        const isSelected = savedModel === model.id;
+        const isLocked = !isPro;
 
         html += `
           <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/50 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(91,141,239,0.1)]' : 'border-slate-700'} ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-800 hover:border-slate-600'} transition-all mb-2 group">
@@ -211,7 +249,7 @@ async function loadAIModels() {
               <div class="flex-1">
                 <div class="flex items-center gap-2">
                   <span class="text-sm font-semibold text-white">${model.name}</span>
-                  ${model.tier === 'pro' ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary">PRO</span>' : ''}
+                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary">PRO</span>
                 </div>
                 <div class="text-xs text-slate-400 mt-0.5">${model.useCase || model.reasoning || 'AI model'}</div>
               </div>
@@ -224,73 +262,11 @@ async function loadAIModels() {
       html += `</div>`;
     }
 
-    // Wave (Standard) section
-    if (standardModels.length > 0) {
-      html += `
-        <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">${t('settings.waveDefaultTitle')}</div>
-      `;
-
-      standardModels.forEach(model => {
-        const isSelected = savedModel === model.id;
-        const isLocked = model.tier === 'pro' && !isPro;
-
-        html += `
-          <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/50 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(91,141,239,0.1)]' : 'border-slate-700'} ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-800 hover:border-slate-600'} transition-all mb-2 group">
-            <div class="flex items-center gap-3 flex-1">
-              <input type="radio" name="aiModel" value="${model.id}" ${isSelected ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="selectAIModel('${model.id}')" class="w-4 h-4 text-primary"/>
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold text-white">${model.name}</span>
-                  ${model.tier === 'pro' ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary">PRO</span>' : ''}
-                </div>
-                <div class="text-xs text-slate-400 mt-0.5">${model.useCase || model.reasoning || 'AI model'}</div>
-              </div>
-            </div>
-            ${isLocked ? '<span class="material-symbols-outlined text-slate-600 text-[18px]">lock</span>' : isSelected ? '<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>' : ''}
-          </label>
-        `;
-      });
-
-      html += `</div>`;
-    }
-
-    // Wave O (Reasoning) section
-    if (oModels.length > 0) {
-      html += `
-        <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">${t('settings.waveThinkingTitle')}</div>
-      `;
-
-      oModels.forEach(model => {
-        const isSelected = savedModel === model.id;
-        const isLocked = model.tier === 'pro' && !isPro;
-
-        html += `
-          <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/50 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(91,141,239,0.1)]' : 'border-slate-700'} ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-800 hover:border-slate-600'} transition-all mb-2 group">
-            <div class="flex items-center gap-3 flex-1">
-              <input type="radio" name="aiModel" value="${model.id}" ${isSelected ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="selectAIModel('${model.id}')" class="w-4 h-4 text-primary"/>
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold text-white">${model.name}</span>
-                  ${model.tier === 'pro' ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary">PRO</span>' : ''}
-                </div>
-                <div class="text-xs text-slate-400 mt-0.5">${model.useCase || model.reasoning || 'AI model'}</div>
-              </div>
-            </div>
-            ${isLocked ? '<span class="material-symbols-outlined text-slate-600 text-[18px]">lock</span>' : isSelected ? '<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>' : ''}
-          </label>
-        `;
-      });
-
-      html += `</div>`;
-    }
-
-    if (flashModels.length === 0 && standardModels.length === 0 && oModels.length === 0) {
+    if (freeModels.length === 0 && proModels.length === 0) {
       html += `
         <div class="p-4 text-center text-slate-400 text-sm">
-            <p>${t('settings.noModelsAvailable')}</p>
-            <p class="text-xs mt-1">${t('settings.usingAutoSelect')}</p>
+            <p>No AI models available</p>
+            <p class="text-xs mt-1">Using auto-select mode</p>
           </div>
       `;
     }

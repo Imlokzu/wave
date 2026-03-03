@@ -40,19 +40,12 @@ export function loadConfig(): Config {
   console.log('[Config] SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
   console.log('[Config] SUPABASE_KEY:', process.env.SUPABASE_KEY ? 'SET' : 'NOT SET');
   
-  // Validate Clerk configuration
-  if (!process.env.CLERK_SECRET_KEY) {
-    console.error('❌ CLERK_SECRET_KEY is not set in environment variables!');
-    console.error('   Please add CLERK_SECRET_KEY to your .env file');
-    throw new Error('CLERK_SECRET_KEY is required for authentication');
+  // Validate Supabase configuration
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+    console.error('❌ SUPABASE_URL and SUPABASE_KEY are required!');
+    console.error('   Please add them to your .env file');
+    throw new Error('Supabase configuration is required');
   }
-  
-  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-    console.warn('⚠️  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set');
-    console.warn('   This may be required for some Clerk features');
-  }
-  
-  console.log('[Config] CLERK_SECRET_KEY:', process.env.CLERK_SECRET_KEY ? 'SET' : 'NOT SET');
   
   return {
     port: parseInt(process.env.PORT || '3001', 10),

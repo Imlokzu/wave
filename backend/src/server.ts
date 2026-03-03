@@ -24,6 +24,7 @@ import { AuthService } from './services/AuthService';
 import { initializeEnhancedAIService } from './services/EnhancedAIService';
 import { initializeUnifiedAIService } from './services/UnifiedAIService';
 import { initializeProfileManager } from './managers/ProfileManager';
+import { initializeBioProfileManager } from './managers/BioProfileManager';
 import { initializeSubscriptionManager } from './managers/SubscriptionManager';
 import { createSubscriptionRouter } from './routes/subscription';
 import feedRouter from './routes/feed';
@@ -79,22 +80,27 @@ const fileUploadService = new FileUploadService(
 const aiService = initializeEnhancedAIService(process.env.OPENAI_API_KEY);
 console.log('✅ Enhanced AI Service initialized with multiple models');
 
-// Initialize Unified AI service with OpenRouter API key
-if (process.env.OPENAI_API_KEY) {
+// Initialize Unified AI service with NVIDIA NIM API key
+if (process.env.NVIDIA_API_KEY) {
   try {
-    initializeUnifiedAIService(process.env.OPENAI_API_KEY);
-    console.log('✅ Unified AI Service initialized with model selection support');
-    console.log(`   API Key: ${process.env.OPENAI_API_KEY.substring(0, 20)}...`);
+    initializeUnifiedAIService(process.env.NVIDIA_API_KEY);
+    console.log('✅ Unified AI Service initialized with NVIDIA NIM');
+    console.log(`   API Key: ${process.env.NVIDIA_API_KEY.substring(0, 20)}...`);
   } catch (error: any) {
     console.error('❌ Failed to initialize Unified AI Service:', error.message);
   }
 } else {
-  console.warn('⚠️  OPENAI_API_KEY not found - Unified AI Service will not work');
+  console.warn('⚠️  NVIDIA_API_KEY not found - Unified AI Service will not work');
 }
 
 // Initialize profile manager
 if (config.supabaseUrl && config.supabaseKey) {
   initializeProfileManager(config.supabaseUrl, config.supabaseKey);
+}
+
+// Initialize bio profile manager
+if (config.supabaseUrl && config.supabaseKey) {
+  initializeBioProfileManager(config.supabaseUrl, config.supabaseKey);
 }
 
 // Initialize subscription manager
@@ -141,6 +147,11 @@ app.options('*', cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve bio profile pages
+app.get('/bio/:username', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/bio.html'));
+});
+
 // Serve static files (for the client UI)
 // In development, public folder is at root level (../../public from dist/)
 // In production (Passenger), it's also at root level
@@ -169,6 +180,8 @@ app.get('/health', (req, res) => {
 // API Routes
 import { initializeDeepSeekService } from './services/DeepSeekAIService';
 import { createAdminRouter } from './routes/admin';
+import { createBioProfileRouter } from './routes/bio-profile';
+import { createBioViewsRouter } from './routes/bio-views';
 
 // Initialize DeepSeek AI service with OpenRouter API key
 if (process.env.OPENAI_API_KEY) {
@@ -187,6 +200,8 @@ app.use('/api/dms', createDMRouter(dmManager, userManager));
 app.use('/api/chats', createChatRouter(userManager, dmManager, roomManager, messageManager));
 app.use('/api/invites', createInvitesRouter());
 app.use('/api/profile', createProfileRouter(authService));
+app.use('/api/bio-profile', createBioProfileRouter(authService));
+app.use('/api/bio-views', createBioViewsRouter());
 app.use('/api/ai', createAIRouter(authService));
 app.use('/api/subscription', createSubscriptionRouter(authService));
 app.use('/api/feed', feedRouter);

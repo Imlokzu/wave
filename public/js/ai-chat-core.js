@@ -297,8 +297,13 @@ class AIChatCore {
             }
             
             const data = await response.json();
-            const aiResponse = data.response;
+            let aiResponse = data.response;
             
+            // Remove thinking/reasoning content from display
+            if (aiResponse) {
+                aiResponse = aiResponse.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim();
+            }
+
             const contentDiv = streamingDiv.querySelector('.streaming-content');
             contentDiv.innerHTML = this.formatAIContent(aiResponse);
             
