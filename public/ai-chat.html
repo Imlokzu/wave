@@ -2562,6 +2562,8 @@ You're here to help users with anything they need - from answering questions to 
 
                             const data = await fallbackResponse.json().catch(() => ({}));
                             const finalText = data.response || data.message || data.content || '';
+                            console.log('[AI Chat] Non-streaming response received:', finalText.substring(0, 100));
+                            
                             if (!finalText) {
                                 streamingDiv?.remove();
                                 addMessage('❌ Something went wrong while processing the information.', false);
@@ -2570,8 +2572,10 @@ You're here to help users with anything they need - from answering questions to 
 
                             // Render non-streaming response in the same bubble
                             const contentDiv = streamingDiv.querySelector('.streaming-content');
+                            console.log('[AI Chat] Content div found:', !!contentDiv);
                             if (contentDiv) {
                                 contentDiv.innerHTML = formatAIContent(finalText);
+                                console.log('[AI Chat] Response rendered');
                             }
 
                             // Add speech and stop buttons
@@ -2624,108 +2628,154 @@ You're here to help users with anything they need - from answering questions to 
                             return;
                         }
 
-                        // Handle streaming response
-                        const reader = response.body?.getReader();
-                        if (!reader) {
-                            streamingDiv?.remove();
-                            addMessage('Error: Response body is not readable', false);
-                            return;
-                        }
-
-                        const decoder = new TextDecoder();
-                        let buffer = '';
-                        let fullResponse = '';
-                        let tokenBuffer = '';
-                        let lastUpdate = Date.now();
-                        const UPDATE_INTERVAL = 80; // Update UI every 80ms for smooth streaming
-
-                        const contentDiv = streamingDiv.querySelector('.streaming-content');
+                        // Handle response based on mode
+                        const isStreaming = streamUrl.includes('stream=true');
                         
-                        // Initialize streaming markdown handler
-                        const streamingMd = new StreamingMarkdown(contentDiv);
+                        if (isStreaming) {
+                            // Handle streaming response
+                            const reader = response.body?.getReader();
+                            if (!reader) {
+                                streamingDiv?.remove();
+                                addMessage('Error: Response body is not readable', false);
+                                return;
+                            }
 
-                        let hasReceivedContent = false;
+                            const decoder = new TextDecoder();
+                            let buffer = '';
+                            let fullResponse = '';
+                            let tokenBuffer = '';
+                            let lastUpdate = Date.now();
+                            const UPDATE_INTERVAL = 80; // Update UI every 80ms for smooth streaming
 
-                        try {
-                            while (true) {
-                                const { done, value } = await reader.read();
-                                if (done) break;
+                            const contentDiv = streamingDiv.querySelector('.streaming-content');
 
-                                buffer += decoder.decode(value, { stream: true });
+                            // Initialize streaming markdown handler
+                            const streamingMd = new StreamingMarkdown(contentDiv);
 
-                                // Process complete lines
+                            let hasReceivedContent = false;
+
+                            try {
                                 while (true) {
-                                    const lineEnd = buffer.indexOf('\n');
-                                    if (lineEnd === -1) break;
+                                    const { done, value } = await reader.read();
+                                    if (done) break;
 
-                                    const line = buffer.slice(0, lineEnd).trim();
-                                    buffer = buffer.slice(lineEnd + 1);
+                                    buffer += decoder.decode(value, { stream: true });
 
-                                    if (line.startsWith('data: ')) {
-                                        const data = line.slice(6);
-                                        if (data === '[DONE]') break;
+                                    // Process complete lines
+                                    while (true) {
+                                        const lineEnd = buffer.indexOf('\n');
+                                        if (lineEnd === -1) break;
 
-                                        try {
-                                            const parsed = JSON.parse(data);
+                                        const line = buffer.slice(0, lineEnd).trim();
+                                        buffer = buffer.slice(lineEnd + 1);
 
-                                            if (parsed.error) {
-                                                const errText = String(parsed.error || 'Unknown error');
-                                                const isStreamingError = /stream|streaming|openinference|upstream|provider returned error/i.test(errText);
-                                                if (isStreamingError) {
-                                                    const handled = await runNonStreamingFallback();
-                                                    if (handled) return;
+                                        if (line.startsWith('data: ')) {
+                                            const data = line.slice(6);
+                                            if (data === '[DONE]') break;
+
+                                            try {
+                                                const parsed = JSON.parse(data);
+
+                                                if (parsed.error) {
+                                                    const errText = String(parsed.error || 'Unknown error');
+                                                    const isStreamingError = /stream|streaming|openinference|upstream|provider returned error/i.test(errText);
+                                                    if (isStreamingError) {
+                                                        const handled = await runNonStreamingFallback();
+                                                        if (handled) return;
+                                                    }
+                                                    streamingDiv?.remove();
+                                                    if (/429/.test(errText)) {
+                                                        addMessage('⚠️ Rate limit reached. Please wait a moment and try again.', false);
+                                                    } else if (/400/.test(errText)) {
+                                                        addMessage('⚠️ Request was rejected. Try a shorter message or change the model.', false);
+                                                    } else {
+                                                        addMessage(`Error: ${errText}`, false);
+                                                    }
+                                                    return;
                                                 }
-                                                streamingDiv?.remove();
-                                                if (/429/.test(errText)) {
-                                                    addMessage('⚠️ Rate limit reached. Please wait a moment and try again.', false);
-                                                } else if (/400/.test(errText)) {
-                                                    addMessage('⚠️ Request was rejected. Try a shorter message or change the model.', false);
-                                                } else {
-                                                    addMessage(`Error: ${errText}`, false);
+
+                                                if (parsed.content) {
+                                                    // Remove thinking badge and loader on first content
+                                                    if (!hasReceivedContent) {
+                                                        hasReceivedContent = true;
+                                                        const thinkingBadge = streamingDiv.querySelector('.inline-flex.items-center.gap-1\\.5');
+                                                        if (thinkingBadge) thinkingBadge.remove();
+                                                    }
+
+                                                    fullResponse += parsed.content;
+                                                    tokenBuffer += parsed.content;
+
+                                                    // Use streaming markdown handler for efficient rendering
+                                                    streamingMd.addToken(parsed.content);
                                                 }
-                                                return;
+                                            } catch (e) {
+                                                // Ignore JSON parse errors
                                             }
-
-                                            if (parsed.content) {
-                                                // Remove thinking badge and loader on first content
-                                                if (!hasReceivedContent) {
-                                                    hasReceivedContent = true;
-                                                    const thinkingBadge = streamingDiv.querySelector('.inline-flex.items-center.gap-1\\.5');
-                                                    if (thinkingBadge) thinkingBadge.remove();
-                                                }
-
-                                                fullResponse += parsed.content;
-                                                tokenBuffer += parsed.content;
-
-                                                // Use streaming markdown handler for efficient rendering
-                                                streamingMd.addToken(parsed.content);
-                                            }
-                                        } catch (e) {
-                                            // Ignore JSON parse errors
                                         }
                                     }
                                 }
-                            }
 
-                            // Finalize markdown rendering when streaming is complete
-                            streamingMd.finalize();
-                        } catch (streamError) {
-                            console.error('Stream reading error:', streamError);
-                            // Don't show error to user if we got some content
-                            if (!hasReceivedContent) {
-                                const handled = await runNonStreamingFallback();
-                                if (!handled) {
-                                    streamingDiv?.remove();
-                                    addMessage('Connection interrupted. Please try again.', false);
+                                // Finalize markdown rendering when streaming is complete
+                                streamingMd.finalize();
+                            } catch (streamError) {
+                                console.error('Stream reading error:', streamError);
+                                // Don't show error to user if we got some content
+                                if (!hasReceivedContent) {
+                                    const handled = await runNonStreamingFallback();
+                                    if (!handled) {
+                                        streamingDiv?.remove();
+                                        addMessage('Connection interrupted. Please try again.', false);
+                                    }
+                                    return;
                                 }
+                            } finally {
+                                try {
+                                    reader.cancel();
+                                } catch (e) {
+                                    // Ignore cancel errors
+                                }
+                            }
+                        } else {
+                            // Handle non-streaming response (for search/tool execution)
+                            console.log('[AI Chat] Handling non-streaming response...');
+                            const data = await response.json();
+                            const finalText = data.response || data.message || data.content || '';
+                            console.log('[AI Chat] Non-streaming response:', finalText.substring(0, 100));
+                            
+                            if (!finalText) {
+                                streamingDiv?.remove();
+                                addMessage('❌ Something went wrong while processing the information.', false);
                                 return;
                             }
-                        } finally {
-                            try {
-                                reader.cancel();
-                            } catch (e) {
-                                // Ignore cancel errors
+
+                            // Remove loading indicator
+                            const thinkingBadge = streamingDiv.querySelector('.inline-flex.items-center.gap-1\\.5');
+                            if (thinkingBadge) thinkingBadge.remove();
+
+                            // Render response
+                            const contentDiv = streamingDiv.querySelector('.streaming-content');
+                            if (contentDiv) {
+                                contentDiv.innerHTML = formatAIContent(finalText);
+                                console.log('[AI Chat] Non-streaming response rendered');
                             }
+
+                            // Add speech and stop buttons
+                            const buttonContainer = document.createElement('div');
+                            buttonContainer.className = 'flex items-center gap-2 justify-start ml-1 mt-1';
+                            buttonContainer.innerHTML = `
+                    <button onclick="speakText(this.closest('.flex-col').querySelector('.text-sm').innerText, this)" class="speak-btn p-1 text-slate-500 hover:text-primary transition-colors opacity-0 group-hover:opacity-100" title="Read Aloud">
+                        <span class="material-symbols-outlined text-[16px]">volume_up</span>
+                    </button>
+                    <button onclick="stopSpeaking()" class="p-1 text-slate-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100" title="Stop Reading">
+                        <span class="material-symbols-outlined text-[16px]">stop_circle</span>
+                    </button>
+                `;
+                            streamingDiv.querySelector('.flex-col').appendChild(buttonContainer);
+
+                            // Save to history
+                            conversationHistory.push({ role: 'model', parts: [{ text: finalText }] });
+                            saveConversation();
+                            console.log('[AI Chat] Non-streaming response complete');
                         }
 
                         // Parse JSON search requests from AI response

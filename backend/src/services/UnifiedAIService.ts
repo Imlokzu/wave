@@ -298,8 +298,10 @@ export class UnifiedAIService {
         });
         
         // Get final response from AI with tool results
+        console.log('[UnifiedAI] Getting final response with tool results...');
         const finalResponse = await this.callOpenRouterAPI(model, messages, false, false, temperature, maxTokens);
         response = finalResponse.content;
+        console.log('[UnifiedAI] Final response received:', response.substring(0, 200));
       }
 
       // If this was a fallback, prepend a message for the user
