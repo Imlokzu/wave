@@ -2755,12 +2755,10 @@ You're here to help users with anything they need - from answering questions to 
                             return;
                         }
 
-                        // Now format the complete response (only once, after streaming is done)
+                        // Finalize markdown rendering (streamingMd already handled this)
                         // Remove the cursor/loading indicator if it exists
                         const cursor = streamingDiv.querySelector('.animate-pulse');
                         if (cursor) cursor.remove();
-
-                        textContainer.innerHTML = formatAIContent(fullResponse);
 
                         // Add speech and stop buttons after streaming is done
                         const buttonContainer = document.createElement('div');
@@ -2904,6 +2902,7 @@ You're here to help users with anything they need - from answering questions to 
                 function addMessage(content, isUser = false) {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = isUser ? 'flex gap-3 flex-row-reverse group' : 'flex gap-3 group';
+                    messageDiv.dataset.message = 'true';
 
                     const avatar = isUser
                         ? '<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 bg-primary"></div>'
@@ -2922,8 +2921,8 @@ You're here to help users with anything they need - from answering questions to 
                 ${avatar}
                 <div class="flex flex-col gap-1 max-w-[85%]">
                     ${!isUser ? '<p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>' : ''}
-                    <div class="${bubbleClass}">
-                        <div class="text-sm leading-relaxed ${textClass}">${formattedContent}</div>
+                    <div class="${bubbleClass} message-bubble" oncontextmenu="showMessageContextMenu(event, this, ${isUser})">
+                        <div class="text-sm leading-relaxed ${textClass} message-content">${formattedContent}</div>
                     </div>
                     <div class="flex items-center gap-2 ${isUser ? 'justify-end mr-1' : 'justify-start ml-1'}">
                         ${!isUser ? `
@@ -2943,6 +2942,160 @@ You're here to help users with anything they need - from answering questions to 
                     scrollContainer.scrollTop = scrollContainer.scrollHeight;
 
                     return messageDiv; // Return the element so it can be manipulated
+                }
+
+                // Context Menu for Messages
+                let contextMenuTarget = null;
+
+                function showMessageContextMenu(event, bubble, isUser) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    contextMenuTarget = { bubble, isUser, content: bubble.querySelector('.message-content') };
+                    
+                    // Hide existing menu
+                    const existingMenu = document.getElementById('messageContextMenu');
+                    if (existingMenu) existingMenu.remove();
+                    
+                    // Create context menu
+                    const menu = document.createElement('div');
+                    menu.id = 'messageContextMenu';
+                    menu.className = 'fixed z-[9999] bg-surface-dark border border-white/10 rounded-xl shadow-2xl py-2 min-w-[180px]';
+                    menu.innerHTML = `
+                        <button onclick="copyMessageContent()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-primary/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                            <span>Copy</span>
+                        </button>
+                        ${!isUser ? `
+                        <button onclick="regenerateResponse()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-primary/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">refresh</span>
+                            <span>Regenerate</span>
+                        </button>
+                        <button onclick="replaceResponse()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-primary/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+                            <span>Replace Response</span>
+                        </button>
+                        ` : `
+                        <button onclick="editMessage()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-primary/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                            <span>Edit</span>
+                        </button>
+                        `}
+                        <button onclick="deleteMessage()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-red-500/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px] text-red-400">delete</span>
+                            <span class="text-red-400">Delete</span>
+                        </button>
+                    `;
+                    
+                    // Position menu
+                    const x = Math.min(event.clientX, window.innerWidth - 200);
+                    const y = Math.min(event.clientY, window.innerHeight - 200);
+                    menu.style.left = x + 'px';
+                    menu.style.top = y + 'px';
+                    
+                    document.body.appendChild(menu);
+                    
+                    // Close on click outside
+                    setTimeout(() => {
+                        document.addEventListener('click', function closeMenu(e) {
+                            if (!menu.contains(e.target)) {
+                                menu.remove();
+                                document.removeEventListener('click', closeMenu);
+                            }
+                        });
+                    }, 100);
+                }
+
+                function copyMessageContent() {
+                    if (!contextMenuTarget) return;
+                    const text = contextMenuTarget.content.innerText;
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('Copied to clipboard!', 'success');
+                    }).catch(err => {
+                        console.error('Failed to copy:', err);
+                        showToast('Failed to copy', 'error');
+                    });
+                    document.getElementById('messageContextMenu')?.remove();
+                }
+
+                function regenerateResponse() {
+                    if (!contextMenuTarget) return;
+                    // Find the previous user message
+                    const messageDiv = contextMenuTarget.bubble.closest('[data-message="true"]');
+                    let prevMessage = messageDiv.previousElementSibling;
+                    while (prevMessage && !prevMessage.dataset.message) {
+                        prevMessage = prevMessage.previousElementSibling;
+                    }
+                    
+                    if (prevMessage) {
+                        const userContent = prevMessage.querySelector('.message-content')?.innerText || '';
+                        // Remove the AI message
+                        messageDiv.remove();
+                        // Resend the user message
+                        sendMessage(userContent);
+                    }
+                    document.getElementById('messageContextMenu')?.remove();
+                }
+
+                function replaceResponse() {
+                    if (!contextMenuTarget) return;
+                    const aiContent = contextMenuTarget.content.innerText;
+                    // Put the AI response in the input box for editing
+                    const input = document.getElementById('messageInput');
+                    if (input) {
+                        input.value = aiContent;
+                        input.focus();
+                        showToast('Response loaded to input - edit and send!', 'info');
+                    }
+                    document.getElementById('messageContextMenu')?.remove();
+                }
+
+                function editMessage() {
+                    if (!contextMenuTarget) return;
+                    const userContent = contextMenuTarget.content.innerText;
+                    const input = document.getElementById('messageInput');
+                    if (input) {
+                        input.value = userContent;
+                        input.focus();
+                        // Delete the original message
+                        const messageDiv = contextMenuTarget.bubble.closest('[data-message="true"]');
+                        messageDiv.remove();
+                        showToast('Message loaded to input - edit and send!', 'info');
+                    }
+                    document.getElementById('messageContextMenu')?.remove();
+                }
+
+                function deleteMessage() {
+                    if (!contextMenuTarget) return;
+                    const messageDiv = contextMenuTarget.bubble.closest('[data-message="true"]');
+                    if (messageDiv) {
+                        messageDiv.remove();
+                        showToast('Message deleted', 'success');
+                    }
+                    document.getElementById('messageContextMenu')?.remove();
+                }
+
+                function showToast(message, type = 'info') {
+                    const toast = document.createElement('div');
+                    toast.className = `fixed top-6 right-6 z-[10000] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-pulse ${
+                        type === 'success' ? 'bg-green-500/90' :
+                        type === 'error' ? 'bg-red-500/90' :
+                        'bg-primary/90'
+                    } text-white backdrop-blur-sm`;
+                    toast.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px]">${
+                            type === 'success' ? 'check_circle' :
+                            type === 'error' ? 'error' :
+                            'info'
+                        }</span>
+                        <span class="text-sm font-medium">${message}</span>
+                    `;
+                    document.body.appendChild(toast);
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        toast.style.transition = 'opacity 0.3s';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 2000);
                 }
 
                 // Get language flag emoji
@@ -3051,12 +3204,12 @@ You're here to help users with anything they need - from answering questions to 
                             });
                             
                             this.contentDiv.innerHTML = sanitized;
-                            this.scrollToBottom();
                         } catch (error) {
                             console.error('[Markdown] Parse error:', error);
                             // Fallback: show raw text
                             this.contentDiv.textContent = this.buffer;
                         }
+                        this.scrollToBottom();
                     }
                     
                     scrollToBottom() {
