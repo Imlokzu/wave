@@ -1299,6 +1299,129 @@
                     }, 2000);
                 }
 
+                // Right-click context menu for messages
+                function showMessageContextMenu(event, bubble) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Hide existing menu
+                    const existingMenu = document.getElementById('messageContextMenu');
+                    if (existingMenu) existingMenu.remove();
+                    
+                    // Get message content
+                    const contentEl = bubble.querySelector('.text-sm, .markdown-body');
+                    const text = contentEl ? contentEl.innerText : '';
+                    const isAIMessage = bubble.closest('.group').querySelector('.material-symbols-outlined')?.textContent === 'smart_toy';
+                    
+                    // Create context menu
+                    const menu = document.createElement('div');
+                    menu.id = 'messageContextMenu';
+                    menu.className = 'fixed z-[9999] bg-surface-dark border border-white/10 rounded-xl shadow-2xl py-2 min-w-[180px]';
+                    menu.innerHTML = `
+                        <button onclick="copyMessageText('${text.replace(/'/g, "\\'")}')" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-primary/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                            <span>Copy</span>
+                        </button>
+                        ${isAIMessage ? `
+                        <button onclick="regenerateAIResponse()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-primary/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">refresh</span>
+                            <span>Regenerate</span>
+                        </button>
+                        ` : `
+                        <button onclick="editMyMessage()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-primary/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                            <span>Edit</span>
+                        </button>
+                        `}
+                        <button onclick="deleteThisMessage()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-red-500/10 transition-colors">
+                            <span class="material-symbols-outlined text-[18px] text-red-400">delete</span>
+                            <span class="text-red-400">Delete</span>
+                        </button>
+                    `;
+                    
+                    // Position menu
+                    const x = Math.min(event.clientX, window.innerWidth - 200);
+                    const y = Math.min(event.clientY, window.innerHeight - 200);
+                    menu.style.left = x + 'px';
+                    menu.style.top = y + 'px';
+                    
+                    document.body.appendChild(menu);
+                    
+                    // Close on click outside
+                    setTimeout(() => {
+                        document.addEventListener('click', function closeMenu(e) {
+                            if (!menu.contains(e.target)) {
+                                menu.remove();
+                                document.removeEventListener('click', closeMenu);
+                            }
+                        });
+                    }, 100);
+                }
+
+                function copyMessageText(text) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('Copied!', 'info');
+                    }).catch(err => {
+                        console.error('Failed to copy:', err);
+                        showToast('Failed to copy', 'warning');
+                    });
+                    document.getElementById('messageContextMenu')?.remove();
+                }
+
+                function regenerateAIResponse() {
+                    // Find the previous user message and resend
+                    const menu = document.getElementById('messageContextMenu');
+                    if (!menu) return;
+                    
+                    const currentMsg = menu.closest('[data-message]') || menu.parentElement.closest('[data-message]');
+                    if (!currentMsg) return;
+                    
+                    // Find previous user message
+                    let prev = currentMsg.previousElementSibling;
+                    while (prev && !prev.dataset.message) {
+                        prev = prev.previousElementSibling;
+                    }
+                    
+                    if (prev) {
+                        const userText = prev.querySelector('.text-sm')?.innerText || '';
+                        // Remove AI message
+                        currentMsg.remove();
+                        // Resend
+                        sendMessage(userText);
+                    }
+                    menu.remove();
+                }
+
+                function editMyMessage() {
+                    const menu = document.getElementById('messageContextMenu');
+                    if (!menu) return;
+                    
+                    const currentMsg = menu.closest('[data-message]');
+                    if (!currentMsg) return;
+                    
+                    const userText = currentMsg.querySelector('.text-sm')?.innerText || '';
+                    const input = document.getElementById('messageInput');
+                    if (input) {
+                        input.value = userText;
+                        input.focus();
+                        currentMsg.remove();
+                        showToast('Message loaded to input', 'info');
+                    }
+                    menu.remove();
+                }
+
+                function deleteThisMessage() {
+                    const menu = document.getElementById('messageContextMenu');
+                    if (!menu) return;
+                    
+                    const currentMsg = menu.closest('[data-message]');
+                    if (currentMsg) {
+                        currentMsg.remove();
+                        showToast('Message deleted', 'info');
+                    }
+                    menu.remove();
+                }
+
                 function openSettings() {
                     document.getElementById('settingsModal').classList.remove('hidden');
                 }
@@ -1945,7 +2068,10 @@ Text to translate: ${text}`;
                     // Don't modify userMessage - just send the content as-is
 
                     // Add user message to UI (shows attachment summary)
-                    addMessage(userMessage, true);
+                    // Don't add message here for images - it will be added in sendToQwenAI
+                    if (!hasImages) {
+                        addMessage(userMessage, true);
+                    }
 
                     // Add to conversation history (only once, not in sendToQwenAI)
                     conversationHistory.push({ role: 'user', parts: [{ text: aiPrompt }] });
@@ -2945,6 +3071,7 @@ You're here to help users with anything they need - from answering questions to 
                 function addMessage(content, isUser = false) {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = isUser ? 'flex gap-3 flex-row-reverse group' : 'flex gap-3 group';
+                    messageDiv.dataset.message = 'true';
 
                     const avatar = isUser
                         ? '<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 bg-primary"></div>'
@@ -2963,7 +3090,7 @@ You're here to help users with anything they need - from answering questions to 
                 ${avatar}
                 <div class="flex flex-col gap-1 max-w-[85%]">
                     ${!isUser ? '<p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>' : ''}
-                    <div class="${bubbleClass}">
+                    <div class="${bubbleClass}" oncontextmenu="showMessageContextMenu(event, this)">
                         <div class="text-sm leading-relaxed ${textClass}">${formattedContent}</div>
                     </div>
                     <div class="flex items-center gap-2 ${isUser ? 'justify-end mr-1' : 'justify-start ml-1'}">
