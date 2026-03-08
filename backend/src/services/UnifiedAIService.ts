@@ -335,7 +335,31 @@ export class UnifiedAIService {
       return toolCalls;
     }
     
-    // Fallback: Look for JSON blocks in content
+    console.log('[UnifiedAI] No native tool_calls, checking content for patterns...');
+    
+    // Fallback: Look for [WEB_SEARCH: ...] or [SEARCH: ...] patterns
+    const webSearchRegex = /\[WEB_SEARCH:\s*(.+?)\]/g;
+    const searchRegex = /\[SEARCH:\s*(.+?)\]/g;
+    const fetchRegex = /\[FETCH:\s*(.+?)\]/g;
+    
+    let searchMatch;
+    while ((searchMatch = webSearchRegex.exec(content)) !== null) {
+      console.log(`[UnifiedAI] Found WEB_SEARCH pattern: ${searchMatch[1]}`);
+      toolCalls.push({ name: 'search', args: { query: searchMatch[1].trim() } });
+    }
+    
+    while ((searchMatch = searchRegex.exec(content)) !== null) {
+      console.log(`[UnifiedAI] Found SEARCH pattern: ${searchMatch[1]}`);
+      toolCalls.push({ name: 'search', args: { query: searchMatch[1].trim() } });
+    }
+    
+    let fetchMatch;
+    while ((fetchMatch = fetchRegex.exec(content)) !== null) {
+      console.log(`[UnifiedAI] Found FETCH pattern: ${fetchMatch[1]}`);
+      toolCalls.push({ name: 'fetch', args: { url: fetchMatch[1].trim() } });
+    }
+    
+    // Also look for JSON blocks
     const jsonBlockRegex = /```(?:json)?\s*({[\s\S]*?})\s*```/g;
     let match;
     
@@ -365,18 +389,8 @@ export class UnifiedAIService {
       }
     }
     
-    // Also look for inline tool calls [SEARCH: query] or [FETCH: url]
-    const searchRegex = /\[SEARCH:\s*(.+?)\]/g;
-    const fetchRegex = /\[FETCH:\s*(.+?)\]/g;
-    
-    let searchMatch;
-    while ((searchMatch = searchRegex.exec(content)) !== null) {
-      toolCalls.push({ name: 'search', args: { query: searchMatch[1].trim() } });
-    }
-    
-    let fetchMatch;
-    while ((fetchMatch = fetchRegex.exec(content)) !== null) {
-      toolCalls.push({ name: 'fetch', args: { url: fetchMatch[1].trim() } });
+    if (toolCalls.length > 0) {
+      console.log(`[UnifiedAI] Found ${toolCalls.length} tool call(s) via pattern matching`);
     }
     
     return toolCalls;
@@ -599,6 +613,7 @@ Respond naturally and directly. No thinking process in the main response.`;
       requestBody.tools = getToolsSchema();
       // Optionally set tool_choice to 'auto' to let AI decide when to use tools
       requestBody.tool_choice = 'auto';
+      console.log('[UnifiedAI] Tools schema added:', JSON.stringify(requestBody.tools, null, 2));
     }
 
     // Add thinking/reasoning support
