@@ -2630,6 +2630,7 @@ You're here to help users with anything they need - from answering questions to 
 
                         // Handle response based on mode
                         const isStreaming = streamUrl.includes('stream=true');
+                        let searchQueries = []; // Declare for both modes
                         
                         if (isStreaming) {
                             // Handle streaming response
@@ -2776,33 +2777,36 @@ You're here to help users with anything they need - from answering questions to 
                             conversationHistory.push({ role: 'model', parts: [{ text: finalText }] });
                             saveConversation();
                             console.log('[AI Chat] Non-streaming response complete');
+                            
+                            // For non-streaming, use finalText for pattern matching
+                            searchQueries = [];
                         }
 
-                        // Parse JSON search requests from AI response
-                        let searchQueries = [];
-                        const jsonBlockMatch = fullResponse.match(/```json\s*({[\s\S]*?})\s*```/);
-                        if (jsonBlockMatch) {
-                            try {
-                                const searchRequest = JSON.parse(jsonBlockMatch[1]);
-                                if (searchRequest.searches && Array.isArray(searchRequest.searches)) {
-                                    searchQueries = searchRequest.searches.map(s => s.query || s);
-                                    console.log('🔍 Parsed JSON search request:', searchQueries);
+                        // Parse JSON search requests from AI response (streaming mode only)
+                        if (isStreaming) {
+                            const jsonBlockMatch = fullResponse.match(/```json\s*({[\s\S]*?})\s*```/);
+                            if (jsonBlockMatch) {
+                                try {
+                                    const searchRequest = JSON.parse(jsonBlockMatch[1]);
+                                    if (searchRequest.searches && Array.isArray(searchRequest.searches)) {
+                                        searchQueries = searchRequest.searches.map(s => s.query || s);
+                                        console.log('🔍 Parsed JSON search request:', searchQueries);
+                                    }
+                                } catch (e) {
+                                    console.error('Failed to parse JSON search request:', e);
                                 }
-                            } catch (e) {
-                                console.error('Failed to parse JSON search request:', e);
                             }
-                        }
 
-                        // Fallback: Collect pattern-based searches for backward compatibility
-                        if (searchQueries.length === 0) {
-                            const searchMatches = [...fullResponse.matchAll(/\[SEARCH:\s*(.+?)\]/g)];
-                            searchQueries = searchMatches.map(m => m[1].trim());
-                        }
+                            // Fallback: Collect pattern-based searches for backward compatibility
+                            if (searchQueries.length === 0) {
+                                const searchMatches = [...fullResponse.matchAll(/\[SEARCH:\s*(.+?)\]/g)];
+                                searchQueries = searchMatches.map(m => m[1].trim());
+                            }
 
-                        const weatherMatches = [...fullResponse.matchAll(/\[WEATHER:\s*(.+?)\]/g)];
-                        const fileMatches = [...fullResponse.matchAll(/\[READ_FILE:\s*(.+?)\]/g)];
+                            const weatherMatches = [...fullResponse.matchAll(/\[WEATHER:\s*(.+?)\]/g)];
+                            const fileMatches = [...fullResponse.matchAll(/\[READ_FILE:\s*(.+?)\]/g)];
 
-                        if (searchQueries.length > 0 || weatherMatches.length > 0 || fileMatches.length > 0) {
+                            if (searchQueries.length > 0 || weatherMatches.length > 0 || fileMatches.length > 0) {
                             const weatherCities = weatherMatches.map(m => m[1].trim());
                             const filesToRead = fileMatches.map(m => m[1].trim());
 

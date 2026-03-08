@@ -23,7 +23,7 @@ Wave is an open-source, self-hostable real-time messaging platform. Deploy it on
 - **Invite Links** — Invite others to rooms or the platform
 
 ### AI Assistant
-- **Multi-model Support** — Chat with 20+ models (DeepSeek, Gemini, Llama, and more) via OpenRouter and NVIDIA NIM
+- **Multi-model Support** — Chat with 5+ models (DeepSeek, Qwen, and more) via OpenRouter and NVIDIA NIM
 - **Web Search** — AI can search the web for up-to-date information
 - **Streaming Responses** — Real-time token streaming
 
