@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getSearchService, SearchService } from './SearchService';
 import { AI_MODELS, AIModel } from './AIModelConfig';
-import { executeToolCall, getToolsSchema } from './ToolService';
+import { executeToolCall, getToolsSchema, getToolSystemPrompt } from './ToolService';
 
 // Constants
 const DEFAULT_MODEL_ID = 'glm5';
@@ -261,8 +261,8 @@ export class UnifiedAIService {
 
       let response = responseMessage.content;
 
-      // Check for tool calls in response
-      const toolCalls = this.parseToolCalls(response);
+      // Check for tool calls in response (native or parsed)
+      const toolCalls = this.parseToolCalls(response, responseMessage);
       if (toolCalls.length > 0) {
         console.log(`[UnifiedAI] Detected ${toolCalls.length} tool call(s)`);
         
@@ -311,10 +311,31 @@ export class UnifiedAIService {
   /**
    * Parse tool calls from AI response
    */
-  private parseToolCalls(content: string): Array<{ name: string; args: any }> {
+  private parseToolCalls(content: string, message?: AIMessage): Array<{ name: string; args: any }> {
     const toolCalls: Array<{ name: string; args: any }> = [];
     
-    // Look for JSON blocks
+    // First check for native tool_calls from API (NVIDIA NIM / OpenAI format)
+    if (message?.tool_calls && message.tool_calls.length > 0) {
+      console.log(`[UnifiedAI] Found ${message.tool_calls.length} native tool call(s)`);
+      
+      message.tool_calls.forEach((tc: any) => {
+        if (tc.function) {
+          try {
+            const args = JSON.parse(tc.function.arguments || '{}');
+            toolCalls.push({
+              name: tc.function.name,
+              args
+            });
+          } catch (e) {
+            console.error('[UnifiedAI] Failed to parse tool call arguments:', e);
+          }
+        }
+      });
+      
+      return toolCalls;
+    }
+    
+    // Fallback: Look for JSON blocks in content
     const jsonBlockRegex = /```(?:json)?\s*({[\s\S]*?})\s*```/g;
     let match;
     
@@ -573,15 +594,18 @@ Respond naturally and directly. No thinking process in the main response.`;
       requestBody.max_tokens = maxTokens;
     }
 
-    // Only add extra_body if needed (some models don't support it)
-    if (enableSearch || thinking) {
-      requestBody.extra_body = {};
-      if (enableSearch) {
-        requestBody.extra_body.plugins = ["pdf"];
-      }
-      if (thinking) {
-        requestBody.extra_body.include_reasoning = true;
-      }
+    // Add tools for function calling (NVIDIA NIM / OpenAI format)
+    if (enableSearch) {
+      requestBody.tools = getToolsSchema();
+      // Optionally set tool_choice to 'auto' to let AI decide when to use tools
+      requestBody.tool_choice = 'auto';
+    }
+
+    // Add thinking/reasoning support
+    if (thinking) {
+      requestBody.extra_body = {
+        include_reasoning: true
+      };
     }
 
     const response = await axios.post(
