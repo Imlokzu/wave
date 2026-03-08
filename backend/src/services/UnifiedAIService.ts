@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getSearchService, SearchService } from './SearchService';
 import { AI_MODELS, AIModel } from './AIModelConfig';
+import { executeToolCall, getToolsSchema } from './ToolService';
 
 // Constants
 const DEFAULT_MODEL_ID = 'glm5';
@@ -255,10 +256,33 @@ export class UnifiedAIService {
       // Ensure system message exists
       this.ensureSystemMessage(messages, enableSearch, model);
 
-      // Call API
+      // Call API with tools support
       const responseMessage = await this.callOpenRouterAPI(model, messages, enableSearch, thinking, temperature, maxTokens);
 
       let response = responseMessage.content;
+
+      // Check for tool calls in response
+      const toolCalls = this.parseToolCalls(response);
+      if (toolCalls.length > 0) {
+        console.log(`[UnifiedAI] Detected ${toolCalls.length} tool call(s)`);
+        
+        // Execute tools
+        const toolResults = await this.executeTools(toolCalls);
+        
+        // Add tool results to conversation
+        messages.push(responseMessage);
+        toolResults.forEach(result => {
+          messages.push({
+            role: 'tool',
+            content: JSON.stringify(result.data),
+            tool_call_id: result.tool
+          });
+        });
+        
+        // Get final response from AI with tool results
+        const finalResponse = await this.callOpenRouterAPI(model, messages, false, false, temperature, maxTokens);
+        response = finalResponse.content;
+      }
 
       // If this was a fallback, prepend a message for the user
       if (fallbackDepth > 0) {
@@ -282,6 +306,79 @@ export class UnifiedAIService {
 
       return this.handleChatError(error);
     }
+  }
+
+  /**
+   * Parse tool calls from AI response
+   */
+  private parseToolCalls(content: string): Array<{ name: string; args: any }> {
+    const toolCalls: Array<{ name: string; args: any }> = [];
+    
+    // Look for JSON blocks
+    const jsonBlockRegex = /```(?:json)?\s*({[\s\S]*?})\s*```/g;
+    let match;
+    
+    while ((match = jsonBlockRegex.exec(content)) !== null) {
+      try {
+        const json = JSON.parse(match[1]);
+        
+        // Check for search tool
+        if (json.searches && Array.isArray(json.searches)) {
+          json.searches.forEach((s: any) => {
+            toolCalls.push({
+              name: 'search',
+              args: { query: s.query || s }
+            });
+          });
+        }
+        
+        // Check for fetch tool
+        if (json.fetch || json.url) {
+          toolCalls.push({
+            name: 'fetch',
+            args: { url: json.url || json.fetch }
+          });
+        }
+      } catch (e) {
+        // Ignore invalid JSON
+      }
+    }
+    
+    // Also look for inline tool calls [SEARCH: query] or [FETCH: url]
+    const searchRegex = /\[SEARCH:\s*(.+?)\]/g;
+    const fetchRegex = /\[FETCH:\s*(.+?)\]/g;
+    
+    let searchMatch;
+    while ((searchMatch = searchRegex.exec(content)) !== null) {
+      toolCalls.push({ name: 'search', args: { query: searchMatch[1].trim() } });
+    }
+    
+    let fetchMatch;
+    while ((fetchMatch = fetchRegex.exec(content)) !== null) {
+      toolCalls.push({ name: 'fetch', args: { url: fetchMatch[1].trim() } });
+    }
+    
+    return toolCalls;
+  }
+
+  /**
+   * Execute tool calls
+   */
+  private async executeTools(toolCalls: Array<{ name: string; args: any }>): Promise<Array<{ tool: string; data: any }>> {
+    const results: Array<{ tool: string; data: any }> = [];
+    
+    for (const call of toolCalls) {
+      console.log(`[UnifiedAI] Executing tool: ${call.name}`, call.args);
+      const result = await executeToolCall(call.name, call.args);
+      
+      if (result.success) {
+        results.push({ tool: call.name, data: result.data });
+      } else {
+        results.push({ tool: call.name, data: { error: result.error } });
+      }
+    }
+    
+    return results;
   }
 
   /**
