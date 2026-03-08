@@ -1,186 +1,169 @@
-# 🌊 WaveChat
+# Wave
 
-A modern, real-time chat application with AI assistance, Telegram feed integration, and beautiful UI.
-
-![WaveChat](public/wavechat.png)
-
-## ✨ Features
-
-- 💬 **Real-time Chat** - Socket.io powered instant messaging
-- 🤖 **AI Assistant** - 20+ AI models including DeepSeek R1, Gemini, Llama
-- 🔍 **Web Search** - AI can search the web for current information
-- 🌤️ **Weather Integration** - Real-time weather data
-- 📱 **Telegram Feed** - Scrape and display Telegram channel content
-- 🎨 **Customizable Themes** - Dark mode with custom backgrounds
-- 🎵 **Music Player** - Built-in music streaming
-- 👥 **User Profiles** - Avatars, bios, and customization
-- 🔒 **Secure Authentication** - JWT-based auth with Supabase
-- 📊 **Admin Panel** - User management and moderation
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL or Supabase account
-- OpenRouter API key (for AI features)
-
-### Installation
-
-1. **Clone the repository:**
-```bash
-git clone https://github.com/YOUR_USERNAME/wavechat.git
-cd wavechat
-```
-
-2. **Install backend dependencies:**
-```bash
-cd backend
-npm install
-```
-
-3. **Configure environment:**
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-4. **Build and run:**
-```bash
-npm run build
-npm start
-```
-
-5. **Access the app:**
-```
-http://localhost:3001
-```
-
-## 📖 Documentation
-
-- [Deployment Guide](DEPLOYMENT.md) - Deploy to VPS, Android tablet, or cloud
-- [API Documentation](backend/README.md) - Backend API reference
-- [Theme Guide](public/css/THEME_GUIDE.md) - Customize the UI
-
-## 🛠️ Tech Stack
-
-### Backend
-- **Node.js** + **TypeScript**
-- **Express.js** - Web framework
-- **Socket.io** - Real-time communication
-- **Supabase** - Database and authentication
-- **OpenRouter** - AI model access
-
-### Frontend
-- **Vanilla JavaScript** - No framework overhead
-- **Tailwind CSS** - Utility-first styling
-- **Socket.io Client** - Real-time updates
-- **Material Icons** - Beautiful icons
-
-### Additional Services
-- **Python** - Telegram scraper bot
-- **Telethon** - Telegram API client
-
-## 📁 Project Structure
-
-```
-wavechat/
-├── backend/              # Node.js backend
-│   ├── src/
-│   │   ├── routes/      # API endpoints
-│   │   ├── services/    # Business logic
-│   │   ├── managers/    # Data management
-│   │   ├── socket/      # Socket.io handlers
-│   │   └── server.ts    # Main server file
-│   ├── migrations/      # Database migrations
-│   └── package.json
-├── public/              # Frontend static files
-│   ├── js/             # JavaScript modules
-│   ├── css/            # Stylesheets
-│   ├── mobile/         # Mobile-optimized pages
-│   └── *.html          # HTML pages
-├── feed-bot/           # Telegram scraper
-│   ├── telegram-scraper.py
-│   └── requirements.txt
-├── migrations/         # SQL migrations
-└── README.md
-```
-
-## 🎨 Features in Detail
-
-### AI Chat
-- 20+ AI models to choose from
-- Web search integration
-- Weather queries
-- Code generation
-- Translation
-- Summarization
-
-### Real-time Chat
-- Private messages
-- Group rooms
-- File sharing
-- Image uploads
-- Read receipts
-- Typing indicators
-
-### Telegram Feed
-- Scrape public channels
-- Display posts in feed
-- Media support
-- Auto-sync
-
-### Customization
-- Custom themes
-- Background images
-- Transparency mode
-- Color schemes
-
-## 🔐 Security
-
-- JWT authentication
-- Password hashing with bcrypt
-- SQL injection protection
-- XSS prevention
-- CORS configuration
-- Rate limiting
-
-## 🌐 Deployment
-
-### Deploy to Android Tablet (VPS)
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
-
-### Deploy to Cloud
-- **Railway** - One-click deploy
-- **Heroku** - Easy setup
-- **DigitalOcean** - Full control
-- **AWS** - Enterprise scale
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- OpenRouter for AI model access
-- Supabase for backend infrastructure
-- Tailwind CSS for styling
-- Socket.io for real-time features
-- Material Design for icons
-
-## 📧 Contact
-
-For questions or support, please open an issue on GitHub.
+Wave is an open-source, self-hostable real-time messaging platform. Deploy it on your own server, own your data — like Telegram, but yours.
 
 ---
 
-Made with ❤️ by the WaveChat team
+## Features
+
+### Messaging
+- **Rooms** — Create temporary or persistent chat rooms with shareable room codes
+- **Channels** — Persistent public channels with message history
+- **Direct Messages** — Private one-on-one conversations
+- **Voice Messages** — Record and send audio messages
+- **File & Image Sharing** — Upload and share files up to 50MB via Supabase Storage
+- **Ephemeral Messages** — Self-destructing messages with configurable expiry
+- **Read Receipts & Typing Indicators** — Real-time presence through Socket.IO
+
+### Accounts & Profiles
+- **Authentication** — Signup/login with bcrypt-hashed passwords and JWT session tokens
+- **User Profiles** — Avatar, bio, and customizable display info
+- **Shareable Bio Pages** — Public profile links with view tracking
+- **Multi-device Sessions** — Session management with new-device email alerts
+- **Invite Links** — Invite others to rooms or the platform
+
+### AI Assistant
+- **Multi-model Support** — Chat with 5+ models (DeepSeek, Qwen, and more) via OpenRouter and NVIDIA NIM
+- **Web Search** — AI can search the web for up-to-date information
+- **Streaming Responses** — Real-time token streaming
+
+### Telegram Feed
+- **Live News Feed** — Aggregates posts from public Telegram channels into a browsable feed
+- **Python Scraper Bot** — Background Telethon-based bot syncs channels into Supabase
+
+### Administration
+- **Admin Panel** — Manage users, issue bans, and review reports
+- **Reports System** — Users can submit bug reports and flag content
+- **Pro Subscriptions** — Optional premium tier with configurable feature gates
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js 18+, TypeScript |
+| Framework | Express.js |
+| Real-time | Socket.IO |
+| Database | Supabase (PostgreSQL) |
+| Auth | Custom JWT + bcrypt |
+| AI | OpenRouter, NVIDIA NIM (OpenAI-compatible) |
+| Voice/Video | Agora RTC |
+| File Storage | Supabase Storage |
+| Email | Nodemailer |
+| Feed Bot | Python 3, Telethon, FastAPI |
+| Frontend | Vanilla JS, Tailwind CSS |
+
+---
+
+## Project Structure
+
+```
+wave/
+├── backend/
+│   ├── src/
+│   │   ├── routes/      # REST API endpoints
+│   │   ├── services/    # Business logic (auth, AI, uploads)
+│   │   ├── managers/    # Data access layer
+│   │   ├── socket/      # Socket.IO event handlers
+│   │   ├── middleware/  # Auth guards, error handling
+│   │   └── server.ts    # Entry point
+│   └── migrations/      # SQL migration files
+├── feed-bot/            # Telegram scraper (Python)
+├── public/              # Frontend (HTML, JS, CSS)
+├── admin/               # Admin panel
+└── migrations/          # Root-level SQL migrations
+```
+
+---
+
+## Self-Hosting
+
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project (or self-hosted Supabase)
+- Python 3.10+ — only if using the Telegram feed bot
+
+### 1. Clone
+
+```bash
+git clone https://github.com/YOUR_USERNAME/wave.git
+cd wave
+```
+
+### 2. Install dependencies
+
+```bash
+cd backend && npm install
+```
+
+### 3. Configure environment
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+```env
+# Supabase
+SUPABASE_URL=
+SUPABASE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# AI (optional)
+OPENROUTER_API_KEY=
+NVIDIA_NIM_API_KEY=
+
+# Voice/Video (optional)
+AGORA_APP_ID=
+AGORA_APP_CERTIFICATE=
+
+# Email alerts (optional)
+SMTP_HOST=
+SMTP_USER=
+SMTP_PASS=
+```
+
+### 4. Run database migrations
+
+Apply the SQL files in `migrations/` to your Supabase project in ascending order (001 → latest).
+
+### 5. Start
+
+```bash
+# Development
+npm run dev
+
+# Production
+npm run build && npm start
+```
+
+Server runs at `http://localhost:3001`.
+
+---
+
+## Telegram Feed Bot
+
+Optional. Scrapes public Telegram channels and stores posts in your database.
+
+```bash
+cd feed-bot
+pip install -r requirements.txt
+python telegram-scraper.py
+```
+
+See [feed-bot/README.md](feed-bot/README.md) for Telegram API setup.
+
+---
+
+## Deployment
+
+Wave ships with [Railway](https://railway.app) config out of the box ([`railway.json`](railway.json), [`backend/Procfile`](backend/Procfile)). Set your environment variables and push.
+
+Works equally well on any VPS, Docker, or PaaS that runs Node.js.
+
+---
+
+## License
+
+[MIT](LICENSE)
