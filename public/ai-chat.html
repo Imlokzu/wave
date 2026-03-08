@@ -27,6 +27,29 @@
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@14/dist/markdown-it.min.js"></script>
     <!-- HTML Sanitizer (DOMPurify) -->
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <!-- Syntax Highlighting (Prism.js) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-tsx.min.js"></script>
     <!-- GitHub Markdown CSS (Dark Theme) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-dark.min.css">
     <script>
@@ -155,10 +178,11 @@
             background-color: #0d1117;
             border: 1px solid #30363d;
             border-radius: 8px;
-            padding: 16px;
+            padding: 0;
             overflow: auto;
             font-size: 85%;
             line-height: 1.45;
+            position: relative;
         }
 
         .markdown-body code {
@@ -171,11 +195,12 @@
 
         .markdown-body pre code {
             background-color: transparent;
-            padding: 0;
+            padding: 16px;
             font-size: inherit;
             word-break: normal;
             white-space: pre;
             overflow: visible;
+            display: block;
         }
 
         .markdown-body blockquote {
@@ -2980,12 +3005,11 @@ You're here to help users with anything they need - from answering questions to 
                     typographer: true,
                     breaks: true,
                     highlight: function (str, lang) {
-                        if (lang && window.hljs && window.hljs.getLanguage(lang)) {
-                            try {
-                                return window.hljs.highlight(str, { language: lang }).value;
-                            } catch (__) {}
+                        // Use Prism for syntax highlighting
+                        if (lang && window.Prism && window.Prism.languages[lang]) {
+                            return window.Prism.highlight(str, window.Prism.languages[lang], lang);
                         }
-                        return '';
+                        return str; // Return as-is if no highlighting available
                     }
                 });
 
@@ -3125,9 +3149,23 @@ You're here to help users with anything they need - from answering questions to 
                     const preBlocks = temp.querySelectorAll('pre');
                     
                     preBlocks.forEach((pre, index) => {
-                        // Get code content
+                        // Get code element and content
                         const code = pre.querySelector('code');
                         const codeText = code ? code.textContent : pre.textContent;
+                        
+                        // Detect language from class
+                        let language = 'plaintext';
+                        if (code) {
+                            const langMatch = code.className.match(/language-(\w+)/);
+                            if (langMatch) {
+                                language = langMatch[1];
+                            }
+                        }
+                        
+                        // Add language label
+                        const langLabel = document.createElement('div');
+                        langLabel.className = 'absolute top-2 left-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider';
+                        langLabel.textContent = language;
                         
                         // Create wrapper
                         const wrapper = document.createElement('div');
@@ -3135,7 +3173,7 @@ You're here to help users with anything they need - from answering questions to 
                         
                         // Create copy button
                         const copyBtn = document.createElement('button');
-                        copyBtn.className = 'absolute top-2 right-2 opacity-0 group-hover/code:opacity-100 transition-opacity bg-surface-dark/80 hover:bg-primary/20 border border-white/10 rounded-lg p-1.5 backdrop-blur-sm';
+                        copyBtn.className = 'copy-btn absolute top-2 right-2 opacity-0 group-hover/code:opacity-100 transition-opacity bg-surface-dark/80 hover:bg-primary/20 border border-white/10 rounded-lg p-1.5 backdrop-blur-sm';
                         copyBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-slate-400 hover:text-primary">content_copy</span>';
                         copyBtn.title = 'Copy code';
                         copyBtn.onclick = (e) => {
@@ -3156,10 +3194,18 @@ You're here to help users with anything they need - from answering questions to 
                         pre.parentNode.insertBefore(wrapper, pre);
                         wrapper.appendChild(pre);
                         wrapper.appendChild(copyBtn);
+                        wrapper.appendChild(langLabel);
                         
                         // Add styling to pre
                         pre.style.margin = '0';
                         pre.style.borderRadius = '8px';
+                        pre.style.paddingTop = '32px'; // Space for label and button
+                        
+                        // Apply Prism highlighting
+                        if (code && window.Prism) {
+                            code.className = `language-${language}`;
+                            Prism.highlightElement(code);
+                        }
                     });
                     
                     return temp.innerHTML;
