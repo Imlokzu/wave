@@ -737,6 +737,9 @@
                         </div>
                         <div
                             class="flex-1 bg-surface-dark rounded-3xl min-h-[3.5rem] px-5 py-3.5 flex items-center gap-2 border border-white/5 focus-within:border-primary/50 focus-within:bg-surface-dark-lighter transition-all shadow-sm">
+                            <!-- Image Preview Container (Left side, same height as input) -->
+                            <div id="imagePreviewContainer" class="hidden flex items-center gap-1"></div>
+                            
                             <input id="messageInput"
                                 class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-slate-500 focus:ring-0 p-0"
                                 placeholder="Message or type / for commands..." data-i18n-placeholder="ai.messagePlaceholder" type="text"
@@ -748,11 +751,7 @@
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Image Preview Container (Left of + button) -->
-            <div id="imagePreviewContainer" class="hidden flex items-center gap-1 mr-2"></div>
-            
             <!-- Hidden file input for images -->
             <input type="file" id="imageInput" accept="image/*" multiple class="hidden" />
 
@@ -1518,9 +1517,9 @@
                         previewContainer.classList.remove('hidden');
                         previewContainer.innerHTML = imageFiles.map(file => `
                             <div class="relative group inline-block">
-                                <img src="${URL.createObjectURL(file)}" alt="Preview" class="h-8 w-8 object-cover rounded border border-primary/30" />
-                                <button onclick="this.parentElement.remove(); if(document.querySelectorAll('#imagePreviewContainer img').length === 0) { window.pendingImages = null; document.getElementById('imagePreviewContainer').classList.add('hidden'); }" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span class="material-symbols-outlined text-[12px]">close</span>
+                                <img src="${URL.createObjectURL(file)}" alt="Preview" class="h-6 w-6 object-cover rounded border border-primary/30" />
+                                <button onclick="this.parentElement.remove(); if(document.querySelectorAll('#imagePreviewContainer img').length === 0) { window.pendingImages = null; document.getElementById('imagePreviewContainer').classList.add('hidden'); }" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span class="material-symbols-outlined text-[10px]">close</span>
                                 </button>
                             </div>
                         `).join('');
