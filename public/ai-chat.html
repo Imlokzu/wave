@@ -23,6 +23,12 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Markdown Parser (markdown-it) -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14/dist/markdown-it.min.js"></script>
+    <!-- HTML Sanitizer (DOMPurify) -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <!-- GitHub Markdown CSS (Dark Theme) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-dark.min.css">
     <script>
         // Set worker source for PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -97,6 +103,146 @@
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #2a3440;
+        }
+
+        /* Markdown Styles (GitHub Dark Theme Customization) */
+        .markdown-body {
+            color-scheme: dark;
+            --color-prettylights-syntax-comment: #8b949e;
+            --color-prettylights-syntax-constant: #79c0ff;
+            --color-prettylights-syntax-entity: #d2a8ff;
+            --color-prettylights-syntax-storage-modifier-import: #c9d1d9;
+            --color-prettylights-syntax-entity-tag: #7ee787;
+            --color-prettylights-syntax-keyword: #ff7b72;
+            --color-prettylights-syntax-string: #a5d6ff;
+            --color-prettylights-syntax-variable: #ffa657;
+            --color-prettylights-syntax-brackethighlighter-unmatched: #f85149;
+            --color-prettylights-syntax-invalid-illegal-text: #f0f6fc;
+            --color-prettylights-syntax-invalid-illegal-bg: #8e1519;
+            --color-prettylights-syntax-carriage-return-text: #f0f6fc;
+            --color-prettylights-syntax-carriage-return-bg: #b62324;
+            --color-prettylights-syntax-string-regexp: #7ee787;
+            --color-prettylights-syntax-markup-list: #f2cc60;
+            --color-prettylights-syntax-markup-heading: #1f6feb;
+            --color-prettylights-syntax-markup-italic: #c9d1d9;
+            --color-prettylights-syntax-markup-bold: #c9d1d9;
+            --color-prettylights-syntax-markup-deleted-text: #ffdcd7;
+            --color-prettylights-syntax-markup-deleted-bg: #67060c;
+            --color-prettylights-syntax-markup-inserted-text: #aff5b4;
+            --color-prettylights-syntax-markup-inserted-bg: #033a16;
+            --color-prettylights-syntax-markup-changed-text: #ffdfb6;
+            --color-prettylights-syntax-markup-changed-bg: #5a1e02;
+            --color-prettylights-syntax-markup-ignored-text: #c9d1d9;
+            --color-prettylights-syntax-markup-ignored-bg: #1158c7;
+            --color-prettylights-syntax-meta-diff-range: #d2a8ff;
+            --color-prettylights-syntax-brackethighlighter-angle: #8b949e;
+            --color-prettylights-syntax-sublimelinter-gutter-mark: #484f58;
+            --color-prettylights-syntax-constant-other-reference-link: #a5d6ff;
+            --color-fg-default: #e6edf3;
+            --color-fg-muted: #8b949e;
+            --color-canvas-default: transparent;
+            --color-canvas-subtle: #161b22;
+            --color-border-default: #30363d;
+            --color-border-muted: #21262d;
+            --color-neutral-muted: rgba(110,118,129,0.4);
+            --color-accent-fg: #58a6ff;
+            --color-success-fg: #3fb950;
+            --color-attention-fg: #d29922;
+            --color-danger-fg: #f85149;
+        }
+
+        .markdown-body pre {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+        }
+
+        .markdown-body code {
+            background-color: rgba(110,118,129,0.4);
+            border-radius: 6px;
+            padding: 0.2em 0.4em;
+            font-size: 85%;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        .markdown-body pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: inherit;
+            word-break: normal;
+            white-space: pre;
+            overflow: visible;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid #0db9f2;
+            padding: 0 16px;
+            color: #8b949e;
+        }
+
+        .markdown-body table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+        }
+
+        .markdown-body table th,
+        .markdown-body table td {
+            border: 1px solid #30363d;
+            padding: 8px 13px;
+        }
+
+        .markdown-body table th {
+            background-color: #161b22;
+            font-weight: 600;
+        }
+
+        .markdown-body table tr:nth-child(2n) {
+            background-color: rgba(110,118,129,0.1);
+        }
+
+        .markdown-body a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+
+        .markdown-body a:hover {
+            text-decoration: underline;
+        }
+
+        .markdown-body ul,
+        .markdown-body ol {
+            padding-left: 2em;
+        }
+
+        .markdown-body hr {
+            border: 0;
+            border-top: 1px solid #30363d;
+            margin: 24px 0;
+        }
+
+        .markdown-body details {
+            margin-bottom: 16px;
+        }
+
+        .markdown-body details summary {
+            cursor: pointer;
+            color: #58a6ff;
+            font-weight: 600;
+        }
+
+        .markdown-body details[open] summary {
+            margin-bottom: 8px;
+        }
+
+        /* Streaming content uses markdown-body class */
+        .streaming-content.markdown-body {
+            font-size: 14px;
+            line-height: 1.6;
         }
 
         .mask-gradient-right {
@@ -1802,12 +1948,45 @@ Text to translate: ${text}`;
                         if (window.pendingImages && window.pendingImages.length > 0) {
                             console.log('[AI Chat] 🖼️ VISION MODE: Sending', window.pendingImages.length, 'image(s)');
                             
-                            // Convert image to base64
+                            // Compress and convert image to base64
                             const file = window.pendingImages[0];
-                            const reader = new FileReader();
                             
-                            reader.onload = async function(e) {
-                                const base64Image = e.target.result.split(',')[1];
+                            // Compress image using canvas
+                            const img = new Image();
+                            img.onload = async function() {
+                                // Max dimensions for vision API
+                                const MAX_WIDTH = 1024;
+                                const MAX_HEIGHT = 1024;
+                                const QUALITY = 0.8;
+                                
+                                let width = img.width;
+                                let height = img.height;
+                                
+                                // Calculate new dimensions
+                                if (width > height) {
+                                    if (width > MAX_WIDTH) {
+                                        height = Math.round(height * MAX_WIDTH / width);
+                                        width = MAX_WIDTH;
+                                    }
+                                } else {
+                                    if (height > MAX_HEIGHT) {
+                                        width = Math.round(width * MAX_HEIGHT / height);
+                                        height = MAX_HEIGHT;
+                                    }
+                                }
+                                
+                                // Create canvas and resize
+                                const canvas = document.createElement('canvas');
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                // Compress to JPEG
+                                const base64Image = canvas.toDataURL('image/jpeg', QUALITY).split(',')[1];
+                                
+                                console.log('[AI Chat] Image compressed:', Math.round(base64Image.length / 1024), 'KB');
+                                
                                 const selectedModel = localStorage.getItem('preferredAIModel') || 'qwen3.5-vl';
                                 const visionModel = selectedModel.includes('qwen') ? selectedModel : 'qwen3.5-vl';
                                 
@@ -1818,6 +1997,34 @@ Text to translate: ${text}`;
                                 
                                 // Add user message to UI (normal style, no image mention)
                                 addMessage(userMsg, true);
+                                
+                                // Create streaming message with loading (same as normal AI chat)
+                                // Don't show "Thinking..." badge for vision models - thinking happens internally
+                                const streamingDiv = document.createElement('div');
+                                streamingDiv.className = 'flex gap-3 group streaming-ai-message my-2';
+                                streamingDiv.innerHTML = `
+                                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent" style='background-image: url("/nobackwave.png");'></div>
+                                    <div class="flex flex-col gap-2 max-w-[85%]">
+                                        <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>
+                                        <div class="bg-surface-dark p-3.5 rounded-2xl rounded-bl-none border border-white/5 shadow-sm">
+                                            <div class="streaming-content text-sm leading-relaxed text-slate-200">
+                                                <div class="loader loader-xs" style="display: inline-block; vertical-align: middle;">
+                                                    <div class="circle"></div>
+                                                    <div class="circle"></div>
+                                                    <div class="circle"></div>
+                                                    <div class="circle"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                const messagesContainer = document.getElementById('messages-inner-container') || document.getElementById('chatContainer');
+                                if (messagesContainer) {
+                                    messagesContainer.appendChild(streamingDiv);
+                                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                                }
+                                
+                                const contentDiv = streamingDiv.querySelector('.streaming-content');
                                 
                                 // Call backend vision API and get response
                                 try {
@@ -1831,7 +2038,7 @@ Text to translate: ${text}`;
                                                 role: 'user',
                                                 content: [
                                                     { type: 'text', text: content || 'What is in this image?' },
-                                                    { type: 'image_url', image_url: { url: `data:${file.type};base64,${base64Image}` } }
+                                                    { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
                                                 ]
                                             }],
                                             model: visionModel,
@@ -1845,10 +2052,15 @@ Text to translate: ${text}`;
                                     }
                                     
                                     const data = await response.json();
-                                    const aiResponse = data.response || data.content || 'No response from AI';
+                                    let aiResponse = data.response || data.content || 'No response from AI';
                                     
-                                    // Add AI response using NORMAL addMessage (same as text chat)
-                                    addMessage(aiResponse, false);
+                                    // Strip thinking content (<think>...</think>) from response
+                                    aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+                                    
+                                    // Update streaming message with AI response
+                                    if (contentDiv) {
+                                        contentDiv.innerHTML = formatAIContent(aiResponse);
+                                    }
                                     
                                     // Clear pending images and preview
                                     const previewContainer = document.getElementById('imagePreviewContainer');
@@ -1862,16 +2074,19 @@ Text to translate: ${text}`;
                                     if (!skipAddingToHistory) {
                                         conversationHistory.push({ role: 'model', parts: [{ text: aiResponse }] });
                                         saveConversation();
+                                        console.log('[AI Chat] Vision response saved to history. Total messages:', conversationHistory.length);
                                     }
                                     
                                     console.log('[AI Chat] Vision response complete');
                                 } catch (error) {
                                     console.error('[AI Chat] Vision error:', error);
-                                    addMessage(`Error: ${error.message}`, false);
+                                    if (contentDiv) {
+                                        contentDiv.innerHTML = `<span class="text-red-400">Error: ${error.message}</span>`;
+                                    }
                                 }
                             };
                             
-                            reader.readAsDataURL(file);
+                            img.src = URL.createObjectURL(file);
                             return; // Exit early - vision API handled it
                         }
 
@@ -2759,12 +2974,33 @@ You're here to help users with anything they need - from answering questions to 
                 }
 
                 function formatAIContent(content) {
-                    // Basic markdown formatting
-                    content = content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-                    content = content.replace(/\*(.+?)\*/g, '<em>$1</em>');
-                    content = content.replace(/`(.+?)`/g, '<code class="bg-black/30 px-1 py-0.5 rounded text-xs">$1</code>');
-                    content = content.replace(/```(\w+)?\n([\s\S]+?)```/g, '<pre class="bg-black/30 p-3 rounded-lg mt-2 mb-2 overflow-x-auto"><code>$2</code></pre>');
-                    return content;
+                    // Initialize markdown-it with GitHub Flavored Markdown
+                    const md = window.markdownit({
+                        html: true,
+                        linkify: true,
+                        typographer: true,
+                        breaks: true,
+                        highlight: function (str, lang) {
+                            // Add language class for syntax highlighting (future enhancement)
+                            if (lang && hljs && hljs.getLanguage(lang)) {
+                                try {
+                                    return hljs.highlight(str, { language: lang }).value;
+                                } catch (__) {}
+                            }
+                            return ''; // use external default escaping
+                        }
+                    });
+                    
+                    // Parse markdown
+                    const html = md.render(content);
+                    
+                    // Sanitize HTML to prevent XSS
+                    const sanitized = DOMPurify.sanitize(html, {
+                        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'code', 'pre', 'blockquote', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'del', 'hr', 'img', 'details', 'summary'],
+                        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title']
+                    });
+                    
+                    return sanitized;
                 }
 
                 function createStreamingMessage() {
@@ -2772,13 +3008,11 @@ You're here to help users with anything they need - from answering questions to 
                     const div = document.createElement('div');
                     div.className = 'flex gap-3 group my-2';
                     div.innerHTML = `
-                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-                            <span class="material-symbols-outlined text-white text-[18px]">smart_toy</span>
-                        </div>
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent group-hover:ring-primary/20 transition-all" style='background-image: url("/nobackwave.png");'></div>
                         <div class="flex flex-col gap-1 max-w-[85%]">
-                            <p class="text-[10px] font-medium text-slate-400 ml-1">AI</p>
-                            <div class="bg-surface-dark p-3 rounded-2xl rounded-bl-none border border-white/5">
-                                <div class="streaming-content text-sm leading-relaxed text-slate-200">
+                            <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>
+                            <div class="bg-surface-dark p-3.5 rounded-2xl rounded-bl-none border border-white/5 shadow-sm">
+                                <div class="streaming-content markdown-body text-sm leading-relaxed text-slate-200">
                                     <span class="inline-block w-2 h-4 bg-primary animate-pulse"></span>
                                 </div>
                             </div>
@@ -2795,6 +3029,41 @@ You're here to help users with anything they need - from answering questions to 
                     const chatContainer = document.getElementById('chatContainer') || document.querySelector('.flex-1.overflow-y-auto');
                     if (chatContainer) {
                         chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                }
+
+                function addLoadingMessage(id) {
+                    const chatContainer = document.getElementById('chatContainer') || document.querySelector('.flex-1.overflow-y-auto');
+                    const div = document.createElement('div');
+                    div.id = id;
+                    div.className = 'flex gap-3 group my-2';
+                    div.innerHTML = `
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 self-end mb-1 ring-2 ring-transparent" style='background-image: url("/nobackwave.png");'></div>
+                        <div class="flex flex-col gap-2 max-w-[85%]">
+                            <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>
+                            <div class="bg-surface-dark p-3.5 rounded-2xl rounded-bl-none border border-white/5 shadow-sm">
+                                <div class="flex items-center gap-2 text-slate-400 text-sm">
+                                    <div class="loader loader-xs" style="display: inline-block;">
+                                        <div class="circle"></div>
+                                        <div class="circle"></div>
+                                        <div class="circle"></div>
+                                        <div class="circle"></div>
+                                    </div>
+                                    <span>Analyzing image...</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    if (chatContainer) {
+                        chatContainer.appendChild(div);
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                }
+
+                function removeLoadingMessage(id) {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.remove();
                     }
                 }
 
