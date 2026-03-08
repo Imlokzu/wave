@@ -245,6 +245,20 @@
             line-height: 1.6;
         }
 
+        /* Code block copy button */
+        .group\/code {
+            position: relative;
+        }
+
+        .group\/code:hover .copy-btn,
+        .group\/code .copy-btn:hover {
+            opacity: 1 !important;
+        }
+
+        .group\/code pre {
+            position: relative;
+        }
+
         .mask-gradient-right {
             mask-image: linear-gradient(to right, black 85%, transparent 100%);
             -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
@@ -3092,10 +3106,63 @@ You're here to help users with anything they need - from answering questions to 
                     // Sanitize HTML to prevent XSS
                     const sanitized = DOMPurify.sanitize(html, {
                         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'code', 'pre', 'blockquote', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'del', 'hr', 'img', 'details', 'summary'],
-                        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title']
+                        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'data-*']
                     });
                     
-                    return sanitized;
+                    // Add copy buttons to code blocks
+                    const withCopyButtons = addCopyButtonsToCode(sanitized);
+                    
+                    return withCopyButtons;
+                }
+
+                // Add copy buttons to code blocks (like GitHub)
+                function addCopyButtonsToCode(html) {
+                    // Create a temporary container to parse HTML
+                    const temp = document.createElement('div');
+                    temp.innerHTML = html;
+                    
+                    // Find all <pre> blocks
+                    const preBlocks = temp.querySelectorAll('pre');
+                    
+                    preBlocks.forEach((pre, index) => {
+                        // Get code content
+                        const code = pre.querySelector('code');
+                        const codeText = code ? code.textContent : pre.textContent;
+                        
+                        // Create wrapper
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'relative group/code';
+                        
+                        // Create copy button
+                        const copyBtn = document.createElement('button');
+                        copyBtn.className = 'absolute top-2 right-2 opacity-0 group-hover/code:opacity-100 transition-opacity bg-surface-dark/80 hover:bg-primary/20 border border-white/10 rounded-lg p-1.5 backdrop-blur-sm';
+                        copyBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-slate-400 hover:text-primary">content_copy</span>';
+                        copyBtn.title = 'Copy code';
+                        copyBtn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(codeText).then(() => {
+                                // Show success feedback
+                                copyBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-green-400">check</span>';
+                                setTimeout(() => {
+                                    copyBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-slate-400 hover:text-primary">content_copy</span>';
+                                }, 2000);
+                            }).catch(err => {
+                                console.error('Failed to copy:', err);
+                            });
+                        };
+                        
+                        // Wrap pre with relative container
+                        pre.parentNode.insertBefore(wrapper, pre);
+                        wrapper.appendChild(pre);
+                        wrapper.appendChild(copyBtn);
+                        
+                        // Add styling to pre
+                        pre.style.margin = '0';
+                        pre.style.borderRadius = '8px';
+                    });
+                    
+                    return temp.innerHTML;
                 }
 
                 function createStreamingMessage() {
