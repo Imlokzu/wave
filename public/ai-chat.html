@@ -284,6 +284,22 @@
             position: relative;
         }
 
+        /* Typewriter animation cursor */
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background-color: #0db9f2;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
         .mask-gradient-right {
             mask-image: linear-gradient(to right, black 85%, transparent 100%);
             -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
@@ -3348,7 +3364,7 @@ You're here to help users with anything they need - from answering questions to 
                             <p class="text-[10px] font-medium text-slate-400 ml-1 mb-0.5">Wave AI</p>
                             <div class="bg-surface-dark p-3.5 rounded-2xl rounded-bl-none border border-white/5 shadow-sm">
                                 <div class="streaming-content markdown-body text-sm leading-relaxed text-slate-200">
-                                    <span class="inline-block w-2 h-4 bg-primary animate-pulse"></span>
+                                    <span class="typing-cursor"></span>
                                 </div>
                             </div>
                         </div>
@@ -3358,6 +3374,30 @@ You're here to help users with anything they need - from answering questions to 
                         chatContainer.scrollTop = chatContainer.scrollHeight;
                     }
                     return div;
+                }
+
+                // Smooth typewriter text animation
+                async function streamTextToElement(element, text, speed = 10) {
+                    const words = text.split(' ');
+                    let currentText = '';
+                    
+                    for (let i = 0; i < words.length; i++) {
+                        currentText += (i > 0 ? ' ' : '') + words[i];
+                        element.innerHTML = formatAIContent(currentText) + '<span class="typing-cursor"></span>';
+                        
+                        // Auto-scroll during typing
+                        const chatContainer = document.getElementById('chatContainer') || document.querySelector('.flex-1.overflow-y-auto');
+                        if (chatContainer) {
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                        }
+                        
+                        // Variable speed: faster for common words, slower for code/technical
+                        const delay = speed * (words[i].length > 8 ? 1.5 : 1);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                    
+                    // Remove cursor when done
+                    element.innerHTML = formatAIContent(text);
                 }
 
                 function scrollToBottom() {
