@@ -2593,7 +2593,9 @@ You're here to help users with anything they need - from answering questions to 
                         }
 
                         // Use streaming for better UX
-                        const response = await fetch('/api/ai-chat?stream=true', {
+                        // Use non-streaming when search is enabled (needed for tool execution)
+                        const streamUrl = searchEnabled ? '/api/ai-chat' : '/api/ai-chat?stream=true';
+                        const response = await fetch(streamUrl, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'

@@ -97,8 +97,26 @@ export class UnifiedAIService {
       // Ensure system message exists
       this.ensureSystemMessage(messages, enableSearch, model);
 
+      // Collect full response for tool call detection
+      let fullResponse = '';
+      const chunkCollector = (chunk: string) => {
+        fullResponse += chunk;
+        onChunk(chunk);
+      };
+
       // Call API with streaming
-      await this.callOpenRouterAPIStream(model, messages, enableSearch, thinking, onChunk, temperature, maxTokens);
+      await this.callOpenRouterAPIStream(model, messages, enableSearch, thinking, chunkCollector, temperature, maxTokens);
+      
+      // After streaming completes, check for tool calls
+      if (enableSearch) {
+        const toolCalls = this.parseToolCalls(fullResponse);
+        if (toolCalls.length > 0) {
+          console.log(`[UnifiedAI] Detected ${toolCalls.length} tool call(s) after streaming`);
+          // Note: For streaming, we can't easily execute tools mid-stream
+          // Tools will be detected but user needs to resend for execution
+          // This is a limitation of streaming vs non-streaming
+        }
+      }
     } catch (error: any) {
       console.error(`[UnifiedAI] Streaming error: ${error.message || 'Unknown error'}`);
       throw error;
