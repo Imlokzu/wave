@@ -2594,7 +2594,7 @@ You're here to help users with anything they need - from answering questions to 
                             conversationHistory.push({ role: 'model', parts: [{ text: finalText }] });
                             saveConversation();
                             return true;
-                        }
+                        } // End of runNonStreamingFallback
 
                         // Use streaming for better UX
                         // Use non-streaming when search is enabled (needed for tool execution)
@@ -2807,167 +2807,167 @@ You're here to help users with anything they need - from answering questions to 
                             const fileMatches = [...fullResponse.matchAll(/\[READ_FILE:\s*(.+?)\]/g)];
 
                             if (searchQueries.length > 0 || weatherMatches.length > 0 || fileMatches.length > 0) {
-                            const weatherCities = weatherMatches.map(m => m[1].trim());
-                            const filesToRead = fileMatches.map(m => m[1].trim());
+                                const weatherCities = weatherMatches.map(m => m[1].trim());
+                                const filesToRead = fileMatches.map(m => m[1].trim());
 
-                            console.log('🔍 AI requested searches:', searchQueries);
-                            console.log('🌤️ AI requested weathers:', weatherCities);
-                            console.log('📄 AI requested files:', filesToRead);
+                                console.log('🔍 AI requested searches:', searchQueries);
+                                console.log('🌤️ AI requested weathers:', weatherCities);
+                                console.log('📄 AI requested files:', filesToRead);
 
-                            // Replace the streaming message content with processing indicator
-                            let statusText = '🔍 Processing requests...';
-                            const parts = [];
-                            if (searchQueries.length > 0) parts.push(`searching for ${searchQueries.length} items`);
-                            if (weatherCities.length > 0) parts.push(`getting weather for ${weatherCities.length} cities`);
-                            if (filesToRead.length > 0) parts.push(`reading ${filesToRead.length} files`);
-                            
-                            if (parts.length > 0) {
-                                statusText = `🔍 ${parts.join(', ')}...`;
-                            }
+                                // Replace the streaming message content with processing indicator
+                                let statusText = '🔍 Processing requests...';
+                                const parts = [];
+                                if (searchQueries.length > 0) parts.push(`searching for ${searchQueries.length} items`);
+                                if (weatherCities.length > 0) parts.push(`getting weather for ${weatherCities.length} cities`);
+                                if (filesToRead.length > 0) parts.push(`reading ${filesToRead.length} files`);
 
-                            const statusContent = streamingDiv?.querySelector('.streaming-content');
-                            if (statusContent) {
-                                statusContent.textContent = statusText;
-                            }
-
-                            try {
-                                const results = [];
-
-                                // Execute searches in parallel
-                                const searchPromises = searchQueries.map(async (query) => {
-                                    try {
-                                        const res = await fetch('/api/search', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ query, maxResults: 5, includeContent: true })
-                                        });
-                                        const data = await res.json();
-                                        if (data.success && data.results.length > 0) {
-                                            return `Results for "${query}":\n` + data.results.map((r, i) => {
-                                                const content = r.content ? `\n   Content: ${r.content}` : '';
-                                                return `${i + 1}. ${r.title}\n   URL: ${r.url}\n   ${r.snippet || 'No description'}${content}`;
-                                            }).join('\n\n');
-                                        }
-                                        return `No results found for "${query}".`;
-                                    } catch (e) {
-                                        return `Search failed for "${query}".`;
-                                    }
-                                });
-
-                                // Execute weather checks in parallel
-                                const weatherPromises = weatherCities.map(async (city) => {
-                                    try {
-                                        const res = await fetch('/api/weather', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ city })
-                                        });
-                                        const data = await res.json();
-                                        if (data.success && data.formatted) {
-                                            return `Weather for ${city}:\n${data.formatted}`;
-                                        }
-                                        return `Could not get weather for ${city}.`;
-                                    } catch (e) {
-                                        return `Weather check failed for ${city}.`;
-                                    }
-                                });
-
-                                // Execute file reads in parallel
-                                const filePromises = filesToRead.map(async (filename) => {
-                                    try {
-                                        const res = await fetch(`/${filename}`);
-                                        if (!res.ok) {
-                                            return `File "${filename}" not found.`;
-                                        }
-                                        const html = await res.text();
-                                        
-                                        // Extract relevant content (remove scripts, styles, keep structure)
-                                        const parser = new DOMParser();
-                                        const doc = parser.parseFromString(html, 'text/html');
-                                        
-                                        // Remove scripts and styles
-                                        doc.querySelectorAll('script, style, link').forEach(el => el.remove());
-                                        
-                                        // Get text content with some structure
-                                        const body = doc.body;
-                                        let content = body ? body.innerText : doc.documentElement.innerText;
-                                        
-                                        // Limit content length (first 3000 chars)
-                                        if (content.length > 3000) {
-                                            content = content.substring(0, 3000) + '... (content truncated)';
-                                        }
-                                        
-                                        return `Content of "${filename}":\n${content}`;
-                                    } catch (e) {
-                                        return `Failed to read "${filename}": ${e.message}`;
-                                    }
-                                });
-
-                                const allResults = await Promise.all([...searchPromises, ...weatherPromises, ...filePromises]);
-                                const consolidatedContext = allResults.join('\n\n---\n\n');
-
-                                // Remove JSON search block from the original response
-                                const cleanedResponse = fullResponse.replace(/```json[\s\S]*?```/g, '').trim();
-
-                                // Call AI again with consolidated results
-                                const finalResponse = await fetch('/api/ai-chat', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        messages: messages.concat([{
-                                            role: 'assistant',
-                                            content: cleanedResponse || 'I need to search for information.'
-                                        }, {
-                                            role: 'user',
-                                            content: `Search Results:\n\n${consolidatedContext}\n\nNow please provide a comprehensive answer to my original question using these search results. Be specific and cite the information.`
-                                        }]),
-                                        enableSearch: false,
-                                        thinking: false,
-                                        model: preferredModel || 'auto'
-                                    })
-                                });
-
-                                if (!finalResponse.ok) {
-                                    if (statusContent) {
-                                        statusContent.textContent = '❌ Failed to process the information.';
-                                    } else {
-                                        addMessage('❌ Failed to process the information.', false);
-                                    }
-                                    return;
+                                if (parts.length > 0) {
+                                    statusText = `🔍 ${parts.join(', ')}...`;
                                 }
 
-                                const finalData = await finalResponse.json();
-                                if (finalData.success) {
-                                    // Check if response has actual content
-                                    const cleanResponse = finalData.response.trim();
-                                    
-                                    // If response is too short or only thinking, show fallback
-                                    if (!cleanResponse || cleanResponse.length < 5) {
-                                        if (statusContent) {
-                                            statusContent.innerHTML = formatAIContent('👋 Hello! How can I help you today?');
-                                        } else {
-                                            addMessage('👋 Hello! How can I help you today?', false);
+                                const statusContent = streamingDiv?.querySelector('.streaming-content');
+                                if (statusContent) {
+                                    statusContent.textContent = statusText;
+                                }
+
+                                try {
+                                    const results = [];
+
+                                    // Execute searches in parallel
+                                    const searchPromises = searchQueries.map(async (query) => {
+                                        try {
+                                            const res = await fetch('/api/search', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ query, maxResults: 5, includeContent: true })
+                                            });
+                                            const data = await res.json();
+                                            if (data.success && data.results.length > 0) {
+                                                return `Results for "${query}":\n` + data.results.map((r, i) => {
+                                                    const content = r.content ? `\n   Content: ${r.content}` : '';
+                                                    return `${i + 1}. ${r.title}\n   URL: ${r.url}\n   ${r.snippet || 'No description'}${content}`;
+                                                }).join('\n\n');
+                                            }
+                                            return `No results found for "${query}".`;
+                                        } catch (e) {
+                                            return `Search failed for "${query}".`;
                                         }
-                                        conversationHistory.push({
-                                            role: 'model',
-                                            parts: [{ text: '👋 Hello! How can I help you today?' }]
-                                        });
-                                    } else {
-                                        if (statusContent) {
-                                            statusContent.innerHTML = formatAIContent(cleanResponse);
-                                        } else {
-                                            addMessage(cleanResponse, false);
+                                    });
+
+                                    // Execute weather checks in parallel
+                                    const weatherPromises = weatherCities.map(async (city) => {
+                                        try {
+                                            const res = await fetch('/api/weather', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ city })
+                                            });
+                                            const data = await res.json();
+                                            if (data.success && data.formatted) {
+                                                return `Weather for ${city}:\n${data.formatted}`;
+                                            }
+                                            return `Could not get weather for ${city}.`;
+                                        } catch (e) {
+                                            return `Weather check failed for ${city}.`;
                                         }
-                                        conversationHistory.push({
-                                            role: 'model',
-                                            parts: [{ text: cleanResponse }]
-                                        });
+                                    });
+
+                                    // Execute file reads in parallel
+                                    const filePromises = filesToRead.map(async (filename) => {
+                                        try {
+                                            const res = await fetch(`/${filename}`);
+                                            if (!res.ok) {
+                                                return `File "${filename}" not found.`;
+                                            }
+                                            const html = await res.text();
+
+                                            // Extract relevant content (remove scripts, styles, keep structure)
+                                            const parser = new DOMParser();
+                                            const doc = parser.parseFromString(html, 'text/html');
+
+                                            // Remove scripts and styles
+                                            doc.querySelectorAll('script, style, link').forEach(el => el.remove());
+
+                                            // Get text content with some structure
+                                            const body = doc.body;
+                                            let content = body ? body.innerText : doc.documentElement.innerText;
+
+                                            // Limit content length (first 3000 chars)
+                                            if (content.length > 3000) {
+                                                content = content.substring(0, 3000) + '... (content truncated)';
+                                            }
+
+                                            return `Content of "${filename}":\n${content}`;
+                                        } catch (e) {
+                                            return `Failed to read "${filename}": ${e.message}`;
+                                        }
+                                    });
+
+                                    const allResults = await Promise.all([...searchPromises, ...weatherPromises, ...filePromises]);
+                                    const consolidatedContext = allResults.join('\n\n---\n\n');
+
+                                    // Remove JSON search block from the original response
+                                    const cleanedResponse = fullResponse.replace(/```json[\s\S]*?```/g, '').trim();
+
+                                    // Call AI again with consolidated results
+                                    const finalResponse = await fetch('/api/ai-chat', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            messages: messages.concat([{
+                                                role: 'assistant',
+                                                content: cleanedResponse || 'I need to search for information.'
+                                            }, {
+                                                role: 'user',
+                                                content: `Search Results:\n\n${consolidatedContext}\n\nNow please provide a comprehensive answer to my original question using these search results. Be specific and cite the information.`
+                                            }]),
+                                            enableSearch: false,
+                                            thinking: false,
+                                            model: preferredModel || 'auto'
+                                        })
+                                    });
+
+                                    if (!finalResponse.ok) {
+                                        if (statusContent) {
+                                            statusContent.textContent = '❌ Failed to process the information.';
+                                        } else {
+                                            addMessage('❌ Failed to process the information.', false);
+                                        }
+                                        return;
                                     }
-                                    // Add speech and stop buttons after final response
-                                    if (streamingDiv) {
-                                        const buttonContainer = document.createElement('div');
-                                        buttonContainer.className = 'flex items-center gap-2 justify-start ml-1 mt-1';
-                                        buttonContainer.innerHTML = `
+
+                                    const finalData = await finalResponse.json();
+                                    if (finalData.success) {
+                                        // Check if response has actual content
+                                        const cleanResponse = finalData.response.trim();
+
+                                        // If response is too short or only thinking, show fallback
+                                        if (!cleanResponse || cleanResponse.length < 5) {
+                                            if (statusContent) {
+                                                statusContent.innerHTML = formatAIContent('👋 Hello! How can I help you today?');
+                                            } else {
+                                                addMessage('👋 Hello! How can I help you today?', false);
+                                            }
+                                            conversationHistory.push({
+                                                role: 'model',
+                                                parts: [{ text: '👋 Hello! How can I help you today?' }]
+                                            });
+                                        } else {
+                                            if (statusContent) {
+                                                statusContent.innerHTML = formatAIContent(cleanResponse);
+                                            } else {
+                                                addMessage(cleanResponse, false);
+                                            }
+                                            conversationHistory.push({
+                                                role: 'model',
+                                                parts: [{ text: cleanResponse }]
+                                            });
+                                        }
+                                        // Add speech and stop buttons after final response
+                                        if (streamingDiv) {
+                                            const buttonContainer = document.createElement('div');
+                                            buttonContainer.className = 'flex items-center gap-2 justify-start ml-1 mt-1';
+                                            buttonContainer.innerHTML = `
                     <button onclick="speakText(this.closest('.flex-col').querySelector('.text-sm').innerText, this)" class="speak-btn p-1 text-slate-500 hover:text-primary transition-colors opacity-0 group-hover:opacity-100" title="Read Aloud">
                         <span class="material-symbols-outlined text-[16px]">volume_up</span>
                     </button>
@@ -2975,31 +2975,33 @@ You're here to help users with anything they need - from answering questions to 
                         <span class="material-symbols-outlined text-[16px]">stop_circle</span>
                     </button>
                 `;
-                                        streamingDiv.querySelector('.flex-col')?.appendChild(buttonContainer);
-                                    }
-                                    saveConversation();
-                                } else {
-                                    if (statusContent) {
-                                        statusContent.textContent = '❌ Something went wrong while processing the information.';
+                                            streamingDiv.querySelector('.flex-col')?.appendChild(buttonContainer);
+                                        }
+                                        saveConversation();
                                     } else {
-                                        addMessage('❌ Something went wrong while processing the information.', false);
+                                        if (statusContent) {
+                                            statusContent.textContent = '❌ Something went wrong while processing the information.';
+                                        } else {
+                                            addMessage('❌ Something went wrong while processing the information.', false);
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.error('Error processing multi-requests:', err);
+                                    if (statusContent) {
+                                        statusContent.textContent = '❌ Something went wrong while gathering information.';
+                                    } else {
+                                        addMessage('❌ Something went wrong while gathering information.', false);
                                     }
                                 }
-                            } catch (err) {
-                                console.error('Error processing multi-requests:', err);
-                                if (statusContent) {
-                                    statusContent.textContent = '❌ Something went wrong while gathering information.';
-                                } else {
-                                    addMessage('❌ Something went wrong while gathering information.', false);
-                                }
+
+                                return;
                             }
+                        } // End of if (searchQueries.length > 0)
+                    } // End of if (isStreaming) for pattern parsing
 
-                            return;
-                        }
-
-                        // Finalize markdown rendering (streamingMd already handled this)
-                        // Remove the cursor/loading indicator if it exists
-                        const cursor = streamingDiv.querySelector('.animate-pulse');
+                    // Finalize markdown rendering (streamingMd already handled this)
+                    // Remove the cursor/loading indicator if it exists
+                    const cursor = streamingDiv.querySelector('.animate-pulse');
                         if (cursor) cursor.remove();
 
                         // Add speech and stop buttons after streaming is done
