@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link rel="icon" type="image/png" href="/wavechat.png" />
+    <title>Wave Web Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link href="/css/theme.css" rel="stylesheet" />
+    <link href="/css/theme-config.css" rel="stylesheet" />
+    <link href="/css/sandpack.css" rel="stylesheet" />
+    <script type="importmap">
+        {
+            "imports": {
+                "react": "https://esm.sh/react@18",
+                "react-dom/client": "https://esm.sh/react-dom@18/client",
+                "react/jsx-runtime": "https://esm.sh/react@18/jsx-runtime"
+            }
+        }
+    </script>
+    <script src="/js/theme-init.js"></script>
+    <style>
+        :root {
+            --editor-bg: #ffffff;
+            --editor-text: #111111;
+            --editor-border: rgba(0, 0, 0, 0.08);
+            --editor-panel: #f7f7f7;
+        }
+
+        .dark {
+            --editor-bg: #0a0a0a;
+            --editor-text: #f5f5f5;
+            --editor-border: rgba(255, 255, 255, 0.12);
+            --editor-panel: #111111;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .editor-background {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .page-shell {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--editor-border);
+            background: var(--editor-panel);
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 16px;
+            letter-spacing: -0.02em;
+            margin: 0;
+        }
+
+        header .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            background: var(--editor-text);
+            color: var(--editor-bg);
+            border: 1px solid var(--editor-text);
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-decoration: none;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: var(--editor-text);
+            border-color: var(--editor-border);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .editor-card {
+            flex: 1;
+            border: none;
+            background: var(--editor-panel);
+            border-radius: 0;
+            overflow: hidden;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sandpack-wrapper {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-shell {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--editor-border);
+            background: var(--editor-panel);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .toolbar-input {
+            background: var(--editor-bg);
+            color: var(--editor-text);
+            border: 1px solid var(--editor-border);
+            border-radius: 12px;
+            padding: 8px 10px;
+            font-size: 12px;
+            min-width: 160px;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        .modal-card {
+            width: min(520px, 90vw);
+            background: var(--editor-panel);
+            border: 1px solid var(--editor-border);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .modal-card h4 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .modal-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .editor-body {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(340px, 36vw);
+            align-items: stretch;
+        }
+
+        .editor-pane {
+            border-right: 1px solid var(--editor-border);
+            background: var(--editor-panel);
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-pane:last-child {
+            border-right: none;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .editor-main {
+            display: grid;
+            grid-template-rows: minmax(0, 1fr);
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+            background: var(--editor-bg);
+        }
+
+        .editor-workbench {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .workspace-tabs {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid var(--editor-border);
+            background: var(--editor-panel);
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .workspace-tab {
+            background: transparent;
+            color: var(--editor-text);
+            border: 1px solid var(--editor-border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .workspace-tab.active {
+            background: var(--editor-text);
+            color: var(--editor-bg);
+            border-color: var(--editor-text);
+        }
+
+        .workspace-body {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-code-host {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-code-host .sp-wrapper,
+        .editor-code-host .sp-layout {
+            height: 100% !important;
+            min-height: 0 !important;
+        }
+
+        .browser-pane {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--editor-panel);
+        }
+
+        .browser-pane .sp-wrapper,
+        .browser-pane .sp-layout,
+        .browser-pane .sp-preview-container,
+        .browser-pane iframe {
+            height: 100% !important;
+            min-height: 0 !important;
+        }
+
+        .editor-section {
+            min-height: 0;
+        }
+
+        .ai-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 0;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(18, 24, 33, 0.6), rgba(9, 12, 18, 0.72));
+            backdrop-filter: blur(16px) saturate(120%);
+        }
+
+        .ai-chat-log {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            overflow-x: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(180deg, rgba(10, 12, 16, 0.35), rgba(4, 6, 10, 0.55));
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            overscroll-behavior: contain;
+        }
+
+        .ai-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .ai-row.user {
+            justify-content: flex-end;
+        }
+
+        .ai-bubble {
+            max-width: 92%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: rgba(18, 24, 33, 0.45);
+            backdrop-filter: blur(12px);
+        }
+
+        .ai-row.user .ai-bubble {
+            background: rgba(0, 153, 255, 0.16);
+            color: #eaf6ff;
+            border-color: rgba(88, 189, 255, 0.45);
+        }
+
+        .ai-input-wrap {
+            padding: 10px 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ai-input {
+            width: 100%;
+            min-height: 74px;
+            max-height: 160px;
+            resize: vertical;
+            border-radius: 12px;
+            border: 1px solid rgba(132, 212, 255, 0.42);
+            background: linear-gradient(180deg, rgba(14, 28, 38, 0.68), rgba(5, 14, 20, 0.82));
+            color: #e7f4ff;
+            padding: 10px;
+            font-size: 12px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .tiny-btn {
+            background: transparent;
+            color: var(--editor-text);
+            border: 1px solid var(--editor-border);
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .ai-model-pop {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px 0;
+        }
+
+        .ai-panel h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .ai-panel textarea {
+            flex: 1;
+            resize: none;
+            border-radius: 12px;
+            border: 1px solid var(--editor-border);
+            background: var(--editor-bg);
+            color: var(--editor-text);
+            padding: 12px;
+            font-size: 12px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .ai-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ai-select {
+            background: var(--editor-bg);
+            color: var(--editor-text);
+            border: 1px solid var(--editor-border);
+            border-radius: 10px;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+
+        .ai-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .app-console {
+            border-top: 1px solid var(--editor-border);
+            background: var(--editor-panel);
+            padding: 10px 12px;
+            min-height: 210px;
+        }
+
+        .sp-wrapper {
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: none;
+            overflow: hidden;
+            background: var(--editor-panel) !important;
+            color: var(--editor-text) !important;
+        }
+
+        .sp-layout {
+            flex: 1 !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            border: none !important;
+        }
+
+        .sp-tabs {
+            background: var(--editor-panel) !important;
+            border-bottom: 1px solid var(--editor-border) !important;
+        }
+
+        .sp-tab-button {
+            color: var(--editor-text) !important;
+        }
+
+        .sp-editor {
+            background: var(--editor-bg) !important;
+        }
+
+        .sp-preview {
+            background: var(--editor-bg) !important;
+        }
+
+        .sp-stack {
+            flex: 1 !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            background: var(--editor-panel) !important;
+        }
+
+        .sp-code-editor,
+        .sp-preview-container {
+            flex: 1 !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            overflow: hidden !important;
+        }
+
+        .sp-code-editor {
+            font-family: "JetBrains Mono", monospace;
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            flex: 1 !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .sp-code-editor .cm-editor {
+            flex: 1 !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .sp-code-editor .cm-scroller {
+            flex: 1 !important;
+            min-height: 0 !important;
+            overflow: auto !important;
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .sp-code-editor .cm-content {
+            min-height: 100% !important;
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .sp-file-explorer {
+            background: var(--editor-panel) !important;
+            color: var(--editor-text) !important;
+        }
+
+        .sp-file-explorer-list {
+            padding: 12px 8px;
+        }
+
+        .sp-file-explorer-name {
+            color: var(--editor-text) !important;
+        }
+
+        .sp-button {
+            background: transparent !important;
+            color: var(--editor-text) !important;
+        }
+
+        @media (max-width: 900px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            main {
+                padding: 0;
+            }
+
+            .sandpack-wrapper {
+                height: auto;
+            }
+
+            .editor-body {
+                grid-template-columns: 1fr;
+                grid-template-rows: minmax(360px, 1fr) minmax(360px, 1fr);
+            }
+
+            .editor-pane,
+            .editor-pane:last-child {
+                border-right: none;
+                border-left: none;
+                border-top: 1px solid var(--editor-border);
+            }
+
+            .editor-main {
+                grid-template-rows: minmax(320px, 1fr) 200px;
+            }
+
+            .editor-workbench {
+                min-height: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="editorBackground" class="editor-background"></div>
+    <div class="page-shell">
+        <header>
+            <div>
+                <h1>Wave Web Editor</h1>
+            </div>
+            <div class="actions">
+                <a class="btn secondary" href="/settings.html">Settings</a>
+                <a class="btn" href="/chat.html">Back to Chat</a>
+            </div>
+        </header>
+        <main>
+            <div class="editor-card">
+                <div id="sandpackRoot" class="sandpack-wrapper"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        (function applyEditorBackground() {
+            const background = localStorage.getItem('chatBackground') || 'none';
+            const opacity = Number(localStorage.getItem('bgOpacity') || 10) / 100;
+            const blur = Number(localStorage.getItem('bgBlur') || 4);
+            const customUrl = localStorage.getItem('customBackgroundUrl');
+            const backgroundEl = document.getElementById('editorBackground');
+
+            if (!backgroundEl) return;
+
+            if (background === 'none') {
+                backgroundEl.style.opacity = 0;
+                backgroundEl.style.backgroundImage = 'none';
+                return;
+            }
+
+            let url = '';
+            if (background === 'custom' && customUrl) {
+                url = customUrl;
+            } else {
+                const map = {
+                    bg1: '/backgrounds/1769528516.png',
+                    bg2: '/backgrounds/1769528550.png',
+                    bg3: '/backgrounds/1769528632.png',
+                    bg4: '/backgrounds/1769528667.png',
+                    bg5: '/backgrounds/1769528899.png',
+                    bg6: '/backgrounds/1769529072.png'
+                };
+                url = map[background] || '';
+            }
+
+            if (!url) {
+                backgroundEl.style.opacity = 0;
+                return;
+            }
+
+            backgroundEl.style.backgroundImage = `url('${url}')`;
+            backgroundEl.style.opacity = String(opacity);
+            backgroundEl.style.filter = `blur(${blur}px)`;
+        })();
+    </script>
+
+    <script type="module">
+        import React from 'react';
+        import { createRoot } from 'react-dom/client';
+        import JSZip from 'https://esm.sh/jszip@3.10.1';
+        import {
+            SandpackProvider,
+            SandpackCodeEditor,
+            SandpackPreview,
+            SandpackConsole,
+            useSandpack
+        } from 'https://esm.sh/@codesandbox/sandpack-react@2.20.0?external=react,react-dom';
+
+        const DEFAULT_FILES = {
+            '/index.html': [
+                '<!DOCTYPE html>',
+                '<html>',
+                '<head>',
+                '  <meta charset="UTF-8" />',
+                '  <title>Wave Sandbox</title>',
+                '  <link rel="stylesheet" href="/styles.css" />',
+                '</head>',
+                '<body>',
+                '  <div id="app"></div>',
+                '  <script type="module" src="/index.js"><\/script>',
+                '</body>',
+                '</html>'
+            ].join('\n'),
+            '/index.js': [
+                "import './styles.css';",
+                '',
+                "const app = document.getElementById('app');",
+                '',
+                'app.innerHTML = `<h1>Wave Sandbox</h1>\n<p>Edit files on the left.</p>`;'
+            ].join('\n'),
+            '/styles.css': [
+                'body {',
+                "  font-family: 'Space Grotesk', sans-serif;",
+                '  background: #0a0a0a;',
+                '  color: #f5f5f5;',
+                '  margin: 0;',
+                '  padding: 32px;',
+                '}',
+                '',
+                'h1 {',
+                '  font-size: 28px;',
+                '  margin-bottom: 8px;',
+                '}'
+            ].join('\n')
+        };
+
+        function loadInitialFiles() {
+            try {
+                const raw = localStorage.getItem('waveEditorFiles');
+                if (!raw) return DEFAULT_FILES;
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== 'object') return DEFAULT_FILES;
+                const normalized = normalizeFiles(parsed);
+                const keys = Object.keys(normalized);
+                if (keys.length === 0) return DEFAULT_FILES;
+                return normalized;
+            } catch (error) {
+                console.warn('[Editor] Failed to load saved files, using defaults', error);
+                return DEFAULT_FILES;
+            }
+        }
+
+        const INITIAL_FILES = loadInitialFiles();
+
+        function normalizeFiles(rawFiles) {
+            const output = {};
+            Object.entries(rawFiles || {}).forEach(([path, value]) => {
+                if (!path.startsWith('/')) {
+                    output[`/${path}`] = value;
+                } else {
+                    output[path] = value;
+                }
+            });
+            return output;
+        }
+
+        function getFileCode(entry) {
+            if (!entry) return '';
+            if (typeof entry === 'string') return entry;
+            if (typeof entry.code === 'string') return entry.code;
+            return '';
+        }
+
+        function getDefaultContent(path) {
+            const lower = path.toLowerCase();
+            if (lower.endsWith('.html')) {
+                return '<div id="app"></div>';
+            }
+            if (lower.endsWith('.css')) {
+                return 'body {\n  margin: 0;\n}';
+            }
+            if (lower.endsWith('.js')) {
+                return "console.log('Hello from ' + " + JSON.stringify(path) + ");";
+            }
+            if (lower.endsWith('.json')) {
+                return '{\n  "name": "wave-project"\n}';
+            }
+            return '';
+        }
+
+        const MODEL_OPTIONS = [
+            { id: 'step-3.5-flash', label: 'step-3.5-flash' },
+            { id: 'glm5', label: 'glm5' },
+            { id: 'qwen3.5-vl', label: 'qwen3.5-vl' },
+            { id: 'qwen3.5-397b-a17b', label: 'qwen3.5-397b-a17b' },
+            { id: 'kimi-k2.5', label: 'kimi-k2.5' }
+        ];
+
+        function escapeHtml(input) {
+            return String(input || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderMarkdown(text) {
+            const source = String(text || '');
+            const chunks = source.split(/```/);
+            const rendered = chunks.map((chunk, index) => {
+                if (index % 2 === 1) {
+                    const lines = chunk.split('\n');
+                    const firstLine = lines[0] || '';
+                    const hasLanguage = /^[a-zA-Z0-9_+#.-]+$/.test(firstLine.trim());
+                    const code = hasLanguage ? lines.slice(1).join('\n') : chunk;
+                    return `<pre style="margin: 8px 0; padding: 10px; border-radius: 10px; border: 1px solid var(--editor-border); background: rgba(0,0,0,0.08); overflow:auto;"><code>${escapeHtml(code)}</code></pre>`;
+                }
+
+                let html = escapeHtml(chunk);
+                html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/(^|\W)\*(?!\*)([^*]+)\*(?!\*)/g, '$1<em>$2</em>');
+                html = html.replace(/`([^`]+)`/g, '<code style="padding: 1px 5px; border-radius: 6px; border: 1px solid var(--editor-border); background: rgba(0,0,0,0.06);">$1</code>');
+                html = html.replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+                html = html.replace(/\n/g, '<br>');
+                return html;
+            });
+
+            return rendered.join('');
+        }
+
+        function extractJsonPayload(rawText) {
+            const text = String(rawText || '').trim();
+            if (!text) return null;
+
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                // Continue to fenced JSON extraction
+            }
+
+            const fenced = text.match(/```json\s*([\s\S]*?)\s*```/i) || text.match(/```\s*([\s\S]*?)\s*```/i);
+            if (!fenced) return null;
+
+            try {
+                return JSON.parse(fenced[1]);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function applyLineEdits(originalContent, edits) {
+            const lines = String(originalContent || '').split('\n');
+            const sorted = [...(edits || [])].sort((a, b) => (Number(b.startLine) || 1) - (Number(a.startLine) || 1));
+
+            sorted.forEach((edit) => {
+                const startLine = Math.max(1, Number(edit.startLine) || 1);
+                const endLine = Math.max(startLine, Number(edit.endLine) || startLine);
+                const replacement = String(edit.newText || '').split('\n');
+                lines.splice(startLine - 1, endLine - startLine + 1, ...replacement);
+            });
+
+            return lines.join('\n');
+        }
+
+        function EditorShell() {
+            const { sandpack, files, activeFile } = useSandpack();
+            const [projectName, setProjectName] = React.useState(localStorage.getItem('waveProjectName') || 'Wave Project');
+            const [authorName, setAuthorName] = React.useState(localStorage.getItem('waveAuthorName') || (localStorage.getItem('nickname') || ''));
+            const [authorHandle, setAuthorHandle] = React.useState(localStorage.getItem('waveAuthorHandle') || (localStorage.getItem('username') || ''));
+            const [aiPrompt, setAiPrompt] = React.useState('');
+            const [aiStatus, setAiStatus] = React.useState('Ready');
+            const [aiModel, setAiModel] = React.useState(localStorage.getItem('preferredAIModel') || 'glm5');
+            const [aiMessages, setAiMessages] = React.useState(() => {
+                try {
+                    const raw = localStorage.getItem('waveEditorAiMessages');
+                    if (!raw) return [{ role: 'assistant', text: 'Wave AI is connected to your editor. Ask anything about your files.' }];
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                } catch (error) {
+                    console.warn('[Editor] Failed to load AI chat history', error);
+                }
+                return [{ role: 'assistant', text: 'Wave AI is connected to your editor. Ask anything about your files.' }];
+            });
+            const [showModelPicker, setShowModelPicker] = React.useState(false);
+            const [aiBusy, setAiBusy] = React.useState(false);
+            const [showPreview, setShowPreview] = React.useState(false);
+            const [showConsole, setShowConsole] = React.useState(false);
+            const [activeWorkspaceTab, setActiveWorkspaceTab] = React.useState('file');
+            const [selectedFileTab, setSelectedFileTab] = React.useState('/index.js');
+            const [showExportModal, setShowExportModal] = React.useState(false);
+            const [rememberMetadata, setRememberMetadata] = React.useState(true);
+            const importInputRef = React.useRef(null);
+            const aiLogRef = React.useRef(null);
+
+            const fileMap = files || sandpack.files || {};
+
+            const handleAddFile = () => {
+                const rawPath = window.prompt('New file path (e.g. /pages/app.js):');
+                if (!rawPath) return;
+                const path = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+                const content = getDefaultContent(path);
+                if (sandpack.addFile) {
+                    sandpack.addFile(path, content);
+                } else if (sandpack.updateFile) {
+                    sandpack.updateFile(path, content);
+                }
+                if (sandpack.openFile) {
+                    sandpack.openFile(path);
+                }
+            };
+
+            const handleImportZip = async (file) => {
+                if (!file) return;
+                const zip = await JSZip.loadAsync(file);
+                const entries = [];
+                zip.forEach((relativePath, entry) => {
+                    if (entry.dir) return;
+                    if (relativePath.startsWith('__MACOSX')) return;
+                    entries.push(entry);
+                });
+
+                const imported = {};
+                for (const entry of entries) {
+                    const content = await entry.async('string');
+                    imported[`/${entry.name}`] = content;
+                }
+
+                const normalized = normalizeFiles(imported);
+                if (sandpack.resetAllFiles) {
+                    sandpack.resetAllFiles(normalized);
+                } else if (sandpack.setFiles) {
+                    sandpack.setFiles(normalized);
+                } else if (sandpack.updateFile) {
+                    Object.keys(fileMap).forEach(path => {
+                        if (sandpack.deleteFile && !normalized[path]) {
+                            sandpack.deleteFile(path);
+                        }
+                    });
+                    Object.entries(normalized).forEach(([path, content]) => {
+                        sandpack.updateFile(path, content);
+                    });
+                }
+
+                const metadata = normalized['/wave-project.json'];
+                if (metadata) {
+                    try {
+                        const parsed = JSON.parse(metadata);
+                        setProjectName(parsed.projectName || projectName);
+                        setAuthorName(parsed.authorName || authorName);
+                        setAuthorHandle(parsed.authorHandle || authorHandle);
+                    } catch (error) {
+                        console.warn('[Editor] Failed to parse metadata', error);
+                    }
+                }
+            };
+
+            const handleExportZip = async () => {
+                if (!projectName.trim()) {
+                    setShowExportModal(true);
+                    return;
+                }
+                const zip = new JSZip();
+                const filesToExport = files || sandpack.files || {};
+                Object.entries(filesToExport).forEach(([path, entry]) => {
+                    const content = getFileCode(entry);
+                    const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+                    zip.file(normalizedPath, content);
+                });
+
+                const metadata = {
+                    projectName: projectName || 'Wave Project',
+                    authorName: authorName || '',
+                    authorHandle: authorHandle || '',
+                    exportedAt: new Date().toISOString()
+                };
+                zip.file('wave-project.json', JSON.stringify(metadata, null, 2));
+
+                const blob = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${(projectName || 'wave-project').replace(/\s+/g, '-').toLowerCase()}.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            };
+
+            const confirmExport = async () => {
+                if (rememberMetadata) {
+                    localStorage.setItem('waveProjectName', projectName);
+                    localStorage.setItem('waveAuthorName', authorName);
+                    localStorage.setItem('waveAuthorHandle', authorHandle);
+                }
+                setShowExportModal(false);
+                await handleExportZip();
+            };
+
+            React.useEffect(() => {
+                if (aiLogRef.current) {
+                    aiLogRef.current.scrollTop = aiLogRef.current.scrollHeight;
+                }
+            }, [aiMessages, aiBusy]);
+
+            React.useEffect(() => {
+                if (activeFile) {
+                    setSelectedFileTab(activeFile);
+                }
+            }, [activeFile]);
+
+            React.useEffect(() => {
+                const paths = Object.keys(fileMap || {});
+                if (paths.length === 0) return;
+
+                if (!paths.includes(selectedFileTab)) {
+                    const next = paths.sort()[0];
+                    setSelectedFileTab(next);
+                }
+            }, [fileMap, selectedFileTab]);
+
+            React.useEffect(() => {
+                try {
+                    localStorage.setItem('waveEditorAiMessages', JSON.stringify(aiMessages));
+                } catch (error) {
+                    console.warn('[Editor] Failed to persist AI chat history', error);
+                }
+            }, [aiMessages]);
+
+            const persistFilesSnapshot = React.useCallback(() => {
+                try {
+                    const snapshot = {};
+                    Object.entries(fileMap || {}).forEach(([path, entry]) => {
+                        snapshot[path] = getFileCode(entry);
+                    });
+                    if (Object.keys(snapshot).length > 0) {
+                        localStorage.setItem('waveEditorFiles', JSON.stringify(snapshot));
+                    }
+                } catch (error) {
+                    console.warn('[Editor] Failed to persist files', error);
+                }
+            }, [fileMap]);
+
+            React.useEffect(() => {
+                persistFilesSnapshot();
+                const intervalId = setInterval(() => persistFilesSnapshot(), 1500);
+                const onBeforeUnload = () => persistFilesSnapshot();
+                window.addEventListener('beforeunload', onBeforeUnload);
+                return () => {
+                    clearInterval(intervalId);
+                    window.removeEventListener('beforeunload', onBeforeUnload);
+                };
+            }, [persistFilesSnapshot]);
+
+            React.useEffect(() => {
+                if (!MODEL_OPTIONS.some((m) => m.id === aiModel)) {
+                    setAiModel('glm5');
+                    localStorage.setItem('preferredAIModel', 'glm5');
+                }
+            }, [aiModel]);
+
+            const buildFilesContext = () => {
+                const entries = Object.entries(fileMap || {});
+                const chunks = entries.map(([path, entry]) => {
+                    const code = getFileCode(entry);
+                    return `FILE: ${path}\n${code}`;
+                });
+                const joined = chunks.join('\n\n-----\n\n');
+                if (joined.length > 120000) {
+                    return joined.slice(0, 120000) + '\n\n[TRUNCATED: project too large for one request]';
+                }
+                return joined;
+            };
+
+            const handleAiSend = async () => {
+                if (!aiPrompt.trim()) return;
+                if (aiBusy) return;
+
+                const promptText = aiPrompt.trim();
+                setAiPrompt('');
+                setAiBusy(true);
+                setAiStatus('Thinking...');
+                setAiMessages((prev) => [...prev, { role: 'user', text: promptText }]);
+
+                const currentFile = activeFile || '/index.js';
+                const preferredModel = aiModel || localStorage.getItem('preferredAIModel') || 'glm5';
+                const filesContext = buildFilesContext();
+                const recentChat = aiMessages.slice(-10).map((m) => `${m.role.toUpperCase()}: ${m.text}`).join('\n\n');
+
+                const messages = [
+                    {
+                        role: 'system',
+                        content: [
+                            'You are Wave Editor AI with full read access to all project files in context.',
+                            'Always return valid JSON only, no markdown wrapper.',
+                            'JSON schema:',
+                            '{',
+                            '  "assistantMessage": "markdown text for user",',
+                            '  "edits": [',
+                            '    {',
+                            '      "path": "/file.ext",',
+                            '      "startLine": 1,',
+                            '      "endLine": 1,',
+                            '      "newText": "replacement text"',
+                            '    }',
+                            '  ]',
+                            '}',
+                            'Use 1-based line numbers. If no file change is needed, return an empty edits array.'
+                        ].join('\n')
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            `ACTIVE FILE: ${currentFile}`,
+                            '',
+                            'PROJECT FILES:',
+                            filesContext,
+                            '',
+                            'RECENT CHAT:',
+                            recentChat || 'None',
+                            '',
+                            'USER REQUEST:',
+                            promptText
+                        ].join('\n')
+                    }
+                ];
+
+                try {
+                    const authToken = localStorage.getItem('authToken');
+                    const response = await fetch('/api/ai-chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+                        },
+                        body: JSON.stringify({ messages, model: preferredModel, enableSearch: false, thinking: false })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`AI request failed: ${response.status} ${errorText}`);
+                    }
+
+                    const data = await response.json();
+                    const aiResponse = String(data.response || '').trim();
+                    const payload = extractJsonPayload(aiResponse);
+
+                    if (!payload || typeof payload !== 'object') {
+                        setAiMessages((prev) => [...prev, { role: 'assistant', text: aiResponse || 'No response.' }]);
+                        setAiStatus('Ready (no JSON edits)');
+                        return;
+                    }
+
+                    const assistantMessage = String(payload.assistantMessage || 'Done.');
+                    const edits = Array.isArray(payload.edits) ? payload.edits : [];
+
+                    if (edits.length > 0) {
+                        const grouped = edits.reduce((acc, edit) => {
+                            const path = String(edit.path || activeFile || '/index.js');
+                            if (!acc[path]) acc[path] = [];
+                            acc[path].push(edit);
+                            return acc;
+                        }, {});
+
+                        const changedPaths = Object.keys(grouped);
+                        changedPaths.forEach((path) => {
+                            const existing = getFileCode(fileMap[path]);
+                            const updated = applyLineEdits(existing, grouped[path]);
+
+                            if (existing === '' && sandpack.addFile) {
+                                sandpack.addFile(path, updated);
+                            } else if (sandpack.updateFile) {
+                                sandpack.updateFile(path, updated);
+                            }
+                        });
+
+                        if (changedPaths.length > 0 && sandpack.openFile) {
+                            sandpack.openFile(changedPaths[0]);
+                        }
+
+                        setAiStatus(`Applied ${edits.length} edit(s) across ${changedPaths.length} file(s)`);
+                    } else {
+                        setAiStatus('Ready (no edits requested)');
+                    }
+
+                    setAiMessages((prev) => [...prev, { role: 'assistant', text: assistantMessage }]);
+                } catch (error) {
+                    console.error('[Editor] AI error', error);
+                    const message = error.message || 'AI request failed.';
+                    if (message.includes('UnifiedAIService not initialized')) {
+                        setAiStatus('AI is not configured on the server. Set NVIDIA_API_KEY in backend/.env and restart backend.');
+                    } else {
+                        setAiStatus(message);
+                    }
+                    setAiMessages((prev) => [...prev, { role: 'assistant', text: `Error: ${message}` }]);
+                } finally {
+                    setAiBusy(false);
+                }
+            };
+
+            return React.createElement(
+                'div',
+                { className: 'editor-shell' },
+                React.createElement(
+                    'div',
+                    { className: 'editor-toolbar' },
+                    React.createElement(
+                        'div',
+                        { className: 'toolbar-group' },
+                        React.createElement('button', { className: 'btn secondary', type: 'button', onClick: handleAddFile }, 'Add File'),
+                        React.createElement('button', {
+                            className: 'btn secondary',
+                            type: 'button',
+                            onClick: () => importInputRef.current && importInputRef.current.click()
+                        }, 'Import ZIP'),
+                        React.createElement('button', { className: 'btn', type: 'button', onClick: () => setShowExportModal(true) }, 'Export ZIP'),
+                        React.createElement('button', {
+                            className: 'btn secondary',
+                            type: 'button',
+                            onClick: () => setShowPreview((value) => !value)
+                        }, showPreview ? 'Hide Preview' : 'Show Preview'),
+                        React.createElement('button', {
+                            className: 'btn secondary',
+                            type: 'button',
+                            onClick: () => setShowConsole((value) => !value)
+                        }, showConsole ? 'Hide Console' : 'Show Console'),
+                        React.createElement('input', {
+                            ref: importInputRef,
+                            type: 'file',
+                            accept: '.zip,application/zip',
+                            style: { display: 'none' },
+                            onChange: (event) => handleImportZip(event.target.files[0])
+                        })
+                    ),
+                    React.createElement('div', { className: 'toolbar-group' })
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'editor-body' },
+                    React.createElement(
+                        'div',
+                        { className: 'editor-main', style: { gridTemplateRows: showPreview ? 'minmax(0, 1fr) 240px' : 'minmax(0, 1fr)' } },
+                        React.createElement(
+                            'div',
+                            { className: 'editor-section editor-workbench' },
+                            React.createElement(
+                                'div',
+                                { className: 'workspace-tabs' },
+                                Object.keys(fileMap || {}).sort().map((path) => React.createElement('button', {
+                                    key: path,
+                                    className: `workspace-tab ${activeWorkspaceTab === 'file' && selectedFileTab === path ? 'active' : ''}`,
+                                    type: 'button',
+                                    onClick: () => {
+                                        setActiveWorkspaceTab('file');
+                                        setSelectedFileTab(path);
+                                        if (sandpack.openFile) sandpack.openFile(path);
+                                    }
+                                }, path.replace(/^\//, ''))),
+                                React.createElement('button', {
+                                    className: `workspace-tab ${activeWorkspaceTab === 'browser' ? 'active' : ''}`,
+                                    type: 'button',
+                                    onClick: () => setActiveWorkspaceTab('browser')
+                                }, 'Browser')
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'workspace-body' },
+                                activeWorkspaceTab === 'browser'
+                                    ? React.createElement(
+                                        'div',
+                                        { className: 'browser-pane', style: { height: '100%' } },
+                                        React.createElement(SandpackPreview, { showOpenInCodeSandbox: false, showRefreshButton: true })
+                                    )
+                                    : React.createElement(
+                                        'div',
+                                        { className: 'editor-code-host' },
+                                        React.createElement(SandpackCodeEditor, { showTabs: false, showLineNumbers: true, wrapContent: true })
+                                    )
+                            )
+                        ),
+                        showPreview
+                            ? React.createElement(
+                                'div',
+                                { className: 'editor-section' },
+                                React.createElement(SandpackPreview, { showOpenInCodeSandbox: false, showRefreshButton: true })
+                            )
+                            : null
+                        ),
+                    React.createElement(
+                        'div',
+                        { className: 'editor-pane' },
+                        React.createElement(
+                            'div',
+                            { className: 'ai-panel' },
+                            React.createElement(
+                                'div',
+                                { className: 'ai-actions', style: { padding: '12px 16px' } },
+                                React.createElement('h3', { style: { marginRight: 'auto' } }, 'Wave AI Chat'),
+                                React.createElement('button', {
+                                    className: 'tiny-btn',
+                                    type: 'button',
+                                    onClick: () => setShowModelPicker((v) => !v)
+                                }, 'Model')
+                            ),
+                            showModelPicker
+                                ? React.createElement(
+                                    'div',
+                                    { className: 'ai-model-pop' },
+                                    React.createElement('select', {
+                                        className: 'ai-select',
+                                        value: aiModel,
+                                        onChange: (event) => {
+                                            setAiModel(event.target.value);
+                                            localStorage.setItem('preferredAIModel', event.target.value);
+                                        }
+                                    }, MODEL_OPTIONS.map((model) => React.createElement('option', { key: model.id, value: model.id }, model.label))),
+                                    React.createElement('span', { className: 'ai-status' }, `Current: ${aiModel}`)
+                                )
+                                : null,
+                            React.createElement(
+                                'div',
+                                { className: 'ai-chat-log', ref: aiLogRef },
+                                aiMessages.map((msg, index) => React.createElement(
+                                    'div',
+                                    { key: `${msg.role}-${index}`, className: `ai-row ${msg.role === 'user' ? 'user' : ''}` },
+                                    React.createElement('div', {
+                                        className: 'ai-bubble',
+                                        dangerouslySetInnerHTML: { __html: renderMarkdown(msg.text) }
+                                    })
+                                )),
+                                aiBusy ? React.createElement(
+                                    'div',
+                                    { className: 'ai-row' },
+                                    React.createElement('div', { className: 'ai-bubble' }, 'Thinking...')
+                                ) : null
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'ai-input-wrap' },
+                                React.createElement('textarea', {
+                                    className: 'ai-input',
+                                    placeholder: 'Ask about any file. AI receives full project context.',
+                                    value: aiPrompt,
+                                    onChange: (event) => setAiPrompt(event.target.value),
+                                    onKeyDown: (event) => {
+                                        if (event.key === 'Enter' && !event.shiftKey) {
+                                            event.preventDefault();
+                                            handleAiSend();
+                                        }
+                                    }
+                                }),
+                                React.createElement(
+                                    'div',
+                                    { className: 'ai-actions' },
+                                    React.createElement('button', { className: 'btn', type: 'button', onClick: handleAiSend, disabled: aiBusy }, aiBusy ? 'Sending...' : 'Send'),
+                                    React.createElement('button', { className: 'btn secondary', type: 'button', onClick: () => setAiMessages([{ role: 'assistant', text: 'Wave AI is connected to your editor. Ask anything about your files.' }]) }, 'Clear'),
+                                    React.createElement('span', { className: 'ai-status' }, aiStatus)
+                                )
+                            )
+                        )
+                    ),
+                ),
+                showConsole
+                    ? React.createElement(
+                        'div',
+                        { className: 'app-console' },
+                        React.createElement('div', { className: 'ai-status', style: { marginBottom: '8px' } }, 'Console (full app bottom)'),
+                        React.createElement(SandpackConsole, { style: { height: '170px' } })
+                    )
+                    : null,
+                showExportModal
+                    ? React.createElement(
+                        'div',
+                        { className: 'modal-backdrop' },
+                        React.createElement(
+                            'div',
+                            { className: 'modal-card' },
+                            React.createElement('h4', null, 'Project Metadata'),
+                            React.createElement('div', { className: 'modal-row' },
+                                React.createElement('label', null, 'Project name'),
+                                React.createElement('input', {
+                                    className: 'toolbar-input',
+                                    value: projectName,
+                                    onChange: (event) => setProjectName(event.target.value)
+                                })
+                            ),
+                            React.createElement('div', { className: 'modal-row' },
+                                React.createElement('label', null, 'Author name'),
+                                React.createElement('input', {
+                                    className: 'toolbar-input',
+                                    value: authorName,
+                                    onChange: (event) => setAuthorName(event.target.value)
+                                })
+                            ),
+                            React.createElement('div', { className: 'modal-row' },
+                                React.createElement('label', null, 'Handle'),
+                                React.createElement('input', {
+                                    className: 'toolbar-input',
+                                    value: authorHandle,
+                                    onChange: (event) => setAuthorHandle(event.target.value)
+                                })
+                            ),
+                            React.createElement(
+                                'label',
+                                { className: 'ai-status' },
+                                React.createElement('input', {
+                                    type: 'checkbox',
+                                    checked: rememberMetadata,
+                                    onChange: (event) => setRememberMetadata(event.target.checked)
+                                }),
+                                ' Remember for next export'
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'modal-actions' },
+                                React.createElement('button', { className: 'btn secondary', type: 'button', onClick: () => setShowExportModal(false) }, 'Cancel'),
+                                React.createElement('button', { className: 'btn', type: 'button', onClick: confirmExport }, 'Export ZIP')
+                            )
+                        )
+                    )
+                    : null
+            );
+        }
+
+        const isDark = document.documentElement.classList.contains('dark');
+        const theme = isDark ? 'dark' : 'light';
+
+        const App = () => (
+            React.createElement(SandpackProvider, {
+                template: 'vanilla',
+                files: INITIAL_FILES,
+                theme
+            }, React.createElement(EditorShell))
+        );
+
+        const root = createRoot(document.getElementById('sandpackRoot'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+</html>
