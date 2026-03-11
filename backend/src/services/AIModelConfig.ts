@@ -149,129 +149,51 @@ export interface AIModel {
 //   console.log(AI_MODELS[0].name); // "Wave Llama 3.2"
 
 export const AI_MODELS: AIModel[] = [
-  // Wave Flash - Speed / Low Latency models (all free)
+  // NVIDIA NIM Models
+  
+  // Free Models
   {
-    id: 'wave-flash-1',
-    name: 'Wave Flash 1',
+    id: 'step-3.5-flash',
+    name: 'Step-3.5-Flash',
     tier: 'free',
-    useCase: 'Ultra-fast responses',
-    reasoning: 'Fastest responses for simple questions',
-    openRouterModel: 'liquid/lfm-2.5-1.2b-instruct:free'
-  },
-  {
-    id: 'wave-flash-2',
-    name: 'Wave Flash 2',
-    tier: 'free',
-    useCase: 'Quick responses',
+    useCase: 'Fast chat, streaming',
     reasoning: 'Fast responses for simple questions',
-    openRouterModel: 'qwen/qwen3-4b:free',
-    fallbackId: 'wave-flash-1'
+    openRouterModel: 'stepfun-ai/step-3.5-flash'
   },
   {
-    id: 'wave-flash-3',
-    name: 'Wave Flash 3',
+    id: 'glm5',
+    name: 'GLM-5',
     tier: 'free',
-    useCase: 'Lightweight research',
-    reasoning: 'Fast & accurate for easy Q&A',
-    openRouterModel: 'google/gemma-3n-e4b-it:free',
-    fallbackId: 'wave-flash-2'
-  },
-  {
-    id: 'wave-flash-4',
-    name: 'Wave Flash 4',
-    tier: 'free',
-    useCase: 'Efficient dialogue',
-    reasoning: 'Balanced speed and quality',
-    openRouterModel: 'google/gemma-3-12b-it:free',
-    fallbackId: 'wave-flash-2'
+    useCase: 'Deep reasoning, agents',
+    reasoning: 'Medium reasoning with thinking mode',
+    openRouterModel: 'z-ai/glm5'
   },
   
-  // Wave - Balanced / Default models
+  // Pro Models (Vision/Multimodal)
   {
-    id: 'wave-1',
-    name: 'Wave 1',
-    tier: 'free',
-    useCase: 'Fast balanced model',
-    reasoning: 'Balanced reasoning for general tasks',
-    openRouterModel: 'nvidia/nemotron-3-nano-30b-a3b:free'
-  },
-  {
-    id: 'wave-2',
-    name: 'Wave 2',
-    tier: 'free',
-    useCase: 'General intelligence',
-    reasoning: 'Medium reasoning for everyday tasks',
-    openRouterModel: 'arcee-ai/trinity-mini:free'
-  },
-  {
-    id: 'wave-3',
-    name: 'Wave 3',
-    tier: 'free',
-    useCase: 'Balanced chat & research',
-    reasoning: 'Strong reasoning for general tasks',
-    openRouterModel: 'google/gemma-3-27b-it:free',
-    fallbackId: 'wave-2'
-  },
-  {
-    id: 'wave-4',
-    name: 'Wave 4',
+    id: 'qwen3.5-vl',
+    name: 'Qwen3.5-VL',
     tier: 'pro',
-    useCase: 'High-intelligence tasks',
-    reasoning: 'Very strong reasoning for complex tasks',
-    openRouterModel: 'meta-llama/llama-3.3-70b-instruct:free'
+    useCase: 'Images, docs, VQA',
+    reasoning: 'Vision-language understanding',
+    openRouterModel: 'qwen/qwen3.5-397b-a17b'
   },
   {
-    id: 'wave-5',
-    name: 'Wave 5',
+    id: 'qwen3.5-397b-a17b',
+    name: 'Qwen3.5-397B-A17B',
     tier: 'pro',
-    useCase: 'Advanced reasoning',
-    reasoning: 'Advanced reasoning with structured outputs',
-    openRouterModel: 'arcee-ai/trinity-large-preview:free'
-  },
-  
-  // Wave O - Thinking / Reasoning models
-  {
-    id: 'wave-o1',
-    name: 'Wave O1',
-    tier: 'free',
-    useCase: 'Fast thinking mode',
-    reasoning: 'Fast thinking for simple reasoning',
-    openRouterModel: 'liquid/lfm-2.5-1.2b-thinking:free'
+    useCase: 'Multimodal foundation model',
+    reasoning: 'Advanced reasoning with thinking',
+    openRouterModel: 'qwen/qwen3.5-397b-a17b'
   },
   {
-    id: 'wave-o2',
-    name: 'Wave O2',
+    id: 'kimi-k2.5',
+    name: 'Kimi K2.5',
     tier: 'pro',
-    useCase: 'Reasoning & research',
-    reasoning: 'Medium reasoning with thinking toggle',
-    openRouterModel: 'z-ai/glm-4.5-air:free'
-  },
-  {
-    id: 'wave-o3',
-    name: 'Wave O3',
-    tier: 'pro',
-    useCase: 'Deep logic',
-    reasoning: 'Strong reasoning for complex logic',
-    openRouterModel: 'stepfun/step-3.5-flash:free'
-  },
-  {
-    id: 'wave-o4',
-    name: 'Wave O4',
-    tier: 'pro',
-    useCase: 'Expert research',
-    reasoning: 'Very strong reasoning for deep research',
-    openRouterModel: 'tngtech/tng-r1t-chimera:free'
-  },
-  {
-    id: 'wave-o5',
-    name: 'Wave O5',
-    tier: 'pro',
-    useCase: 'Premium analysis',
-    reasoning: 'Deepest reasoning for complex tasks',
-    openRouterModel: 'deepseek/deepseek-r1-0528:free'
+    useCase: 'Video, heavy multimodal',
+    reasoning: 'Heavy multimodal understanding',
+    openRouterModel: 'moonshotai/kimi-k2.5'
   }
-  
-  // Total: 8 free models + 6 pro models = 14 models
 ];
 
 

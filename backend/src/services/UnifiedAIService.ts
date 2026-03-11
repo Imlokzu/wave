@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { getSearchService, SearchService } from './SearchService';
 import { AI_MODELS, AIModel } from './AIModelConfig';
+import { executeToolCall, getToolsSchema, getToolSystemPrompt } from './ToolService';
 
 // Constants
-const DEFAULT_MODEL_ID = 'wave-flash-2';
+const DEFAULT_MODEL_ID = 'glm5';
 const DEFAULT_SEARCH_RESULTS_LIMIT = 5;
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+const NVIDIA_NIM_BASE_URL = 'https://integrate.api.nvidia.com/v1';
 
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant' | 'tool';
@@ -32,7 +33,7 @@ export class UnifiedAIService {
   constructor(
     apiKey: string,
     searchService?: SearchService,
-    baseUrl: string = OPENROUTER_BASE_URL
+    baseUrl: string = NVIDIA_NIM_BASE_URL
   ) {
     this.apiKey = apiKey;
     this.searchService = searchService || getSearchService();
@@ -96,8 +97,26 @@ export class UnifiedAIService {
       // Ensure system message exists
       this.ensureSystemMessage(messages, enableSearch, model);
 
+      // Collect full response for tool call detection
+      let fullResponse = '';
+      const chunkCollector = (chunk: string) => {
+        fullResponse += chunk;
+        onChunk(chunk);
+      };
+
       // Call API with streaming
-      await this.callOpenRouterAPIStream(model, messages, enableSearch, thinking, onChunk, temperature, maxTokens);
+      await this.callOpenRouterAPIStream(model, messages, enableSearch, thinking, chunkCollector, temperature, maxTokens);
+      
+      // After streaming completes, check for tool calls
+      if (enableSearch) {
+        const toolCalls = this.parseToolCalls(fullResponse);
+        if (toolCalls.length > 0) {
+          console.log(`[UnifiedAI] Detected ${toolCalls.length} tool call(s) after streaming`);
+          // Note: For streaming, we can't easily execute tools mid-stream
+          // Tools will be detected but user needs to resend for execution
+          // This is a limitation of streaming vs non-streaming
+        }
+      }
     } catch (error: any) {
       console.error(`[UnifiedAI] Streaming error: ${error.message || 'Unknown error'}`);
       throw error;
@@ -255,10 +274,35 @@ export class UnifiedAIService {
       // Ensure system message exists
       this.ensureSystemMessage(messages, enableSearch, model);
 
-      // Call API
+      // Call API with tools support
       const responseMessage = await this.callOpenRouterAPI(model, messages, enableSearch, thinking, temperature, maxTokens);
 
       let response = responseMessage.content;
+
+      // Check for tool calls in response (native or parsed)
+      const toolCalls = this.parseToolCalls(response, responseMessage);
+      if (toolCalls.length > 0) {
+        console.log(`[UnifiedAI] Detected ${toolCalls.length} tool call(s)`);
+        
+        // Execute tools
+        const toolResults = await this.executeTools(toolCalls);
+        
+        // Add tool results to conversation
+        messages.push(responseMessage);
+        toolResults.forEach(result => {
+          messages.push({
+            role: 'tool',
+            content: JSON.stringify(result.data),
+            tool_call_id: result.tool
+          });
+        });
+        
+        // Get final response from AI with tool results
+        console.log('[UnifiedAI] Getting final response with tool results...');
+        const finalResponse = await this.callOpenRouterAPI(model, messages, false, false, temperature, maxTokens);
+        response = finalResponse.content;
+        console.log('[UnifiedAI] Final response received:', response.substring(0, 200));
+      }
 
       // If this was a fallback, prepend a message for the user
       if (fallbackDepth > 0) {
@@ -282,6 +326,114 @@ export class UnifiedAIService {
 
       return this.handleChatError(error);
     }
+  }
+
+  /**
+   * Parse tool calls from AI response
+   */
+  private parseToolCalls(content: string, message?: AIMessage): Array<{ name: string; args: any }> {
+    const toolCalls: Array<{ name: string; args: any }> = [];
+    
+    // First check for native tool_calls from API (NVIDIA NIM / OpenAI format)
+    if (message?.tool_calls && message.tool_calls.length > 0) {
+      console.log(`[UnifiedAI] Found ${message.tool_calls.length} native tool call(s)`);
+      
+      message.tool_calls.forEach((tc: any) => {
+        if (tc.function) {
+          try {
+            const args = JSON.parse(tc.function.arguments || '{}');
+            toolCalls.push({
+              name: tc.function.name,
+              args
+            });
+          } catch (e) {
+            console.error('[UnifiedAI] Failed to parse tool call arguments:', e);
+          }
+        }
+      });
+      
+      return toolCalls;
+    }
+    
+    console.log('[UnifiedAI] No native tool_calls, checking content for patterns...');
+    
+    // Fallback: Look for [WEB_SEARCH: ...] or [SEARCH: ...] patterns
+    const webSearchRegex = /\[WEB_SEARCH:\s*(.+?)\]/g;
+    const searchRegex = /\[SEARCH:\s*(.+?)\]/g;
+    const fetchRegex = /\[FETCH:\s*(.+?)\]/g;
+    
+    let searchMatch;
+    while ((searchMatch = webSearchRegex.exec(content)) !== null) {
+      console.log(`[UnifiedAI] Found WEB_SEARCH pattern: ${searchMatch[1]}`);
+      toolCalls.push({ name: 'search', args: { query: searchMatch[1].trim() } });
+    }
+    
+    while ((searchMatch = searchRegex.exec(content)) !== null) {
+      console.log(`[UnifiedAI] Found SEARCH pattern: ${searchMatch[1]}`);
+      toolCalls.push({ name: 'search', args: { query: searchMatch[1].trim() } });
+    }
+    
+    let fetchMatch;
+    while ((fetchMatch = fetchRegex.exec(content)) !== null) {
+      console.log(`[UnifiedAI] Found FETCH pattern: ${fetchMatch[1]}`);
+      toolCalls.push({ name: 'fetch', args: { url: fetchMatch[1].trim() } });
+    }
+    
+    // Also look for JSON blocks
+    const jsonBlockRegex = /```(?:json)?\s*({[\s\S]*?})\s*```/g;
+    let match;
+    
+    while ((match = jsonBlockRegex.exec(content)) !== null) {
+      try {
+        const json = JSON.parse(match[1]);
+        
+        // Check for search tool
+        if (json.searches && Array.isArray(json.searches)) {
+          json.searches.forEach((s: any) => {
+            toolCalls.push({
+              name: 'search',
+              args: { query: s.query || s }
+            });
+          });
+        }
+        
+        // Check for fetch tool
+        if (json.fetch || json.url) {
+          toolCalls.push({
+            name: 'fetch',
+            args: { url: json.url || json.fetch }
+          });
+        }
+      } catch (e) {
+        // Ignore invalid JSON
+      }
+    }
+    
+    if (toolCalls.length > 0) {
+      console.log(`[UnifiedAI] Found ${toolCalls.length} tool call(s) via pattern matching`);
+    }
+    
+    return toolCalls;
+  }
+
+  /**
+   * Execute tool calls
+   */
+  private async executeTools(toolCalls: Array<{ name: string; args: any }>): Promise<Array<{ tool: string; data: any }>> {
+    const results: Array<{ tool: string; data: any }> = [];
+    
+    for (const call of toolCalls) {
+      console.log(`[UnifiedAI] Executing tool: ${call.name}`, call.args);
+      const result = await executeToolCall(call.name, call.args);
+      
+      if (result.success) {
+        results.push({ tool: call.name, data: result.data });
+      } else {
+        results.push({ tool: call.name, data: { error: result.error } });
+      }
+    }
+    
+    return results;
   }
 
   /**
@@ -476,15 +628,19 @@ Respond naturally and directly. No thinking process in the main response.`;
       requestBody.max_tokens = maxTokens;
     }
 
-    // Only add extra_body if needed (some models don't support it)
-    if (enableSearch || thinking) {
-      requestBody.extra_body = {};
-      if (enableSearch) {
-        requestBody.extra_body.plugins = ["pdf"];
-      }
-      if (thinking) {
-        requestBody.extra_body.include_reasoning = true;
-      }
+    // Add tools for function calling (NVIDIA NIM / OpenAI format)
+    if (enableSearch) {
+      requestBody.tools = getToolsSchema();
+      // Optionally set tool_choice to 'auto' to let AI decide when to use tools
+      requestBody.tool_choice = 'auto';
+      console.log('[UnifiedAI] Tools schema added:', JSON.stringify(requestBody.tools, null, 2));
+    }
+
+    // Add thinking/reasoning support
+    if (thinking) {
+      requestBody.extra_body = {
+        include_reasoning: true
+      };
     }
 
     const response = await axios.post(

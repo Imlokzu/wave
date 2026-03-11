@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Profile...</title>
+    <script>
+        // Get username from URL path (/bio/username)
+        const pathParts = window.location.pathname.split('/');
+        const username = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+        
+        if (!username || username === 'bio' || username === 'bio.html') {
+            // No username provided, redirect to own profile or show error
+            const myUsername = localStorage.getItem('username');
+            if (myUsername) {
+                window.location.href = `/bio/${myUsername}`;
+            } else {
+                document.write('<h1 style="color: white; text-align: center; margin-top: 100px;">No username provided</h1>');
+            }
+        } else {
+            // Load profile data for this username from backend
+            fetch(`/api/bio-views/${username}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Store username for bio-view to use
+                    sessionStorage.setItem('viewingUsername', username);
+                    // Redirect to bio-view.html which will load the data
+                    window.location.href = '/bio-view.html?u=' + username;
+                })
+                .catch(err => {
+                    console.error('Failed to load profile:', err);
+                    document.write('<h1 style="color: white; text-align: center; margin-top: 100px;">Profile not found</h1>');
+                });
+        }
+    </script>
+</head>
+<body style="background: #0a0a0a;">
+    <div style="color: white; text-align: center; margin-top: 100px;">
+        <h2>Loading profile...</h2>
+    </div>
+</body>
+</html>

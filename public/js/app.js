@@ -56,11 +56,8 @@ class App {
     // Check authentication FIRST - redirect if not authenticated
     const isAuthenticated = await this.checkAuthentication();
     if (!isAuthenticated) {
-      console.log('[App] Not authenticated');
-      if (!window.clerkAuth) {
-        console.log('[App] Redirecting to login...');
-        window.location.href = '/login.html';
-      }
+      console.log('[App] Not authenticated, redirecting to login...');
+      window.location.href = '/login.html';
       return; // Stop initialization
     }
 
@@ -128,87 +125,6 @@ class App {
    * Returns true if authenticated, false otherwise
    */
   async checkAuthentication() {
-    if (!window.clerkAuth) {
-      try {
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = '/js/clerk-config.js';
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = '/js/clerk-auth.js';
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-      } catch (error) {
-        console.warn('[App] Clerk helpers failed to load:', error);
-      }
-    }
-
-    if (window.clerkAuth) {
-      try {
-        await window.clerkAuth.ensureLoaded();
-
-        let clerkUser = window.Clerk?.user;
-        let clerkSession = window.Clerk?.session;
-
-        if (!clerkUser && !clerkSession) {
-          for (let i = 0; i < 8; i += 1) {
-            await new Promise(resolve => setTimeout(resolve, 250));
-            clerkUser = window.Clerk?.user;
-            clerkSession = window.Clerk?.session;
-            if (clerkUser || clerkSession) break;
-          }
-        }
-
-        if (!clerkUser && !clerkSession) {
-          console.log('[App] Clerk: no active session');
-          return false;
-        }
-
-        await window.clerkAuth.getToken();
-
-        const backendUser = await window.clerkAuth.syncSessionWithBackend();
-        const user = backendUser || (await window.clerkAuth.syncUserToStorage());
-
-        if (user) {
-          state.setUser({
-            id: user.id,
-            username: user.username,
-            nickname: user.nickname
-          });
-          window.clerkAuth.startTokenRefresh();
-          return true;
-        }
-
-        // Fallback: allow Clerk session even if backend sync fails
-        if (window.Clerk?.user) {
-          const clerkUser = window.Clerk.user;
-          const email = clerkUser.primaryEmailAddress?.emailAddress || '';
-          const username = clerkUser.username || email.split('@')[0] || clerkUser.id;
-          const nickname = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ').trim() || username;
-
-          state.setUser({
-            id: clerkUser.id,
-            username,
-            nickname
-          });
-          window.clerkAuth.startTokenRefresh();
-          return true;
-        }
-
-        return false;
-      } catch (error) {
-        console.error('[App] Clerk auth check failed:', error);
-        return false;
-      }
-    }
-
     const authToken = localStorage.getItem('authToken');
     const userId = localStorage.getItem('userId');
 
@@ -1071,25 +987,6 @@ class App {
     }
   }
   
-  updateRoomSubtitle(text) {
-    const subtitleEl = document.getElementById('roomSubtitleRight');
-    if (subtitleEl) {
-      subtitleEl.textContent = text;
-    }
-  }
-3  
-  stripDMContextPrefix(content) {
-    if (!content) return '';
-    return content.replace(/^\[\[dmctx\|[^\]]+\]\]\s*/, '');
-  }
-
-  getI18nText(key, fallback) {
-    if (window.i18n && typeof window.i18n.t === 'function') {
-      return window.i18n.t(key);
-    }
-    return fallback;
-  }
-  
   /**
    * Add DM to sidebar list
    */
@@ -1113,7 +1010,6 @@ class App {
     }
 
     const senderUsername = (message.senderUsername || message.senderNickname || 'Unknown').replace('@', '');
-    const content = this.stripDMContextPrefix(message.content);
     const currentUsername = (state.get('user.username') || state.get('user.nickname') || '').replace('@', '');
     
     console.log(`[App] 📩 New DM from ${senderUsername}`);
@@ -1136,7 +1032,7 @@ class App {
     
     // Check if we're chatting with this user
     const currentRoom = state.get('room');
-    const isInDMWithSender = currentRoom && currentRoom.isDM &&
+    const isInDMWithSender = currentRoom && currentRoom.isDM && 
       currentRoom.name.replace('@', '').toLowerCase() === senderUsername.toLowerCase();
 
     // For AI bot, check if we're in the DM that this AI message belongs to
@@ -1164,7 +1060,7 @@ class App {
       let fileUrl = null;
       let fileName = null;
       let fileSize = null;
-      let content = this.stripDMContextPrefix(message.content);
+      let content = message.content;
       
       // Check if it's an image message
       if (content && content.startsWith('[Image:') && content.endsWith(']')) {
@@ -1187,6 +1083,7 @@ class App {
             fileUrl = fileInfo;
           }
         } else {
+          fileName = fileInfo;
           fileUrl = fileInfo; // Fallback
         }
         content = '';
@@ -1456,6 +1353,28 @@ class App {
       console.log('[App] Attachment button listener added successfully');
     } else {
       console.error('[App] ❌ Attachment button NOT found!');
+    }
+
+    // AI Vision Image Upload Button
+    const aiVisionBtn = document.getElementById('aiVisionBtn');
+    console.log('[App] Looking for AI Vision button...', aiVisionBtn);
+    if (aiVisionBtn) {
+      console.log('[App] AI Vision button found! Adding click listener');
+      const newAiVisionBtn = aiVisionBtn.cloneNode(true);
+      aiVisionBtn.parentNode.replaceChild(newAiVisionBtn, aiVisionBtn);
+
+      newAiVisionBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[App] ✅ AI VISION BUTTON CLICKED!');
+        // Trigger image input click
+        const imageInput = document.getElementById('imageInput');
+        if (imageInput) {
+          imageInput.click();
+        }
+      });
+    } else {
+      console.error('[App] ❌ AI Vision button NOT found!');
     }
 
     // Emoji button (sentiment_satisfied icon)
@@ -2061,7 +1980,7 @@ class App {
         menu.style.transform = 'scale(0.9) translateY(8px)';
         setTimeout(() => menu.classList.add('hidden'), 350);
         
-        // Use AI image chat if available, otherwise fallback to file picker
+        // Use AI image chat if available
         const imageInput = document.getElementById('imageInput');
         if (imageInput && window.aiImageChat) {
           imageInput.click();
@@ -2488,7 +2407,6 @@ class App {
       try {
         await navigator.clipboard.writeText(roomCode);
         alert(message + '\n\n✓ Code copied to clipboard!');
-      this.updateRoomSubtitle(this.getI18nText('chat.directMessage', 'Direct message'));
       } catch (e) {
         alert(message);
       }
@@ -2867,7 +2785,7 @@ class App {
         const existingMessages = state.get('messages') || [];
         const existingIds = new Set(existingMessages.map(m => m.id));
         const existingSignatures = new Set(
-          existingMessages.map(m => `${m.senderId || ''}|${this.stripDMContextPrefix(m.content || '')}`)
+          existingMessages.map(m => `${m.senderId || ''}|${m.content || ''}`)
         );
         
         // Add only new messages to state
@@ -2878,7 +2796,7 @@ class App {
           }
 
           // Skip if same sender+content already exists (dedupe cached optimistic messages)
-          const signature = `${msg.senderId || ''}|${this.stripDMContextPrefix(msg.content || '')}`;
+          const signature = `${msg.senderId || ''}|${msg.content || ''}`;
           if (existingSignatures.has(signature)) {
             return;
           }
@@ -2889,7 +2807,7 @@ class App {
           let fileUrl = null;
           let fileName = null;
           let fileSize = null;
-          let content = this.stripDMContextPrefix(msg.content);
+          let content = msg.content;
           
           // Check if it's an image message
           if (content && content.startsWith('[Image:') && content.endsWith(']')) {
@@ -2922,17 +2840,13 @@ class App {
           if (msg.fileName && !fileName) fileName = msg.fileName;
           if (msg.fileSize && !fileSize) fileSize = msg.fileSize;
           
-          const AI_BOT_ID = '00000000-0000-0000-0000-000000000001';
-          const isAIBot = msg.senderId === AI_BOT_ID || /wavebot|wave ai|ai assistant/i.test(msg.senderNickname || '');
-
           state.addMessage({
             id: msg.id,
             senderId: msg.senderId,
             senderNickname: msg.senderNickname,
             content: content,
             timestamp: msg.timestamp || new Date(),
-            type: isAIBot ? 'ai' : messageType,
-            isAI: isAIBot,
+            type: messageType,
             imageUrl: imageUrl,
             fileUrl: fileUrl,
             fileName: fileName,
@@ -2943,11 +2857,6 @@ class App {
         // Update cached DM messages
         const allMessages = state.get('messages') || [];
         this.dmMessages.set(currentRoom.dmUsername, [...allMessages]);
-
-        // Update DM subtitle with bio if available
-        if (data.otherUser && typeof data.otherUser.bio === 'string' && data.otherUser.bio.trim()) {
-          this.updateRoomSubtitle(data.otherUser.bio.trim());
-        }
         
         // Mark ALL messages from others as read immediately when history loads
         // This simulates "message loaded in browser = message read"
@@ -3042,16 +2951,40 @@ class App {
     });
 
     // Subscribe to room changes
-    state.subscribe('room', (room) => {
+    state.subscribe('room', async (room) => {
       if (room.name) {
         ui.updateRoomName(room.name);
         ui.updateRoomsList([room]); // Show current room in sidebar
       }
 
-      // Update room avatar in header (placeholder for user/room avatar)
+      // Update room avatar in header
       const roomAvatar = document.getElementById('roomAvatar');
       if (roomAvatar) {
-        roomAvatar.src = room?.avatarUrl || '/wavechat.png';
+        // Check if this is a DM (room name format: "DM: username")
+        if (room.name && room.name.startsWith('DM: ')) {
+          const otherUsername = room.name.replace('DM: ', '');
+          
+          // Load other user's profile picture
+          if (window.profilePictureService) {
+            try {
+              const avatarUrl = await window.profilePictureService.getProfilePicture(otherUsername);
+              roomAvatar.src = avatarUrl;
+              roomAvatar.style.cursor = 'pointer';
+              
+              // Make it clickable with context menu
+              if (window.makeProfileClickable) {
+                window.makeProfileClickable(roomAvatar, otherUsername);
+              }
+            } catch (error) {
+              console.error('Failed to load DM avatar:', error);
+              roomAvatar.src = '/wavechat.png';
+            }
+          }
+        } else {
+          // Regular room - use room avatar or default
+          roomAvatar.src = room?.avatarUrl || '/wavechat.png';
+          roomAvatar.style.cursor = 'default';
+        }
       }
     });
 
@@ -3215,7 +3148,6 @@ class App {
     
     // Update status to show it's a room
     this.updateRoomStatus('Active now');
-    this.updateRoomSubtitle(this.getI18nText('chat.wavechatRoom', 'WaveChat room'));
     
     // Update room code display and UI state
     this.updateRoomCodeDisplay(roomCode);
@@ -3427,7 +3359,12 @@ class App {
       }
 
       const data = await response.json();
-      const aiResponse = data.response || data.message || data.content;
+      let aiResponse = data.response || data.message || data.content;
+      
+      // Remove thinking/reasoning content from display
+      if (aiResponse) {
+          aiResponse = aiResponse.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim();
+      }
 
       if (aiResponse && aiResponse.trim()) {
         const cleaned = aiResponse.replace(/^This message is likely.*?(?=\S)/s, '').trim();
@@ -4069,14 +4006,10 @@ class App {
       
       // Clear all localStorage
       localStorage.removeItem('wave_session');
-      if (window.clerkAuth?.clearAuthStorage) {
-        window.clerkAuth.clearAuthStorage();
-      } else {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
-        localStorage.removeItem('nickname');
-      }
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('username');
+      localStorage.removeItem('nickname');
       
       // Disconnect socket
       socketManager.disconnect();
@@ -4085,11 +4018,7 @@ class App {
       state.reset();
       
       // Redirect to login page
-      if (window.clerkAuth?.signOutAndRedirect) {
-        await window.clerkAuth.signOutAndRedirect('/login.html');
-      } else {
-        window.location.href = '/login.html';
-      }
+      window.location.href = '/login.html';
     } catch (error) {
       console.error('[App] Logout error:', error);
       // Force redirect anyway
@@ -4226,10 +4155,30 @@ class App {
         isActive ? 'bg-primary/10 text-white' : 'text-slate-300 hover:bg-surface-lighter hover:text-white'
       }`;
       
+      // Create avatar element
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden';
+      
+      const avatarImg = document.createElement('img');
+      avatarImg.className = 'w-full h-full object-cover';
+      avatarImg.src = `data:image/svg+xml,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <circle fill="#3b82f6" cx="50" cy="50" r="50"/>
+          <text x="50" y="65" text-anchor="middle" fill="white" font-size="40">${cleanUsername.charAt(0).toUpperCase()}</text>
+        </svg>
+      `)}`;
+      avatarImg.alt = cleanUsername;
+      
+      // Load actual profile picture
+      if (window.profilePictureService) {
+        window.profilePictureService.getProfilePicture(cleanUsername).then(url => {
+          avatarImg.src = url;
+        });
+      }
+      
+      avatarDiv.appendChild(avatarImg);
+      
       dmEl.innerHTML = `
-        <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary text-[16px]">person</span>
-        </div>
         <div class="flex-1 min-w-0 text-left">
           <div class="text-base font-semibold truncate">${cleanUsername}</div>
           <div class="flex items-center justify-between gap-2">
@@ -4243,6 +4192,9 @@ class App {
           </span>
         ` : ''}
       `;
+      
+      // Insert avatar at the beginning
+      dmEl.insertBefore(avatarDiv, dmEl.firstChild);
       
       dmEl.addEventListener('click', () => this.handleStartChat(null, username));
       
@@ -4326,6 +4278,17 @@ class App {
       // Update panel title
       if (roomNameRight) {
         roomNameRight.textContent = currentRoom.name;
+      }
+      
+      // Update room info avatar with other person's profile picture
+      const roomInfoAvatar = document.getElementById('roomInfoAvatar');
+      if (roomInfoAvatar) {
+        const otherUsername = currentRoom.name.replace('DM: ', '').replace('@', '');
+        if (window.profilePictureService) {
+          window.profilePictureService.getProfilePicture(otherUsername).then(url => {
+            roomInfoAvatar.src = url;
+          });
+        }
       }
       
       // Show 2 members (you + other person)

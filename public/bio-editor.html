@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio Profile Editor - Wave</title>
+    <link rel="stylesheet" href="/css/bio-editor.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fas fa-user-circle"></i> Bio Profile</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#basic" class="nav-item active" data-section="basic">
+                    <i class="fas fa-user"></i>
+                    <span>Basic Info</span>
+                </a>
+                <a href="#media" class="nav-item" data-section="media">
+                    <i class="fas fa-image"></i>
+                    <span>Media</span>
+                </a>
+                <a href="#theme" class="nav-item" data-section="theme">
+                    <i class="fas fa-palette"></i>
+                    <span>Theme</span>
+                </a>
+                <a href="#badges" class="nav-item" data-section="badges">
+                    <i class="fas fa-medal"></i>
+                    <span>Badges</span>
+                </a>
+                <a href="#social" class="nav-item" data-section="social">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Social Links</span>
+                </a>
+                <a href="#skills" class="nav-item" data-section="skills">
+                    <i class="fas fa-code"></i>
+                    <span>Skills</span>
+                </a>
+                <a href="#preview" class="nav-item" data-section="preview">
+                    <i class="fas fa-eye"></i>
+                    <span>Preview</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="save-btn" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Save Profile
+                </button>
+                <a href="/" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Wave
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <h2>Edit Your Bio Profile</h2>
+                <p class="subtitle">Customize your profile like guns.lol</p>
+            </div>
+
+            <!-- Basic Info Section -->
+            <section id="basic" class="editor-section active">
+                <div class="section-header">
+                    <h3><i class="fas fa-user"></i> Basic Information</h3>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="yourname" maxlength="30">
+                    <small>This will be your profile URL: wave.app/bio/yourname</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="displayName">Display Name</label>
+                    <input type="text" id="displayName" placeholder="Your Name" maxlength="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" rows="4" placeholder="Write something about yourself..." maxlength="500"></textarea>
+                    <small id="bio-count">0/500</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="customCursorEnabled">
+                        <span>Enable Custom Cursor</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoPlayMusic">
+                        <span>Auto-play Music (when users enter)</span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Media Section -->
+            <section id="media" class="editor-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-image"></i> Media Assets</h3>
+                    <p>Upload your profile assets to Supabase Storage</p>
+                </div>
+
+                <div class="upload-grid">
+                    <!-- Avatar Upload -->
+                    <div class="upload-card">
+                        <div class="upload-preview" id="avatar-preview">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="upload-info">
+                            <h4>Profile Avatar</h4>
+                            <p>GIF or PNG recommended</p>
+                            <input type="file" id="avatar-upload" accept="image/*" hidden>
+                            <button class="btn btn-upload" onclick="document.getElementById('avatar-upload').click()">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                            <button class="btn btn-remove" id="avatar-remove" style="display: none;">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Background Video Upload -->
+                    <div class="upload-card">
+                        <div class="upload-preview" id="background-preview">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <div class="upload-info">
+                            <h4>Background Video</h4>
+                            <p>MP4 or MOV (max 10MB)</p>
+                            <input type="file" id="background-upload" accept="video/*" hidden>
+                            <button class="btn btn-upload" onclick="document.getElementById('background-upload').click()">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                            <button class="btn btn-remove" id="background-remove" style="display: none;">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Music Upload -->
+                    <div class="upload-card">
+                        <div class="upload-preview" id="music-preview">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <div class="upload-info">
+                            <h4>Background Music</h4>
+                            <p>MP3 (max 10MB)</p>
+                            <input type="file" id="music-upload" accept="audio/*" hidden>
+                            <button class="btn btn-upload" onclick="document.getElementById('music-upload').click()">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                            <button class="btn btn-remove" id="music-remove" style="display: none;">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Cursor Upload -->
+                    <div class="upload-card">
+                        <div class="upload-preview" id="cursor-preview">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </div>
+                        <div class="upload-info">
+                            <h4>Custom Cursor</h4>
+                            <p>PNG or CUR</p>
+                            <input type="file" id="cursor-upload" accept="image/*,.cur" hidden>
+                            <button class="btn btn-upload" onclick="document.getElementById('cursor-upload').click()">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                            <button class="btn btn-remove" id="cursor-remove" style="display: none;">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Theme Section -->
+            <section id="theme" class="editor-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-palette"></i> Theme</h3>
+                    <p>Choose your profile's color scheme</p>
+                </div>
+
+                <div class="theme-grid">
+                    <div class="theme-option" data-theme="default">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #7c3aed, #a855f7);"></div>
+                        <span>Default</span>
+                    </div>
+                    <div class="theme-option" data-theme="dark">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);"></div>
+                        <span>Dark</span>
+                    </div>
+                    <div class="theme-option" data-theme="red">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #ef4444, #b91c1c);"></div>
+                        <span>Red</span>
+                    </div>
+                    <div class="theme-option" data-theme="green">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #22c55e, #15803d);"></div>
+                        <span>Green</span>
+                    </div>
+                    <div class="theme-option" data-theme="orange">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #f97316, #c2410c);"></div>
+                        <span>Orange</span>
+                    </div>
+                    <div class="theme-option" data-theme="pink">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #ec4899, #be185d);"></div>
+                        <span>Pink</span>
+                    </div>
+                    <div class="theme-option" data-theme="cyan">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #06b6d4, #0e7490);"></div>
+                        <span>Cyan</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Badges Section -->
+            <section id="badges" class="editor-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-medal"></i> Badges</h3>
+                    <p>Show off your achievements and roles</p>
+                </div>
+
+                <div class="badges-editor">
+                    <div class="badge-input-group">
+                        <input type="text" id="badge-name" placeholder="Badge name (e.g., Owner)">
+                        <input type="text" id="badge-icon" placeholder="Icon URL or upload">
+                        <button class="btn btn-add" id="add-badge-btn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <div class="badges-list" id="badges-list">
+                        <!-- Badges will be added here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Social Links Section -->
+            <section id="social" class="editor-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-share-alt"></i> Social Links</h3>
+                    <p>Connect your social media profiles</p>
+                </div>
+
+                <div class="social-inputs">
+                    <div class="form-group">
+                        <label for="github">GitHub</label>
+                        <input type="url" id="github" placeholder="https://github.com/yourusername">
+                    </div>
+                    <div class="form-group">
+                        <label for="discord">Discord</label>
+                        <input type="url" id="discord" placeholder="https://discord.gg/yourserver">
+                    </div>
+                    <div class="form-group">
+                        <label for="twitter">Twitter / X</label>
+                        <input type="url" id="twitter" placeholder="https://twitter.com/yourusername">
+                    </div>
+                    <div class="form-group">
+                        <label for="youtube">YouTube</label>
+                        <input type="url" id="youtube" placeholder="https://youtube.com/@yourchannel">
+                    </div>
+                    <div class="form-group">
+                        <label for="instagram">Instagram</label>
+                        <input type="url" id="instagram" placeholder="https://instagram.com/yourusername">
+                    </div>
+                    <div class="form-group">
+                        <label for="telegram">Telegram</label>
+                        <input type="url" id="telegram" placeholder="https://t.me/yourusername">
+                    </div>
+                    <div class="form-group">
+                        <label for="spotify">Spotify</label>
+                        <input type="url" id="spotify" placeholder="https://open.spotify.com/user/yourusername">
+                    </div>
+                    <div class="form-group">
+                        <label for="website">Website</label>
+                        <input type="url" id="website" placeholder="https://yourwebsite.com">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Skills Section -->
+            <section id="skills" class="editor-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-code"></i> Skills</h3>
+                    <p>Showcase your programming languages and skills</p>
+                </div>
+
+                <div class="skills-editor">
+                    <div class="skill-input-group">
+                        <input type="text" id="skill-input" placeholder="Add a skill (e.g., JavaScript)">
+                        <button class="btn btn-add" id="add-skill-btn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <div class="skills-list" id="skills-list">
+                        <!-- Skills will be added here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preview Section -->
+            <section id="preview" class="editor-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-eye"></i> Live Preview</h3>
+                    <p>See how your profile will look</p>
+                </div>
+
+                <div class="preview-container">
+                    <div class="preview-frame">
+                        <div class="preview-header">
+                            <span>Preview</span>
+                            <div class="preview-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <div id="preview-content">
+                            <!-- Preview will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/js/bio-editor.js"></script>
+</body>
+</html>
